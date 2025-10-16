@@ -1,0 +1,4 @@
+export interface __PascalSingular__ {
+  name: string
+  email: string
+}

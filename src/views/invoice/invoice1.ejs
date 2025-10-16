@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-4">
+    <div class="shadow-lg py-5 rounded-xl bg-white max-w-6xl w-full">
+      <!-- Company Info -->
+      <img
+        src="<%= company.logo %>"
+        alt="Logo"
+        class="mx-3 sm:mx-6 md:mx-10 mb-6 w-[130px]"
+      />
+
+    <div class="flex justify-between flex-wrap sm:flex-nowrap gap-4 mx-3 sm:mx-6 md:mx-10 text-sm">
+      <div class="space-y-1.5">
+        <p><%= company.address %></p>
+        <p>Email: <%= company.email %></p>
+        <p>Office: <%= company.office %></p>
+        <p>CA Contractors License #<%= company.license %></p>
+        <p>Company Representative: <%= company.representative %></p>
+        <p>Direct: <%= company.direct %></p>
+      </div>
+      <div class="sm:text-right space-y-1.5">
+        <p>Salesperson Name: <%= salesperson.name %></p>
+        <p>Phone: <%= salesperson.phone %></p>
+        <p>Email: <%= salesperson.email %></p>
+        <p>Quote Creation Date: <%= salesperson.quoteCreated %></p>
+        <p>Quote Expiration Date: <%= salesperson.quoteExpiry %></p>
+      </div>
+    </div>
+
+
+      <!-- Customer Info -->
+      <div class="mt-4 pb-4">
+        <h3 class="font-bold py-1 px-3 bg-gray-100 text-base">
+          CUSTOMER QUOTE <%= customer.quoteId %>
+        </h3>
+        <div class="grid sm:grid-cols-2 gap-2 sm:gap-4 mt-2 text-xs sm:text-sm mx-3 sm:mx-6 md:mx-10">
+          <p><strong>NAME:</strong> <%= customer.name %></p>
+          <p><strong>PHONE:</strong> <%= customer.phone %></p>
+          <p><strong>STREET:</strong> <%= customer.street %></p>
+          <p><strong>EMAIL:</strong> <%= customer.email %></p>
+          <p><strong>CITY / ZIP:</strong> <%= customer.city %> / <%= customer.zipCode %></p>
+          <p><strong>JOB LOCATIONS:</strong> <%= customer.jobLocation %></p>
+          <p><strong>APPROX. PRODUCT LEAD TIME:</strong> <%= customer.leadTime %></p>
+          <p><strong>APPROX. INSTALLATION TIME:</strong> <%= customer.installTime %></p>
+        </div>
+      </div>
+
+      <!-- Line Items Table -->
+      <% items.forEach((item, index) => { %>
+        <div class="mt-3 sm:mt-6">
+          <!-- Table Header -->
+          <div class="grid grid-cols-5 font-semibold text-xs sm:text-sm py-2 px-8 bg-gray-100">
+            <div>Line Item</div>
+            <div>Qty</div>
+            <div class="col-span-2">Unit Price</div>
+            <div>Extended Price</div>
+          </div>
+
+          <!-- Item Row -->
+          <div class="grid grid-cols-5 p-2 text-xs sm:text-sm px-8 font-bold border-b">
+            <div><%= index + 1 %></div>
+            <div><%= item.qty %></div>
+            <div class="col-span-2"><%= item.unitPrice %></div>
+            <div><%= item.extendedPrice %></div>
+          </div>
+
+          <div class="grid grid-cols-5">
+            <!-- Image -->
+            <div class="col-span-2 flex flex-col items-center p-1 sm:p-3">
+              <img src="<%= item.image %>" alt="Invoice Item <%= index + 1 %>" width="150" height="120" />
+
+              <% if (item.notes) { %>
+                <div class="text-center text-gray-600 text-[10px] leading-relaxed">
+                  <% item.notes.forEach(note => { %>
+                    <p><%= note %></p>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+
+            <!-- Description -->
+            <div class="col-span-3 p-2 sm:p-4 space-y-3 text-sm">
+              <p class="font-semibold">Line Item Description</p>
+              <p class="mb-2 font-semibold"><%= item.title %></p>
+              <p><%= item.description %></p>
+              <% if (item.location) { %>
+                <p><strong>Location:</strong> <%= item.location %></p>
+              <% } %>
+              <% if (item.options && item.options.length) { %>
+                <% item.options.forEach(opt => { %>
+                  <p><strong>Included Option:</strong> <%= opt %></p>
+                <% }) %>
+              <% } %>
+              <% if (item.size) { %>
+                <p><strong>Size:</strong> <%= item.size %></p>
+              <% } %>
+              <% if (item.color) { %>
+                <p><strong>Structure Color:</strong> <%= item.color %></p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+
+      <div class="text-center mt-3 text-xs">Page 1</div>
+    </div>
+  </body>
+</html>

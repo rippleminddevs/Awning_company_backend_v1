@@ -1,0 +1,9 @@
+import { BaseController } from '../../common/core/baseController'
+import { __PascalSingular__Service } from './__camelSingular__Service'
+import { __PascalSingular__ } from './__camelSingular__Interface'
+
+export class __PascalSingular__Controller extends BaseController<__PascalSingular__, __PascalSingular__Service> {
+  constructor(__camelSingular__Service: __PascalSingular__Service) {
+    super(__camelSingular__Service)
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "app": {
+    "name": "Staging",
+    "port": 5000,
+    "url": "http://localhost:5000",
+    "version": "1.0.0",
+    "corsOrigin": "*"
+  },
+  "database": {
+    "connection": "mongodb",
+    "mongodb": {
+      "host": "futureisapps.fagqr.mongodb.net",
+      "port": 27017,
+      "username": "devteam",
+      "password": "laBf7H1bsijb7Fjc",
+      "database": "awning_company",
+      "atlas": true
+    },
+    "mysql": {
+      "host": "localhost",
+      "port": 3306,
+      "username": "root",
+      "password": "",
+      "database": "awning_company"
+    }
+  },
+  "jwt": {
+    "secret": "accessKey-awning_company",
+    "accessTokenExpiry": "1d",
+    "refreshTokenExpiry": "7d"
+  },
+  "email": {
+    "host": "mail.letsgetwebdesign.com",
+    "port": 465,
+    "username": "noreply@letsgetwebdesign.com",
+    "password": "sYVSd!Zy1q9?",
+    "fromAddress": "noreply@awningcompany.com",
+    "secure": true
+  },
+  "payment": {
+    "stripe": {
+      "publicKey": "",
+      "secretKey": "",
+      "webhookSecret": ""
+    },
+    "paypal": {
+      "publicKey": "",
+      "secretKey": "",
+      "sandbox": false
+    }
+  },
+  "socialLogin": {
+    "google": {
+      "public_key": "",
+      "secretKey": ""
+    }
+  },
+  "upload": {
+    "uploadType": "cloudinary",
+    "uploadDir": "uploads",
+    "cloudinary": {
+      "cloudName": "ddhobrvdq",
+      "apiKey": "197379925413146",
+      "apiSecret": "ZQ_yyRRwiSiAJPivugnYWr1Z7zw"
+    },
+    "aws": {
+      "accessKeyId": "",
+      "secretAccessKey": "",
+      "region": "",
+      "bucketName": ""
+    }
+  },
+  "location": {
+    "google": {
+      "apiKey": "AIzaSyBu2nmQezZDJsSN6JE5YIkcEs3ZQgi24ag",
+      "baseUrl": "https://maps.googleapis.com/maps/api/geocode/json"
+    }
+  }
+}

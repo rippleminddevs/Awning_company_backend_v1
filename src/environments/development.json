@@ -1,0 +1,84 @@
+{
+  "app": {
+    "name": "Development",
+    "port": 5002,
+    "url": "http://localhost:5002",
+    "version": "0.0.1",
+    "corsOrigin": "*"
+  },
+  "database": {
+    "connection": "mongodb",
+    "mongodb": {
+      "host": "localhost",
+      "port": 27017,
+      "username": "",
+      "password": "",
+      "database": "awning_company_v1",
+      "atlas": false
+    },
+    "mysql": {
+      "host": "localhost",
+      "port": 3306,
+      "username": "root",
+      "password": "",
+      "database": "awning_company_v1"
+    }
+  },
+  "jwt": {
+    "secret": "accessKey-awning_company",
+    "accessTokenExpiry": "1d",
+    "refreshTokenExpiry": "7d"
+  },
+  "email": {
+    "host": "sandbox.smtp.mailtrap.io",
+    "port": 2525,
+    "username": "bd43b165be85f8",
+    "password": "a6c392908db4b1",
+    "fromAddress": "no-reply@awningcompany.com",
+    "secure": false
+  },
+  "payment": {
+    "stripe": {
+      "publicKey": "pk_test_51Rqu9o19eHLbbRrQoXXHf7824366jwN1NGymhgH1wx240LS5M2BVgAlUZAoY7zppo0sZIBhRlCmMMVt8NXg90rIs00CK5GuxSZ",
+      "secretKey": "sk_test_51Rqu9o19eHLbbRrQBghBBKV8Ujk6ValNqYwzFR50qDMvX1hCQpXWqbHmqe7n0tunnnYV5DETwYd4chR2x8NMZO3n00XkRKTKej",
+      "webhookSecret": ""
+    },
+    "paypal": {
+      "baseUrl": "",
+      "clientId": "",
+      "secret": "",
+      "sandbox": false
+    }
+  },
+  "socialLogin": {
+    "google": {
+      "clientID": "730633410890-n9a3ko2k8a1hk8ngvfrevctga7vck86l.apps.googleusercontent.com",
+      "clientSecret": "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"
+    },
+    "facebook": {
+      "clientID": "535811009535388",
+      "clientSecret": "2d3c60b10408c9b19fad94d9fb7f3cc2"
+    }
+  },
+  "upload": {
+    "uploadType": "local",
+    "uploadDir": "uploads",
+    "cloudinary": {
+      "cloudName": "ddhobrvdq",
+      "apiKey": "197379925413146",
+      "apiSecret": "ZQ_yyRRwiSiAJPivugnYWr1Z7zw"
+    },
+    "aws": {
+      "accessKeyId": "",
+      "secretAccessKey": "",
+      "region": "",
+      "bucketName": ""
+    }
+  },
+  "location": {
+    "google": {
+      "apiKey": "AIzaSyBu2nmQezZDJsSN6JE5YIkcEs3ZQgi24ag",
+      "baseUrl": "https://maps.googleapis.com/maps/api/geocode/json"
+    }
+  }
+}

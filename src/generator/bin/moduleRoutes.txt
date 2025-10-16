@@ -1,0 +1,20 @@
+import { Router } from 'express'
+import { __PascalSingular__Controller } from './__camelSingular__Controller'
+import { __PascalSingular__Service } from './__camelSingular__Service';
+import { __PascalSingular__Validator } from './__camelSingular__Validator'
+import { authenticate } from '../../middlewares/authMiddleware';
+import { validate } from '../../common/utils/helpers'
+
+const router = Router()
+
+const __camelSingular__Service = new __PascalSingular__Service();
+const __camelSingular__Controller = new __PascalSingular__Controller(__camelSingular__Service)
+
+router.get('/', __camelSingular__Controller.getAll)
+router.get('/:id', __camelSingular__Controller.getById)
+router.use(authenticate);
+router.post('/', validate(__PascalSingular__Validator.create), __camelSingular__Controller.create)
+router.put('/:id', validate(__PascalSingular__Validator.update), __camelSingular__Controller.update)
+router.delete('/:id', __camelSingular__Controller.delete)
+
+export default router

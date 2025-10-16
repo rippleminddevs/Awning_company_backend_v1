@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invoice</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 p-4">
+    <div class="shadow-lg py-5 rounded-xl bg-white max-w-5xl w-full center">
+      <!-- Company Info -->
+      <img
+        src="<%= company.logo %>"
+        alt="Logo"
+        class="mx-3 sm:mx-6 md:mx-10 mb-6 w-[130px]"
+      />
+
+      <div class="flex justify-between flex-wrap sm:flex-nowrap gap-4 mx-3 sm:mx-6 md:mx-10">
+        <div class="space-y-1.5 text-sm">
+          <p><%= company.address %></p>
+          <p>Email: <%= company.email %></p>
+          <p>Office: <%= company.office %></p>
+          <p>CA Contractors License #<%= company.license %></p>
+          <p>Company Representative: <%= company.representative %></p>
+          <p>Direct: <%= company.direct %></p>
+        </div>
+        <div class="sm:text-right space-y-1.5 text-sm">
+          <p>Salesperson Name: <%= salesperson.name %></p>
+          <p>Phone: <%= salesperson.phone %></p>
+          <p>Email: <%= salesperson.email %></p>
+          <p>Quote Creation Date: <%= salesperson.quoteCreated %></p>
+          <p>Quote Expiration Date: <%= salesperson.quoteExpiry %></p>
+        </div>
+      </div>
+
+      <!-- Customer Info -->
+      <div class="mt-4 pb-4">
+        <h3 class="font-bold py-1 px-3 bg-gray-100 text-base">
+          CUSTOMER QUOTE <%= customer.quoteId %>
+        </h3>
+        <div
+          class="grid sm:grid-cols-2 gap-2 sm:gap-4 mt-2 text-xs sm:text-sm mx-3 sm:mx-6 md:mx-10"
+        >
+          <p><strong>NAME:</strong> <%= customer.name %></p>
+          <p><strong>PHONE:</strong> <%= customer.phone %></p>
+          <p><strong>STREET:</strong> <%= customer.street %></p>
+          <p><strong>EMAIL:</strong> <%= customer.email %></p>
+          <p><strong>CITY / STATE / ZIP:</strong> <%= customer.cityStateZip %></p>
+          <p><strong>JOB LOCATIONS:</strong> <%= customer.jobLocation %></p>
+          <p><strong>APPROX. PRODUCT LEAD TIME:</strong> <%= customer.leadTime %></p>
+          <p><strong>APPROX. INSTALLATION TIME:</strong> <%= customer.installTime %></p>
+        </div>
+      </div>
+
+      <!-- Project Financial Summary -->
+      <div class="border-t mx-2 sm:mx-5">
+        <div class="grid sm:grid-cols-2">
+          <div class="grid grid-cols-4 gap-y-2 p-1 md:p-6 text-sm">
+            <div class="col-span-2">Project Subtotal:</div>
+            <div class="col-span-2 text-right"><%= summary.subtotal %></div>
+
+            <div class="col-span-2">Discount:</div>
+            <div class="col-span-2 text-right text-green-600"><%= summary.discount %></div>
+
+            <div class="col-span-2">Taxes:</div>
+            <div class="col-span-2 text-right"><b><%= summary.taxes %></b></div>
+
+            <div class="col-span-2">Freight:</div>
+            <div class="col-span-2 text-right"><b><%= summary.freight %></b></div>
+
+            <div class="col-span-2 font-semibold">Grand Total:</div>
+            <div class="col-span-2 text-right font-semibold"><%= summary.total %></div>
+          </div>
+
+          <!-- Payment Schedule -->
+          <div class="grid grid-cols-4 gap-y-2 p-1 md:p-6 text-sm">
+            <div class="col-span-2 font-medium">Payment Schedule</div>
+            <div class="col-span-2"></div>
+
+            <div class="col-span-2">Due At Acceptance:</div>
+            <div class="col-span-2 text-right"><%= payment.dueAcceptance %></div>
+
+            <div class="col-span-2">No of Installments:</div>
+            <div class="col-span-2 text-right"><%= payment.installments %></div>
+
+            <div class="col-span-2">Due 1-Week Prior to Delivery:</div>
+            <div class="col-span-2 text-right"><%= payment.duePriorDelivery %></div>
+
+            <div class="col-span-2 font-semibold">Balance Due At Completion:</div>
+            <div class="col-span-2 text-right font-semibold"><%= payment.balanceCompletion %></div>
+          </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="pt-5 sm:pt-0 p-2 sm:p-6 text-xs space-y-3 leading-relaxed">
+          <p>
+            <span class="font-bold">Terms and Conditions</span> of The Awning Company (“Seller”)
+          </p>
+          <ol class="list-decimal list-inside space-y-1">
+            <% terms.forEach(function(term) { %>
+              <li><%= term %></li>
+            <% }) %>
+          </ol>
+        </div>
+
+        <!-- Signature Section -->
+        <div
+          class="px-2 sm:px-7 lg:px-10 text-xs sm:text-sm grid sm:grid-cols-2 mt-5 sm:mt-0 gap-2 sm:gap-6"
+        >
+          <div class="flex">
+            <div class="mb-6">Acceptance:</div>
+            <div class="border-b border-gray-400 w-full h-[1px] mt-5"></div>
+          </div>
+          <div class="flex">
+            <div class="mb-6">Date:</div>
+            <div class="border-b border-gray-400 w-full h-[1px] mt-5"></div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-4 my-5 px-3 sm:px-5 lg:px-[60px]">
+          <% company.sponsers.forEach(function(sponsor) { %>
+            <img 
+              src="<%= sponsor %>" 
+              alt="sponsor logo" 
+              class="h-12 object-contain"
+            />
+          <% }) %>
+        </div>
+        
+      </div>
+
+      <div class="text-center mt-3 text-xs">Page 2</div>
+    </div>
+  </body>
+</html>

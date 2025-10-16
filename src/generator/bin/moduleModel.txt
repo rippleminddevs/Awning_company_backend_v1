@@ -1,0 +1,30 @@
+import mongoose from 'mongoose'
+import { FieldsConfig } from '../../common/interfaces/fieldTypes'
+import { BaseModel } from '../../common/core/baseModel'
+import { __PascalSingular__ } from './__camelSingular__Interface'
+
+const fields: FieldsConfig = {
+  name: {
+    type: 'string',
+    nullable: false,
+  },
+  email: {
+    type: 'string',
+    nullable: false,
+    unique: true,
+  },
+}
+
+export class __PascalSingular__Model extends BaseModel<__PascalSingular__> {
+  private static instance: __PascalSingular__Model;
+  constructor() {
+    super('__PascalSingular__', fields)
+  }
+
+  public static getInstance(): __PascalSingular__Model {
+    if (!__PascalSingular__Model.instance) {
+      __PascalSingular__Model.instance = new __PascalSingular__Model();
+    }
+    return __PascalSingular__Model.instance;
+  }
+}

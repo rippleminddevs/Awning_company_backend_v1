@@ -1,0 +1,9 @@
+import { BaseService } from '../../common/core/baseService'
+import { __PascalSingular__Model } from './__camelSingular__Model'
+import { __PascalSingular__ } from './__camelSingular__Interface'
+
+export class __PascalSingular__Service extends BaseService<__PascalSingular__> {
+  constructor() {
+    super(__PascalSingular__Model.getInstance())
+  }
+}
