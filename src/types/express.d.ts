@@ -5,6 +5,8 @@ declare module 'express' {
     userIp?: string
     user?: {
       [key: string]: any
+      id?: string
+      _id?: string
     }
   }
 }

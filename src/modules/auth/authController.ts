@@ -63,7 +63,10 @@ export class AuthController extends BaseController<User, AuthService> {
 
   public changePassword = async (req: Request, res: Response): Promise<void> => {
     const data: changePassword = req.body;
-    const changeResponse = await this.service.changePassword(data, req.user?.id);
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
+    const changeResponse = await this.service.changePassword(data, req.user.id);
     apiResponse(res, changeResponse, 200, "Password changed successfully");
   }
 }

@@ -10,18 +10,24 @@ export class AppointmentController extends BaseController<Appointment, Appointme
   }
 
   public create = async(req: Request, res: Response):Promise<void> => {
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
     const data = {
       ...req.body,
-      createdBy: req.user!.id
+      createdBy: req.user.id
     }
     const appointment = await this.service.createAppointment(data)
     apiResponse(res, appointment, 201, "Appointment created successfully")
   }
 
   public update = async(req: Request, res: Response):Promise<void> => {
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
     const data = {
       ...req.body,
-      createdBy: req.user!.id
+      createdBy: req.user.id
     }
     const appointment = await this.service.updateAppointment(req.params.id, data)
     apiResponse(res, appointment, 200, "Appointment updated successfully")
@@ -39,7 +45,10 @@ export class AppointmentController extends BaseController<Appointment, Appointme
 
   public getAll = async(req: Request, res: Response):Promise<void> => {
     const params = req.query as GetAppointmentParams
-    const appointment = await this.service.getAllAppointments(params, req.user!.id)
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
+    const appointment = await this.service.getAllAppointments(params, req.user.id)
     apiResponse(res, appointment, 200, "Appointments fetched successfully")
   }
 

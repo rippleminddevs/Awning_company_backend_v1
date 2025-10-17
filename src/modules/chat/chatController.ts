@@ -10,28 +10,37 @@ export class ChatController extends BaseController<Chat, ChatService> {
   }
 
   public getAll = async (req: Request, res: Response): Promise<void> => {
-    const authUser = req.user;
-    const chats = await this.service.getAllChats({ ...req.query, userId: authUser!.id })
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
+    const userId = req.user.id;
+    const chats = await this.service.getAllChats({ ...req.query, userId })
     apiResponse(res, chats, 200)
   }
 
   public getById = async (req: Request, res: Response): Promise<void> => {
-    const authUser = req.user;
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
+    const userId = req.user.id;
     const chats = await this.service.getChatById({
       id: req.params.id,
-      userId: authUser!.id
+      userId
     })
     apiResponse(res, chats, 200)
   }
 
   public create = async (req: Request, res: Response): Promise<void> => {
-    const authUser = req.user;
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
+    const authUserId = req.user.id;
     const { userId } = req.body;
 
     // Create participants array
-    const participants = [userId, authUser!.id];
+    const participants = [userId, authUserId];
 
-    const chat = await this.service.createChat(participants, authUser!.id);
+    const chat = await this.service.createChat(participants, authUserId);
     apiResponse(res, chat, 201);
   };
 }

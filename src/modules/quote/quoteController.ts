@@ -10,10 +10,13 @@ export class QuoteController extends BaseController<Quote, QuoteService> {
   }
 
   public create = async (req: Request, res: Response): Promise<void> => {
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
     const { file } = req;
     const payload = {
       ...req.body,
-      createdBy: req.user!.id,
+      createdBy: req.user.id,
       paymentDetails: {
         ...req.body.paymentDetails,
         ...(file && { checkImage: file })
@@ -54,13 +57,19 @@ export class QuoteController extends BaseController<Quote, QuoteService> {
 
   public getAll = async (req: Request, res: Response): Promise<void> => {
     const params = req.query;
-    const quotes = await this.service.getQuotes(params, req.user!.id);
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
+    const quotes = await this.service.getQuotes(params, req.user.id);
     apiResponse(res, quotes, 200, "Quotes fetched successfully");
   }
 
   public getSalesPersonAnalytics = async (req: Request, res: Response): Promise<void> => {
     const params = req.query;
-    const analytics = await this.service.getSalesPersonAnalytics(params, req.user!.id);
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
+    const analytics = await this.service.getSalesPersonAnalytics(params, req.user.id);
     apiResponse(res, analytics, 200, "Analytics fetched successfully");
   }
 }

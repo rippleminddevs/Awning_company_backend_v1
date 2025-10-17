@@ -45,11 +45,11 @@ export class DatabaseService {
     console.log('✅ Connected to MySQL')
   }
 
-  public getMongooseModel = <T>(
+  public getMongooseModel = (
     modelName: string,
     schema: mongoose.Schema
-  ): mongoose.Model<T & mongoose.Document> => {
-    return mongoose.model<T & mongoose.Document>(modelName, schema)
+  ): mongoose.Model<any> => {
+    return mongoose.model(modelName, schema)
   }
 
   public getSequelizeModel = (modelName: string, attributes: any): ModelStatic<Model> => {

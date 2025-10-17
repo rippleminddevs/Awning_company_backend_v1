@@ -11,9 +11,12 @@ export class NotificationController extends BaseController<Notification, Notific
 
   public create = async (req: Request, res: Response) => {
 
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
     const createData: any = {
       ...req.body,
-      createdBy: req.user!.id
+      createdBy: req.user.id
     }
     const notification = await this.service.createNotification(createData)
     return apiResponse(res, notification)
@@ -21,13 +24,19 @@ export class NotificationController extends BaseController<Notification, Notific
 
   public getAll = async (req: Request, res: Response) => {
     const params = req.query as unknown as GetNotificationParams;
-    const result = await this.service.getAllNotifications(req.user!.id, params);
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
+    const result = await this.service.getAllNotifications(req.user.id, params);
     return apiResponse(res, result);
   }
 
   public markAsRead = async (req: Request, res: Response) => {
     const { id: notificationId } = req.params;
-    const userId = req.user!.id;
+    if (!req.user || !req.user.id) {
+      throw new Error('User not found');
+    }
+    const userId = req.user.id;
 
     const notification = await this.service.markAsRead({
       notificationId,
