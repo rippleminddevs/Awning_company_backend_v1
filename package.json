@@ -8,6 +8,7 @@
     "dev": "tsx watch src/main.ts",
     "dev:stag": "tsx watch src/main.ts",
     "build": "tsc && ts-node build.ts",
+    "start": "node dist/main.js",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
