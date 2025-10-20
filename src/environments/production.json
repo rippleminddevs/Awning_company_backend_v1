@@ -9,10 +9,10 @@
   "database": {
     "connection": "mongodb",
     "mongodb": {
-      "host": "futureisapps.fagqr.mongodb.net",
+      "host": "hoffnmazor.u8t7t.mongodb.net",
       "port": 27017,
-      "username": "devteam",
-      "password": "laBf7H1bsijb7Fjc",
+      "username": "admin",
+      "password": "YBfFHwu4bw98l4zT",
       "database": "awning_company",
       "atlas": true
     },
