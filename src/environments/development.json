@@ -9,12 +9,12 @@
   "database": {
     "connection": "mongodb",
     "mongodb": {
-      "host": "localhost",
+      "host": "hoffnmazor.u8t7t.mongodb.net",
       "port": 27017,
-      "username": "",
-      "password": "",
-      "database": "awning_company_v1",
-      "atlas": false
+      "username": "admin",
+      "password": "YBfFHwu4bw98l4zT",
+      "database": "awning_company",
+      "atlas": true
     },
     "mysql": {
       "host": "localhost",
