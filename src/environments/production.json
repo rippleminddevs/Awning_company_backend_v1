@@ -2,7 +2,7 @@
   "app": {
     "name": "Production",
     "port": 5000,
-    "url": "http://localhost:5000",
+    "url": "https://awning-company-backend-v1.onrender.com",
     "version": "0.0.1",
     "corsOrigin": "*"
   },
