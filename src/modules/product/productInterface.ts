@@ -14,15 +14,15 @@ export interface height_ft {
 }
 
 export interface PricingRule {
-  condition: string;             
-  baseValue: string | number;     
-  variationIncrement: number;     
+  condition: string
+  baseValue: string | number
+  variationIncrement: number
 }
 
 export interface Pricing {
-  basePrice: number;              
-  finalPrice: number;             
-  rules: PricingRule[];           
+  basePrice: number
+  finalPrice: number
+  rules: PricingRule[]
 }
 
 export interface Product {
@@ -38,6 +38,11 @@ export interface Product {
   height_ft: height_ft
   image?: string
   pricing: Pricing
+  parentProduct?: string
+  parentProductInfo?: {
+    _id: string
+    name: string
+  }
   createdBy: string
 }
 
@@ -47,4 +52,8 @@ export interface GetProductsParams {
 
 export interface SearchProductsParams {
   name?: string
+}
+
+export interface GetSubProductsParams {
+  parentProduct: string
 }

@@ -52,12 +52,12 @@ const pricingRule: FieldsConfig = {
   },
 }
 
-const Pricing: FieldsConfig ={
+const Pricing: FieldsConfig = {
   basePrice: {
-    type: 'number'
+    type: 'number',
   },
   finalPrice: {
-    type: 'number'
+    type: 'number',
   },
   rules: {
     type: 'array',
@@ -126,6 +126,13 @@ const fields: FieldsConfig = {
     nullable: true,
     default: null,
   },
+  parentProduct: {
+    type: 'string',
+    mongooseType: 'ObjectId',
+    ref: 'Product',
+    nullable: true,
+    default: null,
+  },
   createdBy: {
     type: 'string',
     mongooseType: 'ObjectId',
@@ -135,18 +142,23 @@ const fields: FieldsConfig = {
 }
 
 export class ProductModel extends BaseModel<Product> {
-  private static instance: ProductModel;
+  private static instance: ProductModel
   constructor() {
     const schema = createMongooseSchema(fields, {
       includeTimestamps: true,
     })
+
+    // Add indexes for better performance
+    schema.index({ parentProduct: 1 })
+    schema.index({ type: 1, parentProduct: 1 })
+
     super('Product', fields, schema)
   }
 
   public static getInstance(): ProductModel {
     if (!ProductModel.instance) {
-      ProductModel.instance = new ProductModel();
+      ProductModel.instance = new ProductModel()
     }
-    return ProductModel.instance;
+    return ProductModel.instance
   }
 }
