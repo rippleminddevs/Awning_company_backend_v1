@@ -61,7 +61,7 @@
     }
   },
   "upload": {
-    "uploadType": "local",
+    "uploadType": "cloudinary",
     "uploadDir": "uploads",
     "cloudinary": {
       "cloudName": "ddhobrvdq",
