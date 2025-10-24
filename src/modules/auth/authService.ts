@@ -97,7 +97,7 @@ export class AuthService extends BaseService<User> {
 
     if (user.profilePicture) {
       const profilePicture = await this.uploadService.getById(user.profilePicture);
-      userObj.profilePicture = profilePicture.url || null;
+      userObj.profilePicture = profilePicture?.url || null;
     }
 
 
