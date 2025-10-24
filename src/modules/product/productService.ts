@@ -126,8 +126,11 @@ export class ProductService extends BaseService<Product> {
       query.type = params.type
     }
 
-    // Exclude sub-products from regular products list (only show main products)
-    query.parentProduct = { $exists: false }
+    // Get main products (no parent or null parent) - exclude actual sub-products
+    query.$or = [
+      { parentProduct: { $exists: false } }, // Older products without the field
+      { parentProduct: null }, // Newer products with null parent
+    ]
 
     const products = await this.model.getAll(query)
     const populatedProducts = await Promise.all(

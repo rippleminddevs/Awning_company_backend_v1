@@ -149,7 +149,6 @@ export class ProductModel extends BaseModel<Product> {
     })
 
     // Add indexes for better performance
-    schema.index({ parentProduct: 1 })
     schema.index({ type: 1, parentProduct: 1 })
 
     super('Product', fields, schema)
