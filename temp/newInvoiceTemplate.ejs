@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Quote - The Awning Company</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d8659;
+        }
+
+        .logo-accent {
+            color: #2d8659;
+        }
+
+        .company-info, .sales-info {
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .sales-info {
+            text-align: right;
+        }
+
+        .quote-title {
+            background: #e8e8e8;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .customer-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .detail-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .label {
+            font-weight: bold;
+        }
+
+        .timing-info {
+            display: flex;
+            justify-content: space-between;
+            background: #f8f8f8;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .line-items {
+            margin-bottom: 30px;
+        }
+
+        .item-header {
+            display: grid;
+            grid-template-columns: 80px 80px 1fr 150px;
+            background: #e8e8e8;
+            padding: 10px 20px;
+            font-weight: bold;
+            font-size: 14px;
+            gap: 20px;
+        }
+
+        .line-item {
+            display: grid;
+            grid-template-columns: 80px 80px 1fr 150px;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .item-number {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .item-image {
+            width: 150px;
+            height: auto;
+            margin-top: 10px;
+        }
+
+        .item-description {
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .item-description h4 {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .item-description p {
+            margin-bottom: 8px;
+        }
+
+        .price {
+            font-weight: bold;
+            font-size: 16px;
+            text-align: right;
+        }
+
+        .pricing-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f8f8;
+        }
+
+        .pricing-left, .pricing-right {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .pricing-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+
+        .pricing-row.total {
+            font-weight: bold;
+            font-size: 15px;
+            border-top: 2px solid #333;
+            padding-top: 10px;
+            margin-top: 5px;
+        }
+
+        .terms {
+            font-size: 11px;
+            line-height: 1.6;
+            margin: 30px 0;
+        }
+
+        .terms h3 {
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        .terms ol {
+            margin-left: 20px;
+        }
+
+        .terms li {
+            margin-bottom: 10px;
+        }
+
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+        }
+
+        .signature-field {
+            flex: 1;
+            margin-right: 40px;
+        }
+
+        .signature-field label {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .signature-line {
+            border-bottom: 2px solid #333;
+            margin-top: 30px;
+        }
+
+        .brands {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            align-items: center;
+            justify-items: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .brand-logo {
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .note {
+            font-size: 11px;
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-info">
+                <div class="logo">
+                    <span style="color: #2d8659;">▓▓▓▓</span> the<span class="logo-accent">AWNING</span><br>
+                    <span style="margin-left: 40px;">company</span>
+                </div>
+                <p style="margin-top: 15px;">
+                    <%= company.address %><br>
+                    Email: <%= company.email %><br>
+                    Office: <%= company.office %><br>
+                    CA Contractors License #<%= company.license %><br>
+                    Company Representative: <%= company.representative %><br>
+                    Direct: <%= company.direct %>
+                </p>
+            </div>
+            <div class="sales-info">
+                Salesperson Name: <%= salesperson.name %><br>
+                Phone: <%= salesperson.phone %><br>
+                Email: <%= salesperson.email %><br>
+                Quote Creation Date: <%= salesperson.quoteCreated %><br>
+                Quote Expiration Date: <%= salesperson.quoteExpiry %>
+            </div>
+        </div>
+
+        <!-- Quote Title -->
+        <div class="quote-title">CUSTOMER QUOTE <%= customer.quoteId %></div>
+
+        <!-- Customer Details -->
+        <div class="customer-details">
+            <div class="detail-group">
+                <div><span class="label">NAME:</span> <%= customer.name %></div>
+                <div><span class="label">STREET:</span> <%= customer.street %></div>
+                <div><span class="label">CITY / STATE / ZIP:</span><br><%= customer.city %> <%= customer.state %> <%= customer.zipCode %></div>
+            </div>
+            <div class="detail-group">
+                <div><span class="label">PHONE:</span> <%= customer.phone %></div>
+                <div><span class="label">EMAIL:</span> <%= customer.email %></div>
+                <div><span class="label">JOB LOCATIONS:</span><br><%= customer.jobLocation %></div>
+            </div>
+            <div class="detail-group">
+                <div><span class="label">SOURCE:</span> TAC Web</div>
+            </div>
+        </div>
+
+        <!-- Timing Info -->
+        <div class="timing-info">
+            <div><strong>APPROX. PRODUCT LEAD TIME:</strong> <%= customer.leadTime %></div>
+            <div><strong>APPROX. INSTALLATION TIME:</strong> <%= customer.installTime %></div>
+        </div>
+
+        <!-- Line Items -->
+        <div class="line-items">
+            <div class="item-header">
+                <div>Line Item</div>
+                <div>Qty</div>
+                <div>Unit Price</div>
+                <div>Extended Price</div>
+            </div>
+
+            <% items.forEach(function(item, index) { %>
+                <!-- Item <%= index + 1 %> -->
+                <div class="line-item">
+                    <div class="item-number"><%= index + 1 %></div>
+                    <div><%= item.qty %></div>
+                    <div class="item-description">
+                        <% if (item.image) { %>
+                            <img src="<%= item.image %>" class="item-image" alt="<%= item.title %>">
+                        <% } else { %>
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='100' viewBox='0 0 150 100'%3E%3Crect fill='%23e0e0e0' width='150' height='100'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='12' fill='%23666' text-anchor='middle' dy='.3em'%3E<%= item.title %>%3C/text%3E%3C/svg%3E" class="item-image" alt="<%= item.title %>">
+                        <% } %>
+
+                        <h4>Line Item Description</h4>
+                        <h4><%= item.title %>:</h4>
+                        <p><%= item.description %></p>
+
+                        <% if (item.location) { %>
+                            <p><strong>Location:</strong> <%= item.location %></p>
+                        <% } %>
+
+                        <% if (item.options && item.options.length > 0) { %>
+                            <% item.options.forEach(function(opt) { %>
+                                <p><strong>Included Option:</strong> <%= opt %></p>
+                            <% }) %>
+                        <% } %>
+
+                        <% if (item.size) { %>
+                            <p><strong>Size:</strong><br><%= item.size %></p>
+                        <% } %>
+
+                        <% if (item.color) { %>
+                            <p><strong>Structure Color:</strong> <%= item.color %></p>
+                        <% } %>
+
+                        <% if (item.notes && item.notes.length > 0) { %>
+                            <div class="note">
+                                <% item.notes.forEach(function(note) { %>
+                                    <p><%= note %></p>
+                                <% }) %>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="price"><%= item.extendedPrice %></div>
+                </div>
+            <% }) %>
+        </div>
+
+        <!-- Pricing Summary -->
+        <div class="pricing-summary">
+            <div class="pricing-left">
+                <div class="pricing-row">
+                    <span><strong>Project Subtotal:</strong></span>
+                    <span><%= summary.subtotal %></span>
+                </div>
+                <div class="pricing-row">
+                    <span><strong>Discount:</strong></span>
+                    <span><%= summary.discount %></span>
+                </div>
+                <div class="pricing-row">
+                    <span><strong>Taxes:</strong></span>
+                    <span><%= summary.taxes %></span>
+                </div>
+                <div class="pricing-row">
+                    <span><strong>Freight:</strong></span>
+                    <span><%= summary.freight %></span>
+                </div>
+                <div class="pricing-row total">
+                    <span><strong>Grand Total:</strong></span>
+                    <span><%= summary.total %></span>
+                </div>
+            </div>
+            <div class="pricing-right">
+                <div class="pricing-row">
+                    <span><strong>Payment Schedule</strong></span>
+                </div>
+                <div class="pricing-row">
+                    <span><strong>Due At Acceptance :</strong></span>
+                    <span><%= payment.dueAcceptance %></span>
+                </div>
+                <div class="pricing-row">
+                    <span><strong>No of Installments:</strong></span>
+                    <span><%= payment.installments %></span>
+                </div>
+                <div class="pricing-row">
+                    <span><strong>Due 1-Week Prior To Delivery :</strong></span>
+                    <span><%= payment.duePriorDelivery %></span>
+                </div>
+                <div class="pricing-row total">
+                    <span><strong>Balance Due At Completion:</strong></span>
+                    <span><%= payment.balanceCompletion %></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="terms">
+            <h3>Terms and Conditions of The Awning Company ("Seller")</h3>
+            <ol>
+                <li>THE UNPAID BALANCE IS DUE TO THE INSTALLERS UPON COMPLETION OF THE INSTALLATION. Unpaid balances will bear interest at the rate of .2% per month. The goods sold herein remain the property of the Seller until full payment is received. Product specifications are subject to change without notice.</li>
+                <li>If any legal action is commenced to enforce the terms of this contract the prevailing party shall be entitled to reasonable attorney fees, collection costs and court costs.</li>
+                <li>3. Statutory Right of Rescission. Buyer may cancel this transaction at any time prior to midnight on the third business day. Cancellation must be in writing, mail, email or fax. After this period the order will be processed and the TOTAL contract is payable to the seller.</li>
+                <li>BUYER is responsible for general care and maintenance of all products. SELLER is not responsible for storm, wind or rain damage or from other conditions over which it has no control. All Valances and Bindings carry a 1 year warranty.</li>
+                <li>SELLER IS NOT responsible for any permits required. This is the sole responsibility of the BUYER.</li>
+                <li>Company installers do not carry paint but will do "touch up" stucco or wood (first coat only), provided BUYER supplies necessary materials during the installation.</li>
+            </ol>
+            <p style="margin-top: 20px;">I have read understand and agree to the contents thereof.</p>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-field">
+                <label>Acceptance:</label>
+                <div class="signature-line"></div>
+            </div>
+            <div class="signature-field">
+                <label>Date:</label>
+                <div class="signature-line"></div>
+            </div>
+        </div>
+
+        <!-- Brand Logos -->
+        <div class="brands">
+            <% company.sponsers.forEach(function(sponsor) { %>
+                <div class="brand-logo">
+                    <img src="<%= sponsor %>" alt="sponsor logo" style="max-height: 40px; width: auto;">
+                </div>
+            <% }) %>
+        </div>
+    </div>
+</body>
+</html>
