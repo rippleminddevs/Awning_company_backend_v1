@@ -1,24 +1,49 @@
-# Use Node.js 18 LTS
-FROM node:18-alpine
+# Use Node.js 18 as base
+FROM node:18-bullseye
 
-# Install dependencies for Puppeteer/Chrome
-RUN apk add --no-cache \
-    chromium \
-    nss \
-    freetype \
-    freetype-dev \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont \
-    make \
-    g++
+# Install Chrome and dependencies
+RUN apt-get update && apt-get install -y \
+    chromium-browser \
+    libgbm1 \
+    libasound2 \
+    libatk1.0-0 \
+    libc6 \
+    libcairo2 \
+    libcups2 \
+    libdbus-1-3 \
+    libexpat1 \
+    libfontconfig1 \
+    libgcc1 \
+    libgconf-2-4 \
+    libgdk-pixbuf2.0-0 \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libnspr4 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libstdc++6 \
+    libx11-6 \
+    libx11-xcb1 \
+    libxcb1 \
+    libxcomposite1 \
+    libxcursor1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxi6 \
+    libxrandr2 \
+    libxrender1 \
+    libxss1 \
+    libxtst6 \
+    fonts-liberation \
+    xdg-utils \
+    wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /opt/render/.cache/puppeteer \
+    && chmod -R 777 /opt/render/.cache/puppeteer
 
-# Set Puppeteer to use installed Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
-
-# Create app directory
-WORKDIR /usr/src/app
+# Set working directory
+WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
@@ -26,29 +51,26 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --only=production
 
-# Copy source code
+# Install Puppeteer browsers
+RUN npx puppeteer browsers install chrome
+
+# Copy application code
 COPY . .
 
 # Build the application
 RUN npm run build
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodejs -u 1001
+RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
+    && mkdir -p /home/pptruser/Downloads \
+    && chown -R pptruser:pptruser /home/pptruser \
+    && chown -R pptruser:pptruser /app
 
-# Change ownership of the app directory
-RUN chown -R nodejs:nodejs /usr/src/app
-USER nodejs
+# Switch to non-root user
+USER pptruser
 
 # Expose port
-EXPOSE 10000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node healthcheck.js
+EXPOSE 5000
 
 # Start the application
 CMD ["npm", "start"]
-```
-
-## 🐳 **Phase 2: Create Render.yaml**
