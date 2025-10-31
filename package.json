@@ -5,6 +5,7 @@
   "main": "dist/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "npm install puppeteer && npx puppeteer install",
     "dev": "tsx watch src/main.ts",
     "dev:stag": "tsx watch src/main.ts",
     "build": "tsc && ts-node build.ts",
@@ -12,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
-    "generate": "node src/generator/index.js"
+    "generate": "node src/generator/index.js",
+    "build:render": "npm install && npm run build"
   },
   "author": "Atiq Ghata",
   "license": "ISC",

@@ -313,10 +313,10 @@ export class InvoiceService {
 
   // Download invoice
   public async generatePdf(data: InvoiceData, quoteId: string): Promise<InvoiceResponse> {
-    // Render new invoice template
+    // Render new invoice template with config
     const invoiceHtml = await ejs.renderFile(
       path.join(process.cwd(), 'src/views/invoice/newInvoice.ejs'),
-      data
+      { ...data, config }
     )
 
     // Wrap HTML for PDF generation with proper viewport
@@ -339,13 +339,81 @@ export class InvoiceService {
     // Launch Puppeteer
     const isLinux = process.platform === 'linux'
 
-    const browser = await puppeteer.launch({
+    // Puppeteer configuration for different environments
+    let puppeteerOptions: any = {
       headless: true,
-      executablePath: isLinux
-        ? '/opt/render/.cache/puppeteer/chrome/linux-140.0.7339.80/chrome-linux64/chrome'
-        : undefined,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-    })
+      // Use environment variables for Chrome path
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-web-security',
+        '--disable-extensions',
+        '--no-first-run',
+        '--no-default-browser-check',
+        '--disable-background-timer-throttling',
+        '--disable-renderer-backgrounding',
+      ],
+    }
+
+    // Only try to find Chrome if not already set via environment
+    if (isLinux && !process.env.PUPPETEER_EXECUTABLE_PATH) {
+      // Try to find Chrome in common locations
+      const possiblePaths = [
+        '/opt/render/.cache/puppeteer/chrome/linux-140.0.7339.80/chrome-linux64/chrome',
+        '/opt/render/.cache/puppeteer/chrome/linux-139.0.7354.142/chrome-linux64/chrome',
+        '/opt/render/.cache/puppeteer/chrome/linux-138.0.7375.236/chrome-linux64/chrome',
+        '/usr/bin/google-chrome',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chromium',
+      ]
+
+      for (const chromePath of possiblePaths) {
+        try {
+          if (require('fs').existsSync(chromePath)) {
+            puppeteerOptions.executablePath = chromePath
+            console.log('Using Chrome at:', chromePath)
+            break
+          }
+        } catch (error) {
+          continue
+        }
+      }
+
+      // If no Chrome found, let Puppeteer try auto-detection
+      if (!puppeteerOptions.executablePath) {
+        console.log('Chrome not found, using Puppeteer auto-detection')
+      }
+    }
+
+    let browser
+    try {
+      browser = await puppeteer.launch(puppeteerOptions)
+      console.log('Puppeteer launched successfully')
+    } catch (launchError) {
+      console.error('Puppeteer launch error:', launchError)
+
+      // Fallback: Try with minimal options
+      const fallbackOptions = {
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      }
+
+      try {
+        browser = await puppeteer.launch(fallbackOptions)
+        console.log('Puppeteer launched with fallback options')
+      } catch (fallbackError) {
+        console.error('Fallback launch also failed:', fallbackError)
+        console.log('Environment info:', {
+          platform: process.platform,
+          nodeVersion: process.version,
+          puppeteerVersion: require('puppeteer/package.json').version,
+        })
+        throw new Error(`Failed to launch Puppeteer: ${(fallbackError as Error).message}`)
+      }
+    }
 
     const page = await browser.newPage()
 
@@ -372,6 +440,8 @@ export class InvoiceService {
         left: '20mm',
       },
       preferCSSPageSize: true,
+      scale: 1.0,
+      displayHeaderFooter: false,
     })
 
     await browser.close()

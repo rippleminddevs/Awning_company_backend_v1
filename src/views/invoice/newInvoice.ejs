@@ -34,6 +34,14 @@
             font-size: 24px;
             font-weight: bold;
             color: #2d8659;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .company-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
         }
 
         .logo-accent {
@@ -107,6 +115,12 @@
             grid-template-columns: 80px 80px 1fr 150px;
             padding: 20px;
             border-bottom: 1px solid #e0e0e0;
+            gap: 20px;
+            align-items: start;
+        }
+        .item-content {
+            display: grid;
+            grid-template-columns: 1fr 150px;
             gap: 20px;
             align-items: start;
         }
@@ -244,17 +258,20 @@
         <div class="header">
             <div class="company-info">
                 <div class="logo">
+                    <img src="<%= config.app.url %>/static/uploads/avatar.png" class="company-logo" alt="Company Logo">
+                </div>
+                <div style="margin-left: 10px;">
                     <span style="color: #2d8659;">▓▓▓▓</span> the<span class="logo-accent">AWNING</span><br>
                     <span style="margin-left: 40px;">company</span>
+                    <p style="margin-top: 15px;">
+                        <%= company.address %><br>
+                        Email: <%= company.email %><br>
+                        Office: <%= company.office %><br>
+                        CA Contractors License #<%= company.license %><br>
+                        Company Representative: <%= company.representative %><br>
+                        Direct: <%= company.direct %>
+                    </p>
                 </div>
-                <p style="margin-top: 15px;">
-                    <%= company.address %><br>
-                    Email: <%= company.email %><br>
-                    Office: <%= company.office %><br>
-                    CA Contractors License #<%= company.license %><br>
-                    Company Representative: <%= company.representative %><br>
-                    Direct: <%= company.direct %>
-                </p>
             </div>
             <div class="sales-info">
                 Salesperson Name: <%= salesperson.name %><br>
@@ -274,22 +291,20 @@
                 <div><span class="label">NAME:</span> <%= customer.name %></div>
                 <div><span class="label">STREET:</span> <%= customer.street %></div>
                 <div><span class="label">CITY / STATE / ZIP:</span><br><%= customer.city %> <%= customer.state %> <%= customer.zipCode %></div>
+                <div><span class="label">PHONE:</span> <%= customer.phone %></div>
             </div>
             <div class="detail-group">
-                <div><span class="label">PHONE:</span> <%= customer.phone %></div>
                 <div><span class="label">EMAIL:</span> <%= customer.email %></div>
                 <div><span class="label">JOB LOCATIONS:</span><br><%= customer.jobLocation %></div>
+                <div><span class="label">SOURCE:</span> <%= customer.source %></div>
+                <div><span class="label">APPROX. PRODUCT LEAD TIME:</span> <%= customer.leadTime %></div>
             </div>
             <div class="detail-group">
-                <div><span class="label">SOURCE:</span> <%= customer.source %></div>
+                <div><span class="label">APPROX. INSTALLATION TIME:</span> <%= customer.installTime %></div>
             </div>
         </div>
 
-        <!-- Timing Info -->
-        <div class="timing-info">
-            <div><strong>APPROX. PRODUCT LEAD TIME:</strong> <%= customer.leadTime %></div>
-            <div><strong>APPROX. INSTALLATION TIME:</strong> <%= customer.installTime %></div>
-        </div>
+        <!-- Timing Info removed - moved to customer details -->
 
         <!-- Line Items -->
         <div class="line-items">
@@ -304,45 +319,48 @@
                 <!-- Item <%= index + 1 %> -->
                 <div class="line-item">
                     <div class="item-number"><%= index + 1 %></div>
-                    <div><%= item.qty %></div>
-                    <div class="item-description">
+                    <div>
                         <% if (item.image) { %>
                             <img src="<%= item.image %>" class="item-image" alt="<%= item.title %>">
                         <% } else { %>
                             <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='100' viewBox='0 0 150 100'%3E%3Crect fill='%23e0e0e0' width='150' height='100'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial' font-size='12' fill='%23666' text-anchor='middle' dy='.3em'%3E<%= item.title %>%3C/text%3E%3C/svg%3E" class="item-image" alt="<%= item.title %>">
                         <% } %>
-
-                        <h4>Line Item Description</h4>
-                        <h4><%= item.title %>:</h4>
-                        <p><%= item.description %></p>
-
-                        <% if (item.location) { %>
-                            <p><strong>Location:</strong> <%= item.location %></p>
-                        <% } %>
-
-                        <% if (item.options && item.options.length > 0) { %>
-                            <% item.options.forEach(function(opt) { %>
-                                <p><strong>Included Option:</strong> <%= opt %></p>
-                            <% }) %>
-                        <% } %>
-
-                        <% if (item.size) { %>
-                            <p><strong>Size:</strong><br><%= item.size %></p>
-                        <% } %>
-
-                        <% if (item.color) { %>
-                            <p><strong>Structure Color:</strong> <%= item.color %></p>
-                        <% } %>
-
-                        <% if (item.notes && item.notes.length > 0) { %>
-                            <div class="note">
-                                <% item.notes.forEach(function(note) { %>
-                                    <p><%= note %></p>
-                                <% }) %>
-                            </div>
-                        <% } %>
+                        <div class="note">***Permits are NOT Included, these are the responsibility of the property owner.***</div>
                     </div>
-                    <div class="price"><%= item.extendedPrice %></div>
+                    <div class="item-content">
+                        <div class="item-description">
+                            <h4>Line Item Description</h4>
+                            <h4><%= item.title %>:</h4>
+                            <p><%= item.description %></p>
+
+                            <% if (item.location) { %>
+                                <p><strong>Location:</strong> <%= item.location %></p>
+                            <% } %>
+
+                            <% if (item.options && item.options.length > 0) { %>
+                                <% item.options.forEach(function(opt) { %>
+                                    <p><strong>Included Option:</strong> <%= opt %></p>
+                                <% }) %>
+                            <% } %>
+
+                            <% if (item.size) { %>
+                                <p><strong>Size:</strong><br><%= item.size %></p>
+                            <% } %>
+
+                            <% if (item.color) { %>
+                                <p><strong>Structure Color:</strong> <%= item.color %></p>
+                            <% } %>
+
+                            <% if (item.notes && item.notes.length > 0) { %>
+                                <div class="note">
+                                    <% item.notes.forEach(function(note) { %>
+                                        <p><%= note %></p>
+                                    <% }) %>
+                                </div>
+                            <% } %>
+                        </div>
+                        <div class="price"><%= item.extendedPrice %></div>
+                    </div>
                 </div>
             <% }) %>
         </div>

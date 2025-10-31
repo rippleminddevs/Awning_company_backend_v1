@@ -1,0 +1,59 @@
+services:
+  # API Service
+  - type: web
+    name: awning-company-api
+    env: node
+    plan: starter
+    healthCheckPath: /health
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    environmentVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: true
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/chromium
+
+    # Auto-deploy from main branch
+    buildFilter:
+      paths: [src/, package*.json, tsconfig.json, .nvmrc, Dockerfile, render.yaml]
+
+    # Instance settings
+    instanceType: free
+    region: oregon
+
+    # Health check
+    healthCheck:
+      path: /health
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+# Environment groups
+environments:
+  production:
+    - name: production
+      branches:
+        - main
+      autoDeploy: true
+
+  staging:
+    - name: staging
+      branches:
+        - develop
+        - staging
+      autoDeploy: true
+```
+
+## 🔧 **Phase 3: Update package.json with postinstall**
+<tool_call>edit_file
+<arg_key>display_description</arg_key>
+<arg_value>Update package.json with postinstall script for Chrome dependencies</arg_value>
+<arg_key>path</arg_key>
+<arg_value>Awning_company_backend_v1/package.json</arg_value>
+<arg_key>mode</arg_key>
+<arg_value>edit</arg_value>
+</tool_call>
