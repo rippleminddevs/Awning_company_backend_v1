@@ -1,5 +1,5 @@
-import Joi from 'joi';
-import { Order } from './orderInterface';
+import Joi from 'joi'
+import { Order } from './orderInterface'
 
 const additionalFeaturesSchema = Joi.object({
   handheldRemote: Joi.string().optional().allow('', null),
@@ -30,13 +30,13 @@ const additionalFeaturesSchema = Joi.object({
   doubleHeaderBeams: Joi.string().optional().allow('', null),
   powerOutlet: Joi.string().optional().allow('', null),
   custom: Joi.string().optional().allow('', null),
-});
+})
 
 const locationSchema = Joi.object({
   latitude: Joi.number().required(),
   longitude: Joi.number().required(),
   address: Joi.string().required(),
-});
+})
 
 export const OrderValidator = {
   create: Joi.object<Order>({
@@ -65,12 +65,14 @@ export const OrderValidator = {
     crank: Joi.string().optional().allow('', null),
     motorized: Joi.string().optional().allow('', null),
     fabric: Joi.string().optional().allow('', null),
+    fabricNumber: Joi.string().optional().allow('', null),
     fabricTab: Joi.string().optional().allow('', null),
     magnetLatch: Joi.string().optional().allow('', null),
     quantity: Joi.number().optional().allow(null),
     valancaHeight: Joi.string().optional().allow('', null),
     valancaStyle: Joi.string().optional().allow('', null),
     bindingColor: Joi.string().optional().allow('', null),
+    sandblastPowderCoating: Joi.boolean().optional().allow(null),
     installation: Joi.string().optional().allow('', null),
     story: Joi.string().optional().allow('', null),
     description: Joi.string().optional().allow('', null),
@@ -134,7 +136,7 @@ export const OrderValidator = {
     unitPrice: Joi.number().optional().allow(null),
     location: locationSchema.optional(),
     additionalFeatures: additionalFeaturesSchema.optional(),
-  }), 
+  }),
 
   getAll: Joi.object({
     paginate: Joi.boolean().default(true),
@@ -143,4 +145,4 @@ export const OrderValidator = {
     search: Joi.string().optional().allow(''),
     quoteId: Joi.string().optional(),
   }),
-};
+}

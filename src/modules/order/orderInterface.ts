@@ -37,8 +37,8 @@ export interface AdditionalFeatures {
 
 export interface Order {
   _id: any
-  awningType: string;
-  product: string;
+  awningType: string
+  product: string
   quoteId: string
   custom?: string
   operation?: string
@@ -62,12 +62,14 @@ export interface Order {
   crank?: string
   motorized?: string
   fabric?: string
+  fabricNumber?: string
   fabricTab?: string
   magnetLatch?: string
   quantity?: number
   valancaHeight?: string
   valancaStyle?: string
   bindingColor?: string
+  sandblastPowderCoating?: boolean
   installation?: string
   story?: string
   description?: string

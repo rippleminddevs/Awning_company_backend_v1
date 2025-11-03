@@ -1,8 +1,8 @@
-import mongoose from 'mongoose';
-import { FieldsConfig } from '../../common/interfaces/fieldTypes';
-import { BaseModel } from '../../common/core/baseModel';
-import { Order } from './orderInterface';
-import { createMongooseSchema } from '../../common/utils/schemaUtils';
+import mongoose from 'mongoose'
+import { FieldsConfig } from '../../common/interfaces/fieldTypes'
+import { BaseModel } from '../../common/core/baseModel'
+import { Order } from './orderInterface'
+import { createMongooseSchema } from '../../common/utils/schemaUtils'
 
 const additionalFeaturesFields: FieldsConfig = {
   handheldRemote: { type: 'string', nullable: true },
@@ -33,13 +33,13 @@ const additionalFeaturesFields: FieldsConfig = {
   doubleHeaderBeams: { type: 'string', nullable: true },
   powerOutlet: { type: 'string', nullable: true },
   custom: { type: 'string', nullable: true },
-};
+}
 
 const locationFields: FieldsConfig = {
   latitude: { type: 'number', nullable: true },
   longitude: { type: 'number', nullable: true },
   address: { type: 'string', nullable: true },
-};
+}
 
 const fields: FieldsConfig = {
   quoteId: {
@@ -82,12 +82,14 @@ const fields: FieldsConfig = {
   crank: { type: 'string', nullable: true },
   motorized: { type: 'string', nullable: true },
   fabric: { type: 'string', nullable: true },
+  fabricNumber: { type: 'string', nullable: true },
   fabricTab: { type: 'string', nullable: true },
   magnetLatch: { type: 'string', nullable: true },
   quantity: { type: 'number', nullable: true },
   valancaHeight: { type: 'string', nullable: true },
   valancaStyle: { type: 'string', nullable: true },
   bindingColor: { type: 'string', nullable: true },
+  sandblastPowderCoating: { type: 'boolean', nullable: true },
   installation: { type: 'string', nullable: true },
   story: { type: 'string', nullable: true },
   description: { type: 'string', nullable: true },
@@ -116,22 +118,22 @@ const fields: FieldsConfig = {
     ref: 'User',
     nullable: false,
   },
-};
+}
 
 export class OrderModel extends BaseModel<Order> {
-  private static instance: OrderModel;
+  private static instance: OrderModel
 
   constructor() {
     const schema = createMongooseSchema(fields, {
       includeTimestamps: true,
-    });
-    super('Order', fields, schema);
+    })
+    super('Order', fields, schema)
   }
 
   public static getInstance(): OrderModel {
     if (!OrderModel.instance) {
-      OrderModel.instance = new OrderModel();
+      OrderModel.instance = new OrderModel()
     }
-    return OrderModel.instance;
+    return OrderModel.instance
   }
 }
