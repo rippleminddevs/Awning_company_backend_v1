@@ -1,70 +1,72 @@
-import { BaseService } from '../../common/core/baseService';
-import { MessageModel } from './messageModel';
-import { CreateMessageInput, Message } from './messageInterface';
+import { BaseService } from '../../common/core/baseService'
+import { MessageModel } from './messageModel'
+import { CreateMessageInput, Message } from './messageInterface'
 import {
   DEFAULT_PAGINATION_OPTIONS,
   PaginatedResponse,
-} from '../../common/interfaces/globalInterfaces';
-import { buildPaginationMeta, getPaginationParams } from '../../common/utils/helpers';
-import mongoose from 'mongoose';
-import { ChatService } from '../chat/chatService';
-import socketService from '../../services/socketService';
-import { AppError } from '../../common/utils/appError';
+} from '../../common/interfaces/globalInterfaces'
+import { buildPaginationMeta, getPaginationParams } from '../../common/utils/helpers'
+import mongoose from 'mongoose'
+import { ChatService } from '../chat/chatService'
+import socketService from '../../services/socketService'
+import { AppError } from '../../common/utils/appError'
 import { ChatModel } from '../chat/chatModel'
 import { UserModel } from '../user/userModel'
 import pushNotificationService from '../../services/pushNotificationService'
 
 export class MessageService extends BaseService<Message> {
-  private chatService: ChatService;
+  private chatService: ChatService
   private socketService: typeof socketService
   private chatModel: ChatModel
   private userModel: UserModel
   private pushNotificationService: typeof pushNotificationService
 
   constructor() {
-    super(MessageModel.getInstance());
-    this.chatService = new ChatService();
+    super(MessageModel.getInstance())
+    this.chatService = new ChatService()
     this.socketService = socketService
     this.chatModel = ChatModel.getInstance()
     this.userModel = UserModel.getInstance()
     this.pushNotificationService = pushNotificationService
   }
 
-  public getAllMessages = async (params: any = {}): Promise<Message[] | PaginatedResponse<Message>> => {
-    const page = params.page || DEFAULT_PAGINATION_OPTIONS.page;
-    const perPage = params.perPage || DEFAULT_PAGINATION_OPTIONS.perPage;
-    const paginate = params.paginate === 'true' || params.paginate === true;
+  public getAllMessages = async (
+    params: any = {}
+  ): Promise<Message[] | PaginatedResponse<Message>> => {
+    const page = params.page || DEFAULT_PAGINATION_OPTIONS.page
+    const perPage = params.perPage || DEFAULT_PAGINATION_OPTIONS.perPage
+    const paginate = params.paginate === 'true' || params.paginate === true
 
-    const userId = new mongoose.Types.ObjectId(params.userId);
-    const messageModel = this.model.getMongooseModel();
+    const userId = new mongoose.Types.ObjectId(params.userId)
+    const messageModel = this.model.getMongooseModel()
 
     if (!params.chatId) {
-      return [];
+      return []
     }
 
     const chat = await this.chatService.getOne({
       _id: params.chatId,
       participants: { $all: [userId] },
-    });
+    })
 
     if (!chat) {
-      return [];
+      return []
     }
 
-    const filter = { chatId: chat._id };
+    const filter = { chatId: chat._id }
     await messageModel.updateMany(
       {
         chatId: chat._id,
-        readBy: { $ne: userId }
+        readBy: { $ne: userId },
       },
       {
         $push: { readBy: userId },
-        $set: { updatedAt: new Date() }
+        $set: { updatedAt: new Date() },
       }
-    );
+    )
 
     if (paginate) {
-      const { skip, limit } = getPaginationParams({ page, perPage });
+      const { skip, limit } = getPaginationParams({ page, perPage })
 
       const [result, totalCount] = await Promise.all([
         messageModel
@@ -83,16 +85,16 @@ export class MessageService extends BaseService<Message> {
           })
           .lean(),
         messageModel.countDocuments(filter),
-      ]);
+      ])
       result.map((message: any) => {
-        message.sender.profilePicture = message.sender.profilePicture?.url || null;
-      });
+        message.sender.profilePicture = message.sender.profilePicture?.url || null
+      })
       return {
         result,
         pagination: buildPaginationMeta(totalCount, page, perPage),
-      };
+      }
     }
-    
+
     const result = await messageModel
       .find(filter)
       .populate({
@@ -105,15 +107,15 @@ export class MessageService extends BaseService<Message> {
           select: 'url',
         },
       })
-      .lean();
-      result.map((message: any) => {
-        message.sender.profilePicture = message.sender.profilePicture?.url || null;
-      });
-      return result;
-  };
+      .lean()
+    result.map((message: any) => {
+      message.sender.profilePicture = message.sender.profilePicture?.url || null
+    })
+    return result
+  }
 
   public getById = async (id: string): Promise<Message> => {
-    const messageModel = this.model.getMongooseModel();
+    const messageModel = this.model.getMongooseModel()
     const result = await messageModel
       .findById(id)
       .populate({
@@ -126,44 +128,48 @@ export class MessageService extends BaseService<Message> {
           select: 'url',
         },
       })
-      .lean();
-    result.sender.profilePicture = result.sender.profilePicture?.url || null;
-    return result;
-  };
+      .lean()
+    result.sender.profilePicture = result.sender.profilePicture?.url || null
+    return result
+  }
 
   public createMessage = async (data: CreateMessageInput): Promise<Message> => {
-    const authUserId = data.authUserId;
+    const authUserId = data.authUserId
 
     if (!data.userId && !data.chatId) {
-      throw new Error("Either userId or chatId must be provided");
+      throw new Error('Either userId or chatId must be provided')
     }
 
-    let chat;
+    let chat
 
     if (data.chatId) {
       // Case 1: chatId is provided
       chat = await this.chatService.getChatById({
         id: data.chatId.toString(),
         userId: authUserId.toString(),
-      });
+      })
 
       if (!chat) {
-        throw new Error("Chat not found");
+        throw new Error('Chat not found')
       }
+
+      // Get raw chat document to ensure participants field is available
+      const rawChat = await this.chatModel.getById(data.chatId.toString())
+      chat = rawChat as any
     } else if (data.userId) {
       // Case 2: userId is provided
-      const userId = data.userId;
-      const participants = [authUserId, userId];
+      const userId = data.userId
+      const participants = [authUserId, userId]
 
       chat = await this.chatService.getOne({
         participants: { $all: participants },
-      });
+      })
 
       if (!chat) {
         chat = await this.chatService.create({
           participants,
           createdBy: authUserId,
-        });
+        })
       }
     }
 
@@ -175,41 +181,45 @@ export class MessageService extends BaseService<Message> {
       content: data.content,
       sender: authUserId,
       readBy: [authUserId],
-    });
+    })
 
     // Update chat last message
     await this.chatService.update(chat!._id.toString(), {
       lastMessage: createdMessage._id,
-    });
+    })
 
     // Broadcast via socket
-    const io = socketService.getIO();
-    const message = await this.getById(createdMessage._id);
+    const io = socketService.getIO()
+    const message = await this.getById(createdMessage._id)
 
     for (const participant of chat?.participants || []) {
       const participantChat = await this.chatService.getChatById({
         id: chat!._id.toString(),
         userId: participant.toString(),
-      });
+      })
 
-      io.to(`user_${participant.toString()}`).emit("messageReceived", message);
-      io.to(`user_${participant.toString()}`).emit("updatedChat", participantChat);
+      io.to(`user_${participant.toString()}`).emit('messageReceived', message)
+      io.to(`user_${participant.toString()}`).emit('updatedChat', participantChat)
     }
 
     // Send push notification to the other participant
     const otherParticipant = chat?.participants?.find(
       (participant: any) => participant.toString() !== authUserId.toString()
-    );
+    )
 
     if (otherParticipant) {
-      const notificationContent = message.content_type === 'media'
-        ? 'Sent an image'
-        : message.content;
-      await this.sendPushNotification(chat!._id.toString(), authUserId.toString(), otherParticipant.toString(), notificationContent);
+      const notificationContent =
+        message.content_type === 'media' ? 'Sent an image' : message.content
+      await this.sendPushNotification(
+        chat!._id.toString(),
+        authUserId.toString(),
+        otherParticipant.toString(),
+        notificationContent
+      )
     }
 
-    return message;
-  };
+    return message
+  }
 
   public async getUnreadCount(chatId: string, userId: string): Promise<number> {
     const mongoose = require('mongoose')
@@ -217,8 +227,8 @@ export class MessageService extends BaseService<Message> {
     return await this.model.getMongooseModel().count({
       chatId: new mongoose.Types.ObjectId(chatId),
       sender: { $ne: new mongoose.Types.ObjectId(userId) },
-      'readBy': { $ne: new mongoose.Types.ObjectId(userId) },
-      deletedAt: null
+      readBy: { $ne: new mongoose.Types.ObjectId(userId) },
+      deletedAt: null,
     })
   }
 
@@ -246,16 +256,16 @@ export class MessageService extends BaseService<Message> {
     await this.model.getMongooseModel()?.updateOne(
       {
         _id: new mongoose.Types.ObjectId(messageId),
-        'readBy.user': { $ne: new mongoose.Types.ObjectId(userId) }
+        'readBy.user': { $ne: new mongoose.Types.ObjectId(userId) },
       },
       {
         $push: {
           readBy: {
             user: new mongoose.Types.ObjectId(userId),
-            readAt: new Date()
-          }
+            readAt: new Date(),
+          },
         },
-        $set: { status: 'read' }
+        $set: { status: 'read' },
       }
     )
 
@@ -263,13 +273,18 @@ export class MessageService extends BaseService<Message> {
     this.socketService.getIO().to(`chat_${message.chatId}`).emit('messageRead', {
       messageId,
       readBy: userId,
-      readAt: new Date()
+      readAt: new Date(),
     })
 
     return { message: 'Message marked as read' }
   }
 
-  private async sendPushNotification(chatId: string, senderId: string, receiverId: string, content: string): Promise<void> {
+  private async sendPushNotification(
+    chatId: string,
+    senderId: string,
+    receiverId: string,
+    content: string
+  ): Promise<void> {
     try {
       const sender = await this.userModel.getById(senderId)
       const senderName = sender?.name || 'Someone'
@@ -279,7 +294,7 @@ export class MessageService extends BaseService<Message> {
         'New Message',
         `${senderName}: ${content.length > 50 ? content.substring(0, 50) + '...' : content}`,
         {
-          chatId: chatId
+          chatId: chatId,
         }
       )
     } catch (error) {
@@ -287,5 +302,4 @@ export class MessageService extends BaseService<Message> {
       console.error('Failed to send push notification:', error)
     }
   }
-
 }
