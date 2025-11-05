@@ -13,7 +13,7 @@
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
     "generate": "node src/generator/index.js",
-    "postinstall": "npx @puppeteer/browsers install chrome@131.0.6778.204 --path ./.cache/puppeteer || echo 'Chrome install failed'"
+    "postinstall": "npx puppeteer browsers install chrome || echo 'Puppeteer browser installation failed, will try runtime fallback'"
   },
   "author": "Atiq Ghata",
   "license": "ISC",
