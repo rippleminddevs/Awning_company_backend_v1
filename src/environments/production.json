@@ -30,12 +30,12 @@
     "refreshTokenExpiry": "7d"
   },
   "email": {
-    "host": "sandbox.smtp.mailtrap.io",
-    "port": 2525,
-    "username": "c677bb76acbfdb",
-    "password": "fc626461ae6e1c",
-    "fromAddress": "no-reply@awningcompany.com",
-    "secure": false
+    "host": "mail.letsgetwebdesign.com",
+    "port": 465,
+    "username": "noreply@letsgetwebdesign.com",
+    "password": "sYVSd!Zy1q9?",
+    "fromAddress": "noreply@awningcompany.com",
+    "secure": true
   },
   "payment": {
     "stripe": {
