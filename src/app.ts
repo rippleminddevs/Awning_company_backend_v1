@@ -6,12 +6,14 @@ import { createServer, Server } from 'http'
 // import { createServer as createHttpServer, Server as HttpServer } from 'http'
 // import { createServer as createHttpsServer, Server as HttpsServer } from 'https'
 import routes from './routes'
+import webRoutes from './webRoutes';
 import { ErrorHandler } from './common/utils/errorHandler'
 import { DatabaseService } from './services/databaseService'
 import { config } from './services/configService'
 import { AppError } from './common/utils/appError'
 import { apiResponse } from './common/utils/apiResponse'
 import socketService from './services/socketService'
+import authViewRoutes from './modules/auth/authViewRoutes';
 import path from 'path'
 import fs from 'fs'
 
@@ -84,7 +86,8 @@ class App {
     })
 
     this.app.use('/api', routes)
-
+    this.app.use('/', webRoutes);
+    this.app.use('/auth', authViewRoutes);
     // Health Check
     this.app.get('/health', (_req: Request, res: Response) => {
       apiResponse(res, { status: 'OK' })
