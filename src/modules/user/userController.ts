@@ -13,73 +13,80 @@ export class UserController extends BaseController<User, UserService> {
   public create = async (req: Request, res: Response) => {
     const userData: User = {
       ...req.body,
-     profilePicture: req.file,
-    };
-    const user = await this.service.createUser(userData);
-    apiResponse(res, user, 201, "User created successfully");
+      profilePicture: req.file,
+    }
+    const user = await this.service.createUser(userData)
+    apiResponse(res, user, 201, 'User created successfully')
   }
 
   public updateUsers = async (req: Request, res: Response) => {
-    const id = req.user?._id || req.user?.id;
+    const id = req.user?._id || req.user?.id
     if (!id) {
-      throw AppError.badRequest('User ID is required');
+      throw AppError.badRequest('User ID is required')
     }
 
     const updateData: UserUpdate = {
       ...req.body,
-      profilePicture: req.file
-    };
+      profilePicture: req.file,
+    }
 
-    const user = await this.service.updateUser(id, updateData);
-    apiResponse(res, user, 200, "User updated successfully");
+    const user = await this.service.updateUser(id, updateData)
+    apiResponse(res, user, 200, 'User updated successfully')
   }
 
   public updateOwnProfile = async (req: Request, res: Response) => {
-    const id = req.user?._id || req.user?.id;
+    const id = req.user?._id || req.user?.id
     if (!id) {
-      throw AppError.badRequest('User ID is required');
+      throw AppError.badRequest('User ID is required')
     }
 
     const updateData: UserUpdate = {
       ...req.body,
-      profilePicture: req.file
-    };
+      profilePicture: req.file,
+    }
 
-    const user = await this.service.updateOwnProfile(id, updateData);
-    apiResponse(res, user, 200, "User updated successfully");
+    const user = await this.service.updateOwnProfile(id, updateData)
+    apiResponse(res, user, 200, 'User updated successfully')
   }
 
   public updateFCMTokens = async (req: Request, res: Response): Promise<void> => {
-    const { addfcmToken, removefcmToken } = req.body;
-    const userId = req.user?._id || req.user?.id;
+    const { addfcmToken, removefcmToken } = req.body
+    const userId = req.user?._id || req.user?.id
 
     if (!userId) {
-      throw AppError.unauthorized('User not authenticated');
+      throw AppError.unauthorized('User not authenticated')
     }
 
-    const updatedUser = await this.service.updateFCMTokens(
-      {
-        userId,
-        addfcmToken,
-        removefcmToken
-      }
-    );
+    const updatedUser = await this.service.updateFCMTokens({
+      userId,
+      addfcmToken,
+      removefcmToken,
+    })
 
-    apiResponse(res, updatedUser, 200, "FCM tokens updated successfully");
-  };
+    apiResponse(res, updatedUser, 200, 'FCM tokens updated successfully')
+  }
 
   public getUserById = async (req: Request, res: Response) => {
-    const id = req.params.id || req.user?.id;
+    const id = req.params.id || req.user?.id
     if (!id) {
-      throw AppError.badRequest('User ID is required');
+      throw AppError.badRequest('User ID is required')
     }
 
-    const user = await this.service.getUserById(id);
-    apiResponse(res, user, 200, "User fetched successfully");
+    const user = await this.service.getUserById(id)
+    apiResponse(res, user, 200, 'User fetched successfully')
   }
 
   public getSalesPersons = async (req: Request, res: Response): Promise<void> => {
-    const users = await this.service.getSalesPersons(req.query as GetSalesPersonsParams);
-    apiResponse(res, users, 200, "Sales representatives fetched successfully");
+    const users = await this.service.getSalesPersons(req.query as GetSalesPersonsParams)
+    apiResponse(res, users, 200, 'Sales representatives fetched successfully')
+  }
+
+  public getAll = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const data = await this.service.getAllUsers(req.query)
+      this.handleResponse(res, data)
+    } catch (error: any) {
+      this.handleError(res, error)
+    }
   }
 }
