@@ -120,17 +120,20 @@ export class UserService extends BaseService<User> {
     }
 
     if (data.location?.latitude && data.location?.longitude) {
-      try {
-        const locationData = await this.locationService.getFullAddress(
-          data.location.latitude,
-          data.location.longitude
-        )
-        data.location = {
-          ...data.location,
-          address: locationData || '',
+      // Only geocode if address is not provided in the payload
+      if (!data.location.address) {
+        try {
+          const locationData = await this.locationService.getFullAddress(
+            data.location.latitude,
+            data.location.longitude
+          )
+          data.location = {
+            ...data.location,
+            address: locationData || '',
+          }
+        } catch (error: any) {
+          throw AppError.badRequest(error.message)
         }
-      } catch (error: any) {
-        throw AppError.badRequest(error.message)
       }
     }
 
@@ -155,17 +158,20 @@ export class UserService extends BaseService<User> {
     }
 
     if (data.location?.latitude && data.location?.longitude) {
-      try {
-        const locationData = await this.locationService.getFullAddress(
-          data.location.latitude,
-          data.location.longitude
-        )
-        data.location = {
-          ...data.location,
-          address: locationData || '',
+      // Only geocode if address is not provided in the payload
+      if (!data.location.address) {
+        try {
+          const locationData = await this.locationService.getFullAddress(
+            data.location.latitude,
+            data.location.longitude
+          )
+          data.location = {
+            ...data.location,
+            address: locationData || '',
+          }
+        } catch (error: any) {
+          throw AppError.badRequest(error.message)
         }
-      } catch (error: any) {
-        throw AppError.badRequest(error.message)
       }
     }
 

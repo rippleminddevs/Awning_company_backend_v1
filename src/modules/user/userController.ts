@@ -20,7 +20,7 @@ export class UserController extends BaseController<User, UserService> {
   }
 
   public updateUsers = async (req: Request, res: Response) => {
-    const id = req.user?._id || req.user?.id
+    const id = req.params.id
     if (!id) {
       throw AppError.badRequest('User ID is required')
     }
