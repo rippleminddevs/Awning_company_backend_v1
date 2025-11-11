@@ -111,6 +111,15 @@ export class AppointmentService extends BaseService<Appointment> {
     return this.getPopulatedAppointment(appointment._id)
   }
 
+  // Update appointment status only
+  public updateAppointmentStatus = async (
+    appointmentId: string,
+    status: string
+  ): Promise<Appointment> => {
+    const appointment = await this.model.update(appointmentId, { status })
+    return this.getPopulatedAppointment(appointment._id)
+  }
+
   // Get all appointment
   public getAllAppointments = async (
     params: GetAppointmentParams,

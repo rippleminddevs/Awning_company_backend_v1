@@ -53,7 +53,23 @@ const baseAppointmentSchema = {
   date: Joi.date().required(),
   time: Joi.date().required(),
   duration: Joi.string().required(),
-  status: Joi.string().required(),
+  status: Joi.string()
+    .required()
+    .valid(
+      'SOLD',
+      'CALL BACK',
+      'LEFT PHONE MESSAGE',
+      'QUOTED',
+      'CANCELLED',
+      'NO SHOW',
+      'FOLLOWED UP',
+      'UNAVAILABLE',
+      'CONFIRMED',
+      'NO CAN DO',
+      'AWAITING QUOTE',
+      'SALE PENDING',
+      'TENTATIVE APT'
+    ),
   internalNotes: Joi.string().optional().allow('', null),
   phoneNumber: Joi.string().optional().allow('', null),
   notifications: Joi.object({
@@ -81,7 +97,21 @@ export const AppointmentValidator = {
     date: Joi.date(),
     time: Joi.date(),
     duration: Joi.string(),
-    status: Joi.string(),
+    status: Joi.string().valid(
+      'SOLD',
+      'CALL BACK',
+      'LEFT PHONE MESSAGE',
+      'QUOTED',
+      'CANCELLED',
+      'NO SHOW',
+      'FOLLOWED UP',
+      'UNAVAILABLE',
+      'CONFIRMED',
+      'NO CAN DO',
+      'AWAITING QUOTE',
+      'SALE PENDING',
+      'TENTATIVE APT'
+    ),
   }).min(1),
 
   getAll: Joi.object({
@@ -93,5 +123,25 @@ export const AppointmentValidator = {
     dateFilter: Joi.string().allow(''),
     customerType: Joi.string().valid('residential', 'commercial', 'contractor'),
     staff: Joi.string(),
+  }),
+
+  updateStatus: Joi.object({
+    status: Joi.string()
+      .required()
+      .valid(
+        'SOLD',
+        'CALL BACK',
+        'LEFT PHONE MESSAGE',
+        'QUOTED',
+        'CANCELLED',
+        'NO SHOW',
+        'FOLLOWED UP',
+        'UNAVAILABLE',
+        'CONFIRMED',
+        'NO CAN DO',
+        'AWAITING QUOTE',
+        'SALE PENDING',
+        'TENTATIVE APT'
+      ),
   }),
 }
