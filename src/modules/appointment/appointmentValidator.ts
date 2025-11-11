@@ -1,42 +1,44 @@
-import Joi from 'joi';
+import Joi from 'joi'
 
 const baseAppointmentSchema = {
   // Common fields for all customer types
-  customerType: Joi.string().required().valid('residential', 'commercial', 'contractor'),
+  customerType: Joi.string()
+    .required()
+    .valid('residential', 'commercial', 'contractor', 'designer'),
   firstName: Joi.string().when('customerType', {
-    is: 'residential',
+    is: Joi.valid('residential', 'designer'),
     then: Joi.required(),
-    otherwise: Joi.optional().allow('', null)
+    otherwise: Joi.optional().allow('', null),
   }),
   lastName: Joi.string().when('customerType', {
-    is: 'residential',
+    is: Joi.valid('residential', 'designer'),
     then: Joi.required(),
-    otherwise: Joi.optional().allow('', null)
+    otherwise: Joi.optional().allow('', null),
   }),
   businessName: Joi.string().when('customerType', {
     is: Joi.valid('commercial', 'contractor'),
     then: Joi.required(),
-    otherwise: Joi.optional().allow('', null)
+    otherwise: Joi.optional().allow('', null),
   }),
   billAddress: Joi.string().when('customerType', {
     is: Joi.valid('commercial', 'contractor'),
     then: Joi.required(),
-    otherwise: Joi.optional().allow('', null)
+    otherwise: Joi.optional().allow('', null),
   }),
   projectManagerContact: Joi.string().when('customerType', {
     is: Joi.valid('commercial', 'contractor'),
     then: Joi.required(),
-    otherwise: Joi.optional().allow('', null)
+    otherwise: Joi.optional().allow('', null),
   }),
   companyContact: Joi.string().when('customerType', {
     is: Joi.valid('commercial', 'contractor'),
     then: Joi.required(),
-    otherwise: Joi.optional().allow('', null)
+    otherwise: Joi.optional().allow('', null),
   }),
   source: Joi.string().when('customerType', {
     is: Joi.valid('commercial', 'contractor'),
     then: Joi.required(),
-    otherwise: Joi.optional().allow('', null)
+    otherwise: Joi.optional().allow('', null),
   }),
   // Rest of the common fields
   emailAddress: Joi.string().required(),
@@ -58,15 +60,17 @@ const baseAppointmentSchema = {
     emailToCustomer: Joi.boolean().default(false),
     emailToManager: Joi.boolean().default(false),
     textMessages: Joi.boolean().default(false),
-  }).optional().default(null)
-};
+  })
+    .optional()
+    .default(null),
+}
 
 export const AppointmentValidator = {
   create: Joi.object(baseAppointmentSchema),
 
   update: Joi.object({
     ...baseAppointmentSchema,
-    customerType: Joi.string().valid('residential', 'commercial', 'contractor'),
+    customerType: Joi.string().valid('residential', 'commercial', 'contractor', 'designer'),
     emailAddress: Joi.string(),
     address1: Joi.string(),
     city: Joi.string(),
@@ -88,6 +92,6 @@ export const AppointmentValidator = {
     today: Joi.boolean().default(false),
     dateFilter: Joi.string().allow(''),
     customerType: Joi.string().valid('residential', 'commercial', 'contractor'),
-    staff: Joi.string()
-  })
-};
+    staff: Joi.string(),
+  }),
+}

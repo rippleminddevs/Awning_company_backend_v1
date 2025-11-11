@@ -4,6 +4,23 @@ export interface notifications {
   textMessages?: boolean
 }
 
+export interface ServiceInfo {
+  id: string
+  name: string
+}
+
+export interface StaffInfo {
+  id: string
+  name: string
+  email: string
+  profilePicture?: string
+}
+
+export interface LocationCoordinates {
+  latitude: number
+  longitude: number
+}
+
 export interface Appointment {
   _id?: string
   customerType: string
@@ -21,8 +38,8 @@ export interface Appointment {
   zipCode: string
   bestContact: string
   customerNotes?: string
-  service: string
-  staff: string
+  service: string | ServiceInfo
+  staff: string | StaffInfo
   date: Date | string
   time: Date | string
   duration: string
@@ -31,6 +48,7 @@ export interface Appointment {
   notifications?: notifications
   phoneNumber?: string
   createdBy: string
+  location?: LocationCoordinates
 }
 
 export interface GetAppointmentParams {
@@ -45,10 +63,10 @@ export interface GetAppointmentParams {
 
 export interface StaffAppointments {
   staff: {
-    _id: string;
-    name: string;
-    profilePicture?: string;
-    email: string;
-  };
-  appointments: Appointment[];
+    _id: string
+    name: string
+    profilePicture?: string
+    email: string
+  }
+  appointments: Appointment[]
 }
