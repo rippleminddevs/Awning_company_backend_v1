@@ -69,13 +69,6 @@ export class AppointmentService extends BaseService<Appointment> {
         appointment.zipCode
       )
 
-      console.log('Geocoding result:', {
-        address1: appointment.address1,
-        city: appointment.city,
-        zipCode: appointment.zipCode,
-        coordinates: coordinates,
-      })
-
       if (coordinates) {
         appointment.location = coordinates
       }

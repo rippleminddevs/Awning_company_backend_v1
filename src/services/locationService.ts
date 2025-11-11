@@ -54,11 +54,6 @@ export class LocationService {
       // Build the full address string
       const fullAddress = `${address1}${address2 ? ', ' + address2 : ''}, ${city}, ${zipCode}`
 
-      console.log('LocationService: Calling Google API with:', {
-        fullAddress,
-        apiKey: this.apiKey ? 'present' : 'missing',
-      })
-
       const response = await axios.get<GeocodingResponse>(this.baseUrl, {
         params: {
           address: fullAddress,
@@ -66,17 +61,13 @@ export class LocationService {
         },
       })
 
-      console.log('LocationService: Google API response status:', response.data.status)
-
       if (response.data.status === 'OK' && response.data.results.length > 0) {
         const location = response.data.results[0].geometry.location
-        console.log('LocationService: Coordinates found:', location)
         return {
           latitude: location.lat,
           longitude: location.lng,
         }
       }
-      console.log('LocationService: No results or status not OK')
       return null
     } catch (error) {
       console.error('Error getting coordinates from Google Maps:', error)
