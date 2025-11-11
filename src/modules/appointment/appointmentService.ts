@@ -61,15 +61,26 @@ export class AppointmentService extends BaseService<Appointment> {
     }
 
     // Get coordinates from address
-    const coordinates = await this.locationService.getCoordinates(
-      appointment.address1,
-      appointment.address2,
-      appointment.city,
-      appointment.zipCode
-    )
+    try {
+      const coordinates = await this.locationService.getCoordinates(
+        appointment.address1,
+        appointment.address2,
+        appointment.city,
+        appointment.zipCode
+      )
 
-    if (coordinates) {
-      appointment.location = coordinates
+      console.log('Geocoding result:', {
+        address1: appointment.address1,
+        city: appointment.city,
+        zipCode: appointment.zipCode,
+        coordinates: coordinates,
+      })
+
+      if (coordinates) {
+        appointment.location = coordinates
+      }
+    } catch (error) {
+      console.error('Error getting coordinates:', error)
     }
 
     return appointment
