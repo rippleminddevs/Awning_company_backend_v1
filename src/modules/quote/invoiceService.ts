@@ -320,21 +320,22 @@ export class InvoiceService {
     )
 
     // Wrap HTML for PDF generation with proper viewport
-    const combinedHtml = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8"/>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-          <style>
-            body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-          </style>
-        </head>
-        <body>
-          ${invoiceHtml}
-        </body>
-      </html>
-    `
+    const combinedHtml = invoiceHtml;
+    // `
+    //   <!DOCTYPE html>
+    //   <html>
+    //     <head>
+    //       <meta charset="utf-8"/>
+    //       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    //       <style>
+    //         body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+    //       </style>
+    //     </head>
+    //     <body>
+    //       ${invoiceHtml}
+    //     </body>
+    //   </html>
+    // `
 
     // Launch Puppeteer
     const isLinux = process.platform === 'linux'
@@ -433,12 +434,6 @@ export class InvoiceService {
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
-      margin: {
-        top: '20mm',
-        right: '20mm',
-        bottom: '20mm',
-        left: '20mm',
-      },
       preferCSSPageSize: true,
       scale: 1.0,
       displayHeaderFooter: false,

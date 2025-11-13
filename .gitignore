@@ -4,3 +4,4 @@ src/generator/node_modules
 src/generator/package-lock.json
 package-lock.json
 .env
+.cache
