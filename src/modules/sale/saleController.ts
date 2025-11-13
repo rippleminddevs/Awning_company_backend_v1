@@ -44,19 +44,19 @@ export class SaleController extends BaseController<Sale, SaleService> {
 
       const { salePersonId } = req.params;
       const params = req.query;
-  
+   
       if (!salePersonId) {
         throw new Error('Sale person ID is required');
       }
-  
-      const buffer = await this.service.downloadSalesReport(salePersonId, params);
-  
-      // Set headers for Excel file download
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename=sales-report.xlsx`);
-      
-      // Send the Excel file
-      return res.send(buffer);
+   
+      const reportData = await this.service.downloadSalesReport(salePersonId, params);
+   
+      // Return JSON response with report URL
+      return apiResponse(res, {
+        reportUrl: reportData.reportUrl,
+        fileName: reportData.fileName,
+        uploadId: reportData.uploadId
+      }, 200, "Sales report generated successfully");
   };
   
 }

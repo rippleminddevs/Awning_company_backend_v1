@@ -355,6 +355,24 @@ export class SaleService extends BaseService<Sale> {
       },
       { $unwind: { path: '$staff', preserveNullAndEmptyArrays: true } },
       {
+        $lookup: {
+          from: 'uploads',
+          localField: 'quote.invoice',
+          foreignField: '_id',
+          as: 'invoiceUpload'
+        }
+      },
+      {
+        $addFields: {
+          invoiceUrl: {
+            $ifNull: [
+              { $arrayElemAt: ['$invoiceUpload.url', 0] },
+              null
+            ]
+          }
+        }
+      },
+      {
         $project: {
           _id: 1,
           customerName: {
@@ -388,7 +406,8 @@ export class SaleService extends BaseService<Sale> {
           InvoiceAmount: '$quote.paymentStructure.grandTotal',
           date: 1,
           paymentStatus: '$quote.paymentStatus',
-          status: 1
+          status: 1,
+          invoiceUrl: 1
         }
       }
     ];
@@ -784,11 +803,11 @@ export class SaleService extends BaseService<Sale> {
   }
 
   // Download report of staff
-  public downloadSalesReport = async (salePersonId: string, params: any): Promise<ExcelJS.Buffer> => {
+  public downloadSalesReport = async (salePersonId: string, params: any): Promise<any> => {
     const tableData = await this.getSalesReportTableData(
       salePersonId,
       params.page || 1,
-      params.perPage || 2000 
+      params.perPage || 2000
     );
   
     // Get staff details
@@ -842,7 +861,58 @@ export class SaleService extends BaseService<Sale> {
     });
   
     // Generate the Excel file in memory
-    return workbook.xlsx.writeBuffer();
+    const buffer = await workbook.xlsx.writeBuffer() as unknown as Buffer;
+    
+    // Save the file using upload service
+    const fileName = `sales-report-${staff.name}-${Date.now()}.xlsx`;
+    const uploadRecord = await this.saveReportFile(buffer, fileName, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    
+    return {
+      reportUrl: uploadRecord.url,
+      fileName: fileName,
+      uploadId: uploadRecord._id
+    };
+  };
+
+  // Helper method to save report file
+  private async saveReportFile(buffer: Buffer, fileName: string, mimeType: string): Promise<any> {
+    const { config } = await import('../../services/configService');
+    const path = require('path');
+    const fs = require('fs').promises;
+    
+    // Create uploads directory if it doesn't exist
+    const uploadsDir = path.join(process.cwd(), 'static', 'uploads', 'reports');
+    try {
+      await fs.access(uploadsDir);
+    } catch {
+      await fs.mkdir(uploadsDir, { recursive: true });
+    }
+    
+    // Save file to local storage
+    const filePath = path.join(uploadsDir, fileName);
+    await fs.writeFile(filePath, buffer);
+    
+    // Create upload record in database
+    const UploadModel = (await import('../upload/uploadModel')).UploadModel;
+    const uploadModel = UploadModel.getInstance();
+    
+    const uploadRecord = await uploadModel.create({
+      filename: fileName,
+      originalName: fileName,
+      size: buffer.length,
+      mimeType: mimeType,
+      path: filePath.replace(process.cwd(), ''),
+      url: `${config.app.url}/static/uploads/reports/${fileName}`,
+      uploadedHost: 'local',
+      isPublic: true,
+      userId: undefined,
+      metadata: {
+        type: 'sales-report',
+        generatedAt: new Date()
+      },
+    });
+    
+    return uploadRecord;
   };
 
   // Dashboard Analytics
