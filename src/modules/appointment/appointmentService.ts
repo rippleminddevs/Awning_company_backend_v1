@@ -127,11 +127,40 @@ export class AppointmentService extends BaseService<Appointment> {
   ): Promise<Appointment[] | PaginatedResponse<Appointment>> => {
     const { search, today, dateFilter, ...filters } = params
     let query: any = { ...filters }
+    const conditions = []
 
     // Get user data
     const user = await this.userService.getById(userId)
     if (user.role === 'salesperson') {
-      query.staff = userId
+      conditions.push({
+        $or: [{ staff: userId }, { createdBy: userId }],
+      })
+    }
+
+    // search items
+    if (search) {
+      const searchRegex = new RegExp(search, 'i')
+      conditions.push({
+        $or: [
+          { email: searchRegex },
+          { phoneNumber: searchRegex },
+          { businessName: searchRegex },
+          { source: searchRegex },
+          {
+            $expr: {
+              $regexMatch: {
+                input: { $concat: ['$firstName', ' ', '$lastName'] },
+                regex: search,
+                options: 'i',
+              },
+            },
+          },
+        ],
+      })
+    }
+
+    if (conditions.length > 0) {
+      query.$and = conditions
     }
 
     // Handle date filtering
@@ -156,26 +185,6 @@ export class AppointmentService extends BaseService<Appointment> {
         $gte: filterDate,
         $lt: nextDay,
       }
-    }
-
-    // search items
-    if (search) {
-      const searchRegex = new RegExp(search, 'i')
-      query.$or = [
-        { email: searchRegex },
-        { phoneNumber: searchRegex },
-        { businessName: searchRegex },
-        { source: searchRegex },
-        {
-          $expr: {
-            $regexMatch: {
-              input: { $concat: ['$firstName', ' ', '$lastName'] },
-              regex: search,
-              options: 'i',
-            },
-          },
-        },
-      ]
     }
 
     const appointments = await this.model.getAll(query)
