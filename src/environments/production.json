@@ -59,9 +59,9 @@
     "uploadType": "cloudinary",
     "uploadDir": "uploads",
     "cloudinary": {
-      "cloudName": "diufvejd4",
-      "apiKey": "926541127882791",
-      "apiSecret": "1PJiLoUHFvbocrj7OPLCICiJPkk"
+      "cloudName": "dmkuzfvgq",
+      "apiKey": "123128981466563",
+      "apiSecret": "5dFAkLLlSDPohJSD6TCgyiOYO0g"
     },
     "aws": {
       "accessKeyId": "",
