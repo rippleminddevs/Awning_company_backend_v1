@@ -68,7 +68,8 @@ const baseAppointmentSchema = {
       'NO CAN DO',
       'AWAITING QUOTE',
       'SALE PENDING',
-      'TENTATIVE APT'
+      'TENTATIVE APT',
+      'SCHEDULED'
     ),
   internalNotes: Joi.string().optional().allow('', null),
   phoneNumber: Joi.string().optional().allow('', null),
@@ -142,7 +143,8 @@ export const AppointmentValidator = {
         'NO CAN DO',
         'AWAITING QUOTE',
         'SALE PENDING',
-        'TENTATIVE APT'
+        'TENTATIVE APT',
+        'SCHEDULED'
       ),
   }),
 }
