@@ -110,7 +110,8 @@ export const AppointmentValidator = {
       'NO CAN DO',
       'AWAITING QUOTE',
       'SALE PENDING',
-      'TENTATIVE APT'
+      'TENTATIVE APT',
+      'SCHEDULED'
     ),
   }).min(1),
 
