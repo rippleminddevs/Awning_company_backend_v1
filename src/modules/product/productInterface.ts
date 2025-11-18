@@ -29,6 +29,7 @@ export interface Product {
   type: string
   name: string
   name_in_camel_case: string
+  name_with_type_in_camel_case?: string // Only for sub-products
   colors: string[]
   installation: string
   hood: string

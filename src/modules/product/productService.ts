@@ -71,6 +71,15 @@ export class ProductService extends BaseService<Product> {
     // Convert the name to camelCase
     const nameInCamelCase = toCamelCase(item.name)
 
+    // Convert the type to camelCase
+    const typeInCamelCase = toCamelCase(item.type)
+
+    // Determine if this is a sub-product (has parentProductInfo)
+    const isSubProduct = !!item.parentProductInfo
+
+    // Create the combined field for sub-products only
+    const nameWithTypeInCamelCase = isSubProduct ? nameInCamelCase + typeInCamelCase : undefined
+
     // Restructure the item to position parentProductInfo after type
     const reorderedItem = {
       _id: item._id,
@@ -78,6 +87,7 @@ export class ProductService extends BaseService<Product> {
       parentProductInfo: item.parentProductInfo,
       name: item.name,
       name_in_camel_case: nameInCamelCase,
+      name_with_type_in_camel_case: nameWithTypeInCamelCase,
       colors: item.colors,
       installation: item.installation,
       hood: item.hood,
