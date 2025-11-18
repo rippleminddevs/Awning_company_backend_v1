@@ -10,6 +10,20 @@ import { UploadService } from '../../modules/upload/uploadService'
 import { AppError } from '../../common/utils/appError'
 import { isValidObjectId } from 'mongoose'
 
+// Utility function to convert a string to camelCase
+const toCamelCase = (str: string): string => {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map((word, index) => {
+      if (index === 0) {
+        return word
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join('')
+}
+
 export class ProductService extends BaseService<Product> {
   private uploadService: UploadService
   constructor() {
@@ -18,7 +32,7 @@ export class ProductService extends BaseService<Product> {
   }
 
   // Common function to get populated item data
-  private getPopulatedProduct = async (itemId: string): Promise<Product> => {
+  public getPopulatedProduct = async (itemId: string): Promise<Product> => {
     const productModel = this.model.getMongooseModel()
     const item = await productModel
       .findById(itemId)
@@ -54,12 +68,16 @@ export class ProductService extends BaseService<Product> {
       delete item.parentProduct
     }
 
+    // Convert the name to camelCase
+    const nameInCamelCase = toCamelCase(item.name)
+
     // Restructure the item to position parentProductInfo after type
     const reorderedItem = {
       _id: item._id,
       type: item.type,
       parentProductInfo: item.parentProductInfo,
       name: item.name,
+      name_in_camel_case: nameInCamelCase,
       colors: item.colors,
       installation: item.installation,
       hood: item.hood,

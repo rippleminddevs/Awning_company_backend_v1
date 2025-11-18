@@ -28,6 +28,7 @@ export interface Pricing {
 export interface Product {
   type: string
   name: string
+  name_in_camel_case: string
   colors: string[]
   installation: string
   hood: string

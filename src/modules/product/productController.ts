@@ -35,6 +35,11 @@ export class ProductController extends BaseController<Product, ProductService> {
     apiResponse(res, item, 200, 'Product updated successfully')
   }
 
+  public getById = async (req: Request, res: Response): Promise<void> => {
+    const data = await this.service.getPopulatedProduct(req.params.id)
+    apiResponse(res, data, 200, 'Product fetched successfully')
+  }
+
   public delete = async (req: Request, res: Response): Promise<void> => {
     const data = await this.service.deleteProduct(req.params.id)
     apiResponse(res, data, 200, 'Product deleted successfully')
