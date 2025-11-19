@@ -6,6 +6,7 @@ import { authenticate } from '../../middlewares/authMiddleware'
 import { validate, validateQuery } from '../../common/utils/helpers'
 import { TrackingController } from '../tracking/trackingController'
 import { TrackingValidator } from '../tracking/trackingValidator'
+import { requiredRole } from '../../middlewares/authorization'
 
 const router = Router()
 
