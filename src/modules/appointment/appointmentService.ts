@@ -131,10 +131,15 @@ export class AppointmentService extends BaseService<Appointment> {
 
     // Get user data
     const user = await this.userService.getById(userId)
-    if (user.role === 'salesperson') {
+
+    // Apply role-based filtering only if 'today' is not true
+    // When 'today=true', allow viewing all appointments for today regardless of assignment
+    if (user.role === 'salesperson' && !today) {
       conditions.push({
         $or: [{ staff: userId }, { createdBy: userId }],
       })
+    } else if (user.role === 'salesperson' && today) {
+      // Skip role-based filtering when today=true
     }
 
     // search items
@@ -170,6 +175,7 @@ export class AppointmentService extends BaseService<Appointment> {
 
       const tomorrowUTC = new Date(todayUTC)
       tomorrowUTC.setUTCDate(todayUTC.getUTCDate() + 1)
+
       query.date = {
         $gte: todayUTC,
         $lt: tomorrowUTC,
