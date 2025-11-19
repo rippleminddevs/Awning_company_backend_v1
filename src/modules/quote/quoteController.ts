@@ -11,65 +11,69 @@ export class QuoteController extends BaseController<Quote, QuoteService> {
 
   public create = async (req: Request, res: Response): Promise<void> => {
     if (!req.user || !req.user.id) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
-    const { file } = req;
+    const { file } = req
     const payload = {
       ...req.body,
       createdBy: req.user.id,
       paymentDetails: {
         ...req.body.paymentDetails,
-        ...(file && { checkImage: file })
-      }
-    };
+        ...(file && { checkImage: file }),
+      },
+    }
 
-    const quote = await this.service.createQuote(payload);
-    apiResponse(res, quote, 201, "Quote created successfully")
+    const quote = await this.service.createQuote(payload)
+    apiResponse(res, quote, 201, 'Quote created successfully')
   }
 
   public update = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params
     const payload = req.body
     const quote = await this.service.updateQuote(id, payload)
-    apiResponse(res, quote, 200, "Quote updated successfully")
+    apiResponse(res, quote, 200, 'Quote updated successfully')
   }
 
   public updateDocuments = async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params
+    const { files } = req
 
-    const { id } = req.params;
-    const { files } = req;
-    
-    let removeDocuments: string[] = [];
+    let removeDocuments: string[] = []
     if (req.body.removeDocuments) {
       removeDocuments = Array.isArray(req.body.removeDocuments)
         ? req.body.removeDocuments
-        : [req.body.removeDocuments];
+        : [req.body.removeDocuments]
     }
 
     const payload = {
       addDocuments: files as Express.Multer.File[],
-      removeDocuments: removeDocuments
-    };
+      removeDocuments: removeDocuments,
+    }
 
-    const updatedQuote = await this.service.updateQuoteDocuments(id, payload as any);
-    apiResponse(res, updatedQuote, 200, "Documents updated successfully");
+    const updatedQuote = await this.service.updateQuoteDocuments(id, payload as any)
+    apiResponse(res, updatedQuote, 200, 'Documents updated successfully')
   }
 
   public getAll = async (req: Request, res: Response): Promise<void> => {
-    const params = req.query;
+    const params = req.query
     if (!req.user || !req.user.id) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
-    const quotes = await this.service.getQuotes(params, req.user.id);
-    apiResponse(res, quotes, 200, "Quotes fetched successfully");
+    const quotes = await this.service.getQuotes(params, req.user.id)
+    apiResponse(res, quotes, 200, 'Quotes fetched successfully')
   }
 
   public getSalesPersonAnalytics = async (req: Request, res: Response): Promise<void> => {
-    const params = req.query;
+    const params = req.query
     if (!req.user || !req.user.id) {
-      throw new Error('User not found');
+      throw new Error('User not found')
     }
-    const analytics = await this.service.getSalesPersonAnalytics(params, req.user.id);
-    apiResponse(res, analytics, 200, "Analytics fetched successfully");
+    const analytics = await this.service.getSalesPersonAnalytics(params, req.user.id)
+    apiResponse(res, analytics, 200, 'Analytics fetched successfully')
+  }
+
+  public getTransactionAnalytics = async (req: Request, res: Response): Promise<void> => {
+    const analytics = await this.service.getTransactionAnalytics()
+    apiResponse(res, analytics, 200, 'Transaction analytics fetched successfully')
   }
 }
