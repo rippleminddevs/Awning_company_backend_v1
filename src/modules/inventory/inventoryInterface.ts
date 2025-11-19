@@ -36,14 +36,16 @@ export interface InventoryResponse {
   sku?: string
   status?: string
   createdBy: string
+  awningTypeId?: string
+  productId?: string
 }
 
 export interface AnalyticsResponse {
   analytics: Array<{
-    totalItems?: number;
-    inStock?: number;
-    outOfStock?: number;
-    change: number;
-    isUp: boolean;
-  }>;
+    totalItems?: number
+    inStock?: number
+    outOfStock?: number
+    change: number
+    isUp: boolean
+  }>
 }
