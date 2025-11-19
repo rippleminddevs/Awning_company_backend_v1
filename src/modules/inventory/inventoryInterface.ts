@@ -38,6 +38,7 @@ export interface InventoryResponse {
   createdBy: string
   awningTypeName?: string
   productName?: string
+  productImage?: string
 }
 
 export interface AnalyticsResponse {

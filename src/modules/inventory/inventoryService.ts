@@ -55,6 +55,7 @@ export class InventoryService extends BaseService<Inventory> {
     // Store the names
     const awningTypeName = result.awningType?.name || null
     const productName = result.product?.name || null
+    const productImage = result.product?.image?.url || null
 
     // Update the original fields to show IDs instead of names/populated data
     result.awningType = awningTypeId
@@ -65,6 +66,7 @@ export class InventoryService extends BaseService<Inventory> {
     // Add the names as separate fields
     result.awningTypeName = awningTypeName
     result.productName = productName
+    result.productImage = productImage
 
     // Calculate status based on quantity
     if (result.quantity <= result.criticalLow) {
