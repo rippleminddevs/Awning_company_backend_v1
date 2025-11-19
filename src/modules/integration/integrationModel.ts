@@ -16,7 +16,7 @@ const fields: FieldsConfig = {
   },
   thirdPartyTool: {
     type: 'array',
-    mongooseType: 'Mixed',
+    itemType: 'Mixed',
     nullable: true,
   },
   notificationSetting: {
@@ -33,7 +33,7 @@ const fields: FieldsConfig = {
 }
 
 export class IntegrationModel extends BaseModel<Integration> {
-  private static instance: IntegrationModel;
+  private static instance: IntegrationModel
   constructor() {
     const schema = createMongooseSchema(fields, {
       includeTimestamps: true,
@@ -43,8 +43,8 @@ export class IntegrationModel extends BaseModel<Integration> {
 
   public static getInstance(): IntegrationModel {
     if (!IntegrationModel.instance) {
-      IntegrationModel.instance = new IntegrationModel();
+      IntegrationModel.instance = new IntegrationModel()
     }
-    return IntegrationModel.instance;
+    return IntegrationModel.instance
   }
 }
