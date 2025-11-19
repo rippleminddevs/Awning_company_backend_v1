@@ -59,3 +59,16 @@ export interface SearchProductsParams {
 export interface GetSubProductsParams {
   parentProduct: string
 }
+
+export interface InventoryAnalyticsResponse {
+  totalProducts: number
+  totalCategories: number
+  productsByCategory: Array<{
+    category: string
+    categoryId: string
+    count: number
+  }>
+  totalSubProducts: number
+  productsWithoutImages: number
+  productsWithPricing: number
+}

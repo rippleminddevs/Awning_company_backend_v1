@@ -54,4 +54,9 @@ export class ProductController extends BaseController<Product, ProductService> {
     const data = await this.service.getSubProducts({ parentProduct: req.params.parentProduct })
     apiResponse(res, data, 200, 'Sub-products fetched successfully')
   }
+
+  public getInventoryAnalytics = async (req: Request, res: Response): Promise<void> => {
+    const data = await this.service.getInventoryAnalytics()
+    apiResponse(res, data, 200, 'Inventory analytics fetched successfully')
+  }
 }

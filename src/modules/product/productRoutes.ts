@@ -38,4 +38,7 @@ router.put(
 )
 router.delete('/:id', requiredRole(['superadmin']), productController.delete)
 
+// Inventory analytics route - mapping to the requested endpoint
+router.get('/analytics', productController.getInventoryAnalytics)
+
 export default router

@@ -234,4 +234,94 @@ export class ProductService extends BaseService<Product> {
 
     return populatedSubProducts
   }
+
+  // Get inventory analytics
+  public getInventoryAnalytics = async (): Promise<any> => {
+    const productModel = this.model.getMongooseModel()
+    const categoryModel = (
+      await import('../category/categoryModel')
+    ).CategoryModel.getInstance().getMongooseModel()
+
+    // Get all products with category population
+    const allProducts = await productModel
+      ?.find({})
+      .populate({
+        path: 'type',
+        select: 'name',
+        model: 'Category',
+      })
+      .lean()
+
+    if (!allProducts || allProducts.length === 0) {
+      return {
+        totalProducts: 0,
+        totalCategories: 0,
+        productsByCategory: [],
+        totalSubProducts: 0,
+        productsWithoutImages: 0,
+        productsWithPricing: 0,
+      }
+    }
+
+    // Count products without parent (main products) vs with parent (sub-products)
+    const mainProducts = allProducts.filter((product: any) => !product.parentProduct)
+    const subProducts = allProducts.filter((product: any) => product.parentProduct)
+
+    // Count products without images
+    const productsWithoutImages = allProducts.filter((product: any) => !product.image).length
+
+    // Count products with pricing information
+    const productsWithPricing = allProducts.filter(
+      (product: any) => product.pricing && product.pricing.basePrice > 0
+    ).length
+
+    // Count products by category using populated category names and IDs
+    const categoryCounts: { [key: string]: { count: number; _id?: string; name?: string } } = {}
+    mainProducts.forEach((product: any) => {
+      if (product.type) {
+        const categoryId =
+          typeof product.type === 'string' ? product.type : product.type._id?.toString()
+        const categoryName =
+          typeof product.type === 'string'
+            ? product.type
+            : product.type.name || product.type._id?.toString()
+
+        if (categoryId) {
+          if (!categoryCounts[categoryId]) {
+            categoryCounts[categoryId] = { count: 0, _id: categoryId, name: categoryName }
+          }
+          categoryCounts[categoryId].count++
+        }
+      }
+    })
+
+    // Format products by category for response
+    const productsByCategory = Object.values(categoryCounts).map(({ _id, name, count }) => ({
+      category: name, // use the category name as the main category field
+      categoryId: _id, // include the ID as a separate field
+      count,
+    }))
+
+    // Get total number of distinct categories
+    let totalCategories = 0
+
+    // Try to get actual category count if possible
+    if (categoryModel) {
+      try {
+        totalCategories = await categoryModel.countDocuments({})
+      } catch (error) {
+        // Fallback to calculated distinct categories if category model is not accessible
+        totalCategories = Object.keys(categoryCounts).length
+      }
+    }
+
+    return {
+      totalProducts: allProducts.length,
+      totalCategories,
+      productsByCategory,
+      totalSubProducts: subProducts.length,
+      productsWithoutImages,
+      productsWithPricing,
+    }
+  }
 }
