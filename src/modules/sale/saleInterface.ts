@@ -3,6 +3,8 @@ export interface Sale {
     revenue?: number
     soldItems?: number
     newOrders?: number
+    totalSales?: number
+    totalQuotations?: number
     change: number
     isUp: boolean
   }>
@@ -68,24 +70,6 @@ export interface DashboardAnalytics {
   sortCounts: string
   sortSalesAnalytics: string
   sortOrderStats: string
-}
-
-export interface AdminSalesOverview {
-  newOrders: {
-    count: number
-    change: number
-    isUp: boolean
-  }
-  totalSales: {
-    count: number
-    change: number
-    isUp: boolean
-  }
-  totalQuotations: {
-    count: number
-    change: number
-    isUp: boolean
-  }
 }
 
 export interface DashboardAnalyticsResponse {

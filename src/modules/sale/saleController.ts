@@ -1,12 +1,6 @@
 import { BaseController } from '../../common/core/baseController'
 import { SaleService } from './saleService'
-import {
-  DashboardAnalytics,
-  Sale,
-  SalesOverview,
-  SalesReportParams,
-  AdminSalesOverview,
-} from './saleInterface'
+import { DashboardAnalytics, Sale, SalesOverview, SalesReportParams } from './saleInterface'
 import { Request, Response } from 'express'
 import { apiResponse } from '../../common/utils/apiResponse'
 import { GetSalesPersonsParams } from '../user/userInterface'
@@ -67,10 +61,5 @@ export class SaleController extends BaseController<Sale, SaleService> {
       200,
       'Sales report generated successfully'
     )
-  }
-
-  public getAdminSalesOverview = async (req: Request, res: Response): Promise<void> => {
-    const adminSalesOverview = await this.service.getAdminSalesOverview()
-    apiResponse(res, adminSalesOverview, 200, 'Admin Sales Overview Fetched Successfully')
   }
 }

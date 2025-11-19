@@ -17,6 +17,7 @@ const trackingController = new TrackingController()
 router.use(authenticate)
 router.get(
   '/overview',
+  requiredRole(['superadmin', 'manager']),
   validateQuery(SaleValidator.getSalesOverview),
   saleController.getSalesOverview
 )

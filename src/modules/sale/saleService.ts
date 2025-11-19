@@ -268,6 +268,75 @@ export class SaleService extends BaseService<Sale> {
     // Get previous period counts for comparison
     const previousCounts = await this.getCounts(previousStartDate, currentStartDate)
 
+    // Calculate total sales and quotations for current period
+    const [currentTotalSalesResult, currentTotalQuotations] = await Promise.all([
+      // Current period total sales (revenue from sold appointments)
+      this.quoteModel.getMongooseModel()?.aggregate([
+        {
+          $lookup: {
+            from: 'appointments',
+            localField: 'appointmentId',
+            foreignField: '_id',
+            as: 'appointment',
+          },
+        },
+        { $unwind: '$appointment' },
+        {
+          $match: {
+            'appointment.status': 'Sold',
+            'appointment.createdAt': { $gte: currentStartDate, $lte: now },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$paymentStructure.grandTotal' },
+          },
+        },
+      ]),
+
+      // Current period total quotations
+      this.quoteModel.count({
+        createdAt: { $gte: currentStartDate, $lte: now },
+      }),
+    ])
+
+    // Calculate total sales and quotations for previous period
+    const [previousTotalSalesResult, previousTotalQuotations] = await Promise.all([
+      // Previous period total sales (revenue from sold appointments)
+      this.quoteModel.getMongooseModel()?.aggregate([
+        {
+          $lookup: {
+            from: 'appointments',
+            localField: 'appointmentId',
+            foreignField: '_id',
+            as: 'appointment',
+          },
+        },
+        { $unwind: '$appointment' },
+        {
+          $match: {
+            'appointment.status': 'Sold',
+            'appointment.createdAt': { $gte: previousStartDate, $lt: currentStartDate },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$paymentStructure.grandTotal' },
+          },
+        },
+      ]),
+
+      // Previous period total quotations
+      this.quoteModel.count({
+        createdAt: { $gte: previousStartDate, $lt: currentStartDate },
+      }),
+    ])
+
+    const currentTotalSales = currentTotalSalesResult?.[0]?.total || 0
+    const previousTotalSales = previousTotalSalesResult?.[0]?.total || 0
+
     // Calculate percentage changes and direction
     const calculateChange = (current: number, previous: number) => {
       if (previous === 0) {
@@ -291,6 +360,14 @@ export class SaleService extends BaseService<Sale> {
       {
         newOrders: currentCounts.newOrders,
         ...calculateChange(currentCounts.newOrders, previousCounts.newOrders),
+      },
+      {
+        totalSales: currentTotalSales,
+        ...calculateChange(currentTotalSales, previousTotalSales),
+      },
+      {
+        totalQuotations: currentTotalQuotations,
+        ...calculateChange(currentTotalQuotations, previousTotalQuotations),
       },
     ]
 
@@ -1012,121 +1089,6 @@ export class SaleService extends BaseService<Sale> {
         totalSales: totalSales,
         salesAnalytics: salesAnalytics || [],
         orderStats: orderStats || [],
-      },
-    }
-  }
-
-  // Get admin sales overview - new orders count, total sales, total quotations
-  public getAdminSalesOverview = async (): Promise<any> => {
-    const now = new Date()
-    const period = 'monthly' // Default period for admin overview
-
-    // Get start dates for current and previous periods
-    const currentStartDate = this.getStartDate(period)
-    const previousStartDate = this.getStartDate(period, 2)
-
-    // Get current period data
-    const currentData = await this.getCounts(currentStartDate, now)
-
-    // Get previous period data for comparison
-    const previousData = await this.getCounts(previousStartDate, currentStartDate)
-
-    // Calculate percentage changes and direction
-    const calculateChange = (current: number, previous: number) => {
-      if (previous === 0) {
-        const change = current > 0 ? 100 : 0
-        return { change, isUp: current > 0 }
-      }
-      const change = parseFloat((((current - previous) / previous) * 100).toFixed(2))
-      return { change, isUp: current >= previous }
-    }
-
-    // Calculate total sales (total revenue from all sold appointments) for current and previous periods
-    const [currentTotalSalesResult, previousTotalSalesResult] = await Promise.all([
-      // Current period total sales
-      this.quoteModel.getMongooseModel()?.aggregate([
-        {
-          $lookup: {
-            from: 'appointments',
-            localField: 'appointmentId',
-            foreignField: '_id',
-            as: 'appointment',
-          },
-        },
-        { $unwind: '$appointment' },
-        {
-          $match: {
-            'appointment.status': 'Sold',
-            'appointment.createdAt': { $gte: currentStartDate, $lte: now },
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: '$paymentStructure.grandTotal' },
-          },
-        },
-      ]),
-
-      // Previous period total sales
-      this.quoteModel.getMongooseModel()?.aggregate([
-        {
-          $lookup: {
-            from: 'appointments',
-            localField: 'appointmentId',
-            foreignField: '_id',
-            as: 'appointment',
-          },
-        },
-        { $unwind: '$appointment' },
-        {
-          $match: {
-            'appointment.status': 'Sold',
-            'appointment.createdAt': { $gte: previousStartDate, $lt: currentStartDate },
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: '$paymentStructure.grandTotal' },
-          },
-        },
-      ]),
-    ])
-
-    const currentTotalSales = currentTotalSalesResult?.[0]?.total || 0
-    const previousTotalSales = previousTotalSalesResult?.[0]?.total || 0
-    const totalSalesChange = calculateChange(currentTotalSales, previousTotalSales)
-
-    // Calculate total quotations (total number of quotes) for current and previous periods
-    const [currentTotalQuotations, previousTotalQuotations] = await Promise.all([
-      // Current period total quotations
-      this.quoteModel.count({
-        createdAt: { $gte: currentStartDate, $lte: now },
-      }),
-      // Previous period total quotations
-      this.quoteModel.count({
-        createdAt: { $gte: previousStartDate, $lt: currentStartDate },
-      }),
-    ])
-
-    const totalQuotationsChange = calculateChange(currentTotalQuotations, previousTotalQuotations)
-
-    // Format the new orders response with change and isUp
-    const newOrdersChange = calculateChange(currentData.newOrders, previousData.newOrders)
-
-    return {
-      newOrders: {
-        count: currentData.newOrders,
-        ...newOrdersChange,
-      },
-      totalSales: {
-        count: currentTotalSales,
-        ...totalSalesChange,
-      },
-      totalQuotations: {
-        count: currentTotalQuotations,
-        ...totalQuotationsChange,
       },
     }
   }
