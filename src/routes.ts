@@ -16,6 +16,7 @@ import notificationRoutes from './modules/notification/notificationRoutes'
 import saleRoutes from './modules/sale/saleRoutes'
 import trackingRoutes from './modules/tracking/trackingRoutes'
 import inventoryRoutes from './modules/inventory/inventoryRoutes'
+import integrationRoutes from './modules/integration/integrationRoutes'
 import adminRoutes from './modules/admin/adminRoutes'
 // {{modulePath}}
 
@@ -44,6 +45,7 @@ class Routes {
     this.router.use('/notifications', notificationRoutes)
     this.router.use('/sales', saleRoutes)
     this.router.use('/inventories', inventoryRoutes)
+    this.router.use('/integrations', integrationRoutes)
     this.router.use('/admin', adminRoutes)
     // {{moduleRoute}}
   }
