@@ -5,14 +5,19 @@ import {
   CreateOrderForQuote,
   CreateQuote,
   GetQuotesParams,
+  GetTransactionsParams,
   PaymentDetails,
   PaymentStructure,
   PaymentSummary,
+  PopulatedProduct,
   Quote,
   QuoteResponse,
   SalesPersonAnalytics,
   SyncOrderForQuote,
+  TransactionResponse,
   UploadDocuments,
+  UpdatePaymentStatus,
+  AnalyticsResponse,
 } from './quoteInterface'
 import { ProductModel } from '../product/productModel'
 import { UploadService } from '../upload/uploadService'
@@ -20,12 +25,16 @@ import { Types } from 'mongoose'
 import { QuotePaginatedResponse } from '../../common/interfaces/globalInterfaces'
 import { AppointmentModel } from '../appointment/appointmentModel'
 import { UserService } from '../user/userService'
+import { InventoryModel } from '../inventory/inventoryModel'
+import { OrderModel } from '../order/orderModel'
 export class QuoteService extends BaseService<Quote> {
   private orderService: OrderService
   private productModel: ProductModel
   private uploadService: UploadService
   private appointmentModel: AppointmentModel
   private userService: UserService
+  private inventoryModel: InventoryModel
+  private orderModel: OrderModel
 
   constructor() {
     super(QuoteModel.getInstance())
@@ -34,6 +43,8 @@ export class QuoteService extends BaseService<Quote> {
     this.productModel = ProductModel.getInstance()
     this.appointmentModel = AppointmentModel.getInstance()
     this.userService = new UserService()
+    this.inventoryModel = InventoryModel.getInstance()
+    this.orderModel = OrderModel.getInstance()
   }
 
   // private function to return populated data
@@ -77,6 +88,56 @@ export class QuoteService extends BaseService<Quote> {
     quote.appointmentId.service = quote.appointmentId.service?.name || null
 
     return quote
+  }
+
+  // private function to get populated transaction data
+  private getPopulatedTransaction = async (id: string): Promise<TransactionResponse> => {
+    const quoteModel = this.model.getMongooseModel()
+
+    // Get the quote with appointment data
+    const transaction = await quoteModel
+      .findById(id)
+      .populate({
+        path: 'appointmentId',
+        select: 'firstName lastName',
+        model: 'Appointment',
+      })
+      .lean()
+
+    if (!transaction) {
+      throw new Error('Transaction not found')
+    }
+
+    const orderModel = this.orderModel.getMongooseModel()
+    const order = await orderModel
+      ?.findOne({ quoteId: id })
+      .populate<{ product: PopulatedProduct }>({
+        path: 'product',
+        select: 'name image',
+        model: 'Product',
+        populate: {
+          path: 'image',
+          select: 'url',
+          model: 'Upload',
+        },
+      })
+      .populate('awningType', 'name')
+      .lean()
+
+    // Format the response
+    return {
+      _id: transaction._id.toString(),
+      customerName: transaction.appointmentId
+        ? `${transaction.appointmentId.firstName} ${transaction.appointmentId.lastName}`
+        : 'N/A',
+      product: order?.product?.name || 'N/A',
+      image: order?.product?.image?.url || 'N/A',
+      orderId: order?._id?.toString() || 'N/A',
+      amount: transaction.paymentSummary?.total?.toString() || '0',
+      paymentMethod: transaction.paymentStructure?.paymentMethod || 'N/A',
+      date: transaction.createdAt?.toString() || '',
+      status: transaction.paymentStatus || 'pending',
+    }
   }
 
   // private function to calculate payment summary
@@ -479,7 +540,206 @@ export class QuoteService extends BaseService<Quote> {
     }
   }
 
+  // Get transactions data
+  public getTransactions = async (
+    params: GetTransactionsParams
+  ): Promise<TransactionResponse[] | QuotePaginatedResponse<TransactionResponse>> => {
+    const { search, status, ...restParams } = params
+    let query: any = { ...restParams }
+
+    // Add status filter if provided
+    if (status) {
+      query.paymentStatus = status
+    }
+
+    // Search by customer name or quote ID
+    if (search) {
+      const appointments = await this.appointmentModel.getMongooseModel()?.find(
+        {
+          $or: [
+            { _id: search },
+            {
+              $expr: {
+                $regexMatch: {
+                  input: { $concat: ['$firstName', ' ', '$lastName'] },
+                  regex: search,
+                  options: 'i',
+                },
+              },
+            },
+          ],
+        },
+        '_id'
+      )
+
+      const appointmentIds = appointments?.map(p => p?._id) || []
+
+      if (appointmentIds.length > 0) {
+        query.appointmentId = { $in: appointmentIds }
+      } else {
+        // If no appointments found, try searching by quote ID
+        query._id = search
+      }
+    }
+
+    const transactions = await this.model.getAll(query)
+
+    // paginated response
+    if (transactions && 'result' in transactions && 'pagination' in transactions) {
+      const populatedTransactions = await Promise.all(
+        transactions.result.map((transaction: Quote) =>
+          this.getPopulatedTransaction(transaction._id!)
+        )
+      )
+      return {
+        result: populatedTransactions,
+        pagination: transactions.pagination,
+      }
+    }
+
+    // non-paginated response
+    const populatedTransactions = await Promise.all(
+      transactions.map((transaction: Quote) => this.getPopulatedTransaction(transaction._id!))
+    )
+    return populatedTransactions
+  }
+
   // Get transaction analytics
+  public getPaymentAnalytics = async (): Promise<AnalyticsResponse> => {
+    const quoteModel = this.model.getMongooseModel()
+    const now = new Date()
+
+    // Get current month's payments
+    const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    const currentCompleted = await quoteModel.aggregate([
+      {
+        $match: {
+          paymentStatus: 'paid',
+          createdAt: { $gte: currentMonthStart },
+        },
+      },
+      {
+        $addFields: {
+          totalAmount: { $toDouble: '$paymentSummary.total' },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$totalAmount' },
+        },
+      },
+    ])
+
+    const currentPending = await quoteModel.aggregate([
+      {
+        $match: {
+          paymentStatus: { $in: ['pending', 'partially paid'] },
+          createdAt: { $gte: currentMonthStart },
+        },
+      },
+      {
+        $addFields: {
+          totalAmount: { $toDouble: '$paymentSummary.total' },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$totalAmount' },
+        },
+      },
+    ])
+
+    // Get last month's payments for comparison
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+
+    const lastMonthCompleted = await quoteModel.aggregate([
+      {
+        $match: {
+          paymentStatus: 'paid',
+          createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
+        },
+      },
+      {
+        $addFields: {
+          totalAmount: { $toDouble: '$paymentSummary.total' },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$totalAmount' },
+        },
+      },
+    ])
+
+    const lastMonthPending = await quoteModel.aggregate([
+      {
+        $match: {
+          paymentStatus: { $in: ['pending', 'partially paid'] },
+          createdAt: { $gte: lastMonthStart, $lte: lastMonthEnd },
+        },
+      },
+      {
+        $addFields: {
+          totalAmount: { $toDouble: '$paymentSummary.total' },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$totalAmount' },
+        },
+      },
+    ])
+
+    // Helper function to calculate change
+    const calculateChange = (current: number, previous: number) => {
+      if (previous === 0) return { change: current > 0 ? 100 : 0, isUp: current > 0 }
+      const change = ((current - previous) / previous) * 100
+      return {
+        change: Math.round(change * 100) / 100,
+        isUp: change >= 0,
+      }
+    }
+
+    const currentCompletedTotal = currentCompleted[0]?.total || 0
+    const lastCompletedTotal = lastMonthCompleted[0]?.total || 0
+    const currentPendingTotal = currentPending[0]?.total || 0
+    const lastPendingTotal = lastMonthPending[0]?.total || 0
+
+    const completedChange = calculateChange(currentCompletedTotal, lastCompletedTotal)
+    const pendingChange = calculateChange(currentPendingTotal, lastPendingTotal)
+
+    return {
+      analytics: [
+        {
+          completedPayments: currentCompletedTotal,
+          ...completedChange,
+        },
+        {
+          pendingPayments: currentPendingTotal,
+          ...pendingChange,
+        },
+      ],
+    }
+  }
+
+  // Update payment status
+  public updatePaymentStatus = async (
+    id: string,
+    payload: UpdatePaymentStatus
+  ): Promise<TransactionResponse> => {
+    const updatedQuote = await this.model.update(id, payload)
+    if (!updatedQuote) {
+      throw new Error('Quote not found')
+    }
+    return this.getPopulatedTransaction(id)
+  }
+
+  // Get transaction analytics (old version)
   public getTransactionAnalytics = async (): Promise<any> => {
     const quoteModel = this.model.getMongooseModel()
 

@@ -26,7 +26,12 @@ router.post(
   quoteController.create
 )
 router.get('/analytics', quoteController.getSalesPersonAnalytics)
-router.get('/transactions/analytics', quoteController.getTransactionAnalytics)
+router.get(
+  '/transactions',
+  validateQuery(QuoteValidator.getTransactions),
+  quoteController.getTransactions
+)
+router.get('/transactions/analytics', quoteController.getPaymentAnalytics)
 router.post(
   '/documents/:id',
   upload.array('addDocuments', 10),
@@ -35,6 +40,11 @@ router.post(
 )
 router.get('/:id', quoteController.getById)
 router.put('/:id', validate(QuoteValidator.update), quoteController.update)
+router.put(
+  '/transactions/payment-status/:id',
+  validate(QuoteValidator.updatePaymentStatus),
+  quoteController.updatePaymentStatus
+)
 router.delete('/:id', quoteController.delete)
 
 // Invoice Routes

@@ -8,7 +8,10 @@ export const QuoteValidator = {
     paymentSummary: Joi.object().optional(),
     items: Joi.array().items(Joi.object()).required(),
     status: Joi.string().valid('Hot', 'Warm', 'Dead').optional().default('Hot'),
-    paymentStatus: Joi.string().valid('pending', 'paid', 'partially paid').optional().default('pending'),
+    paymentStatus: Joi.string()
+      .valid('pending', 'paid', 'partially paid')
+      .optional()
+      .default('pending'),
   }),
 
   update: Joi.object({
@@ -36,5 +39,17 @@ export const QuoteValidator = {
     sort: Joi.string().optional().valid('Hot', 'Warm', 'Dead', 'hot', 'warm', 'dead'),
     source: Joi.string().optional(),
     status: Joi.string().optional(),
-  })
+  }),
+
+  getTransactions: Joi.object({
+    paginate: Joi.boolean().optional(),
+    page: Joi.number().optional(),
+    perPage: Joi.number().optional(),
+    search: Joi.string().optional(),
+    status: Joi.string().optional(),
+  }),
+
+  updatePaymentStatus: Joi.object({
+    paymentStatus: Joi.string().valid('pending', 'paid', 'partially paid', 'failed').required(),
+  }),
 }

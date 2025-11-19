@@ -230,3 +230,45 @@ export interface InvoiceResponse {
   mimeType: string
   fileId: string
 }
+
+export interface GetTransactionsParams {
+  paginate?: boolean
+  page?: number
+  perPage?: number
+  search?: string
+  status?: string
+}
+
+export interface TransactionResponse {
+  _id?: string
+  customerName: string
+  product: string
+  image: string
+  orderId: string
+  amount: string
+  paymentMethod: string
+  date: string
+  status: string
+}
+
+export interface PopulatedProduct {
+  _id: string
+  name: string
+  image?: {
+    url: string
+    [key: string]: any
+  }
+}
+
+export interface AnalyticsResponse {
+  analytics: Array<{
+    completedPayments?: number
+    pendingPayments?: number
+    change: number
+    isUp: boolean
+  }>
+}
+
+export interface UpdatePaymentStatus {
+  paymentStatus: string
+}

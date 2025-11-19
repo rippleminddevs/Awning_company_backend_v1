@@ -76,4 +76,22 @@ export class QuoteController extends BaseController<Quote, QuoteService> {
     const analytics = await this.service.getTransactionAnalytics()
     apiResponse(res, analytics, 200, 'Transaction analytics fetched successfully')
   }
+
+  public getTransactions = async (req: Request, res: Response): Promise<void> => {
+    const params = req.query
+    const transactions = await this.service.getTransactions(params as any)
+    apiResponse(res, transactions, 200, 'Transactions fetched successfully')
+  }
+
+  public getPaymentAnalytics = async (req: Request, res: Response): Promise<void> => {
+    const analytics = await this.service.getPaymentAnalytics()
+    apiResponse(res, analytics, 200, 'Analytics fetched successfully')
+  }
+
+  public updatePaymentStatus = async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params
+    const { paymentStatus } = req.body
+    const updatedQuote = await this.service.updatePaymentStatus(id, { paymentStatus })
+    apiResponse(res, updatedQuote, 200, 'Payment status updated successfully')
+  }
 }
