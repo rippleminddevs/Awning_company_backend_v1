@@ -11,7 +11,10 @@ export const UserValidator = {
       latitude: Joi.number().required(),
       longitude: Joi.number().required(),
     }).optional(),
-    role: Joi.string().valid('salesperson', 'manager', 'superadmin').default('salesperson').optional(),
+    role: Joi.string()
+      .valid('salesperson', 'manager', 'superadmin')
+      .default('salesperson')
+      .optional(),
     isAdmin: Joi.boolean().optional().default(false),
     isVerified: Joi.boolean().optional().default(false),
   }),
@@ -27,7 +30,7 @@ export const UserValidator = {
       longitude: Joi.number().required(),
     }).optional(),
     role: Joi.string().valid('salesperson', 'manager', 'superadmin').default('salesperson'),
-    isAdmin: Joi.boolean().optional()
+    isAdmin: Joi.boolean().optional(),
   }),
 
   updateOwnProfile: Joi.object({
@@ -40,7 +43,7 @@ export const UserValidator = {
       latitude: Joi.number().required(),
       longitude: Joi.number().required(),
     }).optional(),
-    role: Joi.string().valid('salesperson', 'manager', 'superadmin').default('salesperson')
+    role: Joi.string().valid('salesperson', 'manager', 'superadmin').default('salesperson'),
   }),
 
   updateFCMTokens: Joi.object({
@@ -48,12 +51,19 @@ export const UserValidator = {
     removefcmToken: Joi.string().optional(),
   }),
 
+  getAll: Joi.object({
+    search: Joi.string().optional(),
+    city: Joi.string().optional(),
+    paginate: Joi.boolean().optional().default(true),
+    page: Joi.number().optional().default(1),
+    perPage: Joi.number().optional().default(10),
+  }),
+
   getSalesPersons: Joi.object({
     search: Joi.string().optional(),
     paginate: Joi.boolean().optional().default(false),
     page: Joi.number().optional().default(1),
     perPage: Joi.number().optional().default(10),
-    duration: Joi.string().optional().valid('daily','weekly', 'monthly', 'yearly'),
+    duration: Joi.string().optional().valid('daily', 'weekly', 'monthly', 'yearly'),
   }),
-
 }

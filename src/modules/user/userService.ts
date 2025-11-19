@@ -224,7 +224,20 @@ export class UserService extends BaseService<User> {
   public getAllUsers = async (
     params: any = {}
   ): Promise<UserResponse[] | PaginatedResponse<UserResponse>> => {
-    const users = await this.model.getAll(params)
+    const { search, city, ...restParams } = params
+    let query: any = { ...restParams }
+
+    // Search filter for user name
+    if (search) {
+      query.name = { $regex: search, $options: 'i' }
+    }
+
+    // City filter - checks if location.address contains the city
+    if (city) {
+      query['location.address'] = { $regex: city, $options: 'i' }
+    }
+
+    const users = await this.model.getAll(query)
 
     // Handle pagination case
     if (users && 'result' in users && 'pagination' in users) {

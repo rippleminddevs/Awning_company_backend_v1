@@ -25,7 +25,7 @@ router.post(
   requiredRole(['superadmin']),
   userController.create
 )
-router.get('/', userController.getAll)
+router.get('/', validateQuery(UserValidator.getAll), userController.getAll)
 router.put(
   '/',
   upload.single('profilePicture'),
