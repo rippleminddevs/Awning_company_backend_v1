@@ -14,6 +14,7 @@ import chatRoutes from './modules/chat/chatRoutes'
 import messageRoutes from './modules/message/messageRoutes'
 import notificationRoutes from './modules/notification/notificationRoutes'
 import saleRoutes from './modules/sale/saleRoutes'
+import trackingRoutes from './modules/tracking/trackingRoutes'
 // {{modulePath}}
 
 class Routes {
