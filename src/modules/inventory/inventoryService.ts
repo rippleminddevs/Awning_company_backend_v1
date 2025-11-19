@@ -48,21 +48,23 @@ export class InventoryService extends BaseService<Inventory> {
       throw AppError.notFound('Inventory not found')
     }
 
-    // Preserve original IDs and add them as separate fields
+    // Preserve original IDs and names to add them as separate fields
     const awningTypeId = result.awningType?._id?.toString() || result.awningType
     const productId = result.product?._id?.toString() || result.product
 
-    if (result.awningType) {
-      result.awningType = result.awningType.name
-    }
+    // Store the names
+    const awningTypeName = result.awningType?.name || null
+    const productName = result.product?.name || null
 
+    // Update the original fields to show IDs instead of names/populated data
+    result.awningType = awningTypeId
     if (result.product) {
-      result.product.image = result.product?.image?.url
+      result.product = productId // Just the ID, no longer populated object
     }
 
-    // Add the original IDs as separate fields
-    result.awningTypeId = awningTypeId
-    result.productId = productId
+    // Add the names as separate fields
+    result.awningTypeName = awningTypeName
+    result.productName = productName
 
     // Calculate status based on quantity
     if (result.quantity <= result.criticalLow) {

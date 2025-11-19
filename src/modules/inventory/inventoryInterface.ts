@@ -36,8 +36,8 @@ export interface InventoryResponse {
   sku?: string
   status?: string
   createdBy: string
-  awningTypeId?: string
-  productId?: string
+  awningTypeName?: string
+  productName?: string
 }
 
 export interface AnalyticsResponse {
