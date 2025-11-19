@@ -94,13 +94,18 @@ export class QuoteService extends BaseService<Quote> {
   private getPopulatedTransaction = async (id: string): Promise<TransactionResponse> => {
     const quoteModel = this.model.getMongooseModel()
 
-    // Get the quote with appointment data
+    // Get the quote with appointment and invoice data
     const transaction = await quoteModel
       .findById(id)
       .populate({
         path: 'appointmentId',
         select: 'firstName lastName',
         model: 'Appointment',
+      })
+      .populate({
+        path: 'invoice',
+        select: 'url',
+        model: 'Upload',
       })
       .lean()
 
@@ -137,6 +142,7 @@ export class QuoteService extends BaseService<Quote> {
       paymentMethod: transaction.paymentStructure?.paymentMethod || 'N/A',
       date: transaction.createdAt?.toString() || '',
       status: transaction.paymentStatus || 'pending',
+      invoiceUrl: transaction.invoice?.url || undefined,
     }
   }
 

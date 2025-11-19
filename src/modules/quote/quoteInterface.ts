@@ -249,6 +249,7 @@ export interface TransactionResponse {
   paymentMethod: string
   date: string
   status: string
+  invoiceUrl?: string
 }
 
 export interface PopulatedProduct {
