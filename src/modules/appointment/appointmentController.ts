@@ -39,7 +39,8 @@ export class AppointmentController extends BaseController<Appointment, Appointme
   }
 
   public getById = async (req: Request, res: Response): Promise<void> => {
-    const appointment = await this.service.getById(req.params.id)
+    const authUserId = req.user?.id || req.user?._id
+    const appointment = await this.service.getById(req.params.id, authUserId)
     apiResponse(res, appointment, 200, 'Appointment fetched successfully')
   }
 

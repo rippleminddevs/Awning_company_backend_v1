@@ -49,6 +49,7 @@ export interface Appointment {
   phoneNumber?: string
   createdBy: string
   location?: LocationCoordinates
+  chatId?: string | null
 }
 
 export interface GetAppointmentParams {

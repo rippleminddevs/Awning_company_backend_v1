@@ -6,20 +6,26 @@ import { UserService } from '../user/userService'
 import { CreateNotificationParam } from '../notification/notificationInterface'
 import { NotificationService } from '../notification/notificationService'
 import { LocationService } from '../../services/locationService'
+import { ChatService } from '../chat/chatService'
 
 export class AppointmentService extends BaseService<Appointment> {
   private userService: UserService
   private notificationService: NotificationService
   private locationService: LocationService
+  private chatService: ChatService
   constructor() {
     super(AppointmentModel.getInstance())
     this.userService = new UserService()
     this.notificationService = new NotificationService()
     this.locationService = new LocationService()
+    this.chatService = new ChatService()
   }
 
   // Common function to get populated item data
-  private getPopulatedAppointment = async (appointmentId: string): Promise<Appointment> => {
+  private getPopulatedAppointment = async (
+    appointmentId: string,
+    authUserId?: string
+  ): Promise<Appointment> => {
     const appointmentModel = this.model.getMongooseModel()
     const appointment = await appointmentModel
       .findById(appointmentId)
@@ -76,13 +82,27 @@ export class AppointmentService extends BaseService<Appointment> {
       console.error('Error getting coordinates:', error)
     }
 
+    // Check if auth user has a chat with the staff
+    if (authUserId && appointment.staff && typeof appointment.staff === 'object') {
+      const staffId = appointment.staff.id
+      try {
+        const existingChat = await this.chatService.findExistingChat([authUserId, staffId])
+        appointment.chatId = existingChat ? existingChat._id.toString() : null
+      } catch (error) {
+        console.error('Error finding chat:', error)
+        appointment.chatId = null
+      }
+    } else {
+      appointment.chatId = null
+    }
+
     return appointment
   }
 
   // Create appointment
   public createAppointment = async (payload: Appointment): Promise<Appointment> => {
     const appointment = await this.model.create(payload)
-    const populatedAppointment = this.getPopulatedAppointment(appointment._id)
+    const populatedAppointment = await this.getPopulatedAppointment(appointment._id)
 
     // Create new appointment notification for salesperson (background-task)
     setImmediate(async () => {
@@ -118,6 +138,11 @@ export class AppointmentService extends BaseService<Appointment> {
   ): Promise<Appointment> => {
     const appointment = await this.model.update(appointmentId, { status })
     return this.getPopulatedAppointment(appointment._id)
+  }
+
+  // Override getById to accept authUserId
+  public getById = async (id: string, authUserId?: string): Promise<Appointment> => {
+    return this.getPopulatedAppointment(id, authUserId)
   }
 
   // Get all appointment
