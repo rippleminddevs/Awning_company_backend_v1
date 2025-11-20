@@ -37,6 +37,7 @@ export interface UserResponse {
   isAdmin?: boolean
   isVerified: boolean
   customersAssigned?: number
+  permissions?: any
   city?: string
   zipCode?: string
 }

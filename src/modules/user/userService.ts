@@ -59,6 +59,7 @@ export class UserService extends BaseService<User> {
       role: user.role || 'salesperson',
       isAdmin: user.isAdmin || false,
       customersAssigned: user.customersAssigned || 0,
+      permissions: user.permissions || null,
       city: user.city || null,
       zipCode: user.zipCode || null,
       // Include any other fields that might be missing
@@ -101,25 +102,36 @@ export class UserService extends BaseService<User> {
 
   // Create user
   public createUser = async (data: User): Promise<User> => {
-    if (data.profilePicture) {
-      const upload = await this.uploadService.create({
-        file: data.profilePicture,
-        userId: data._id,
-      })
+    try {
+      if (data.profilePicture) {
+        const upload = await this.uploadService.create({
+          file: data.profilePicture,
+          userId: data._id,
+        })
 
-      data.profilePicture = upload._id
+        data.profilePicture = upload._id
+      }
+
+      if (!data.password) {
+        data.password = await this.generatePassword()
+      }
+
+      const hashedPassword = await bcrypt.hash(data.password, 10)
+      data.password = hashedPassword
+      data.isVerified = true
+
+      const user = await this.model.create(data)
+      return this.getPopulatedUser(user._id)
+    } catch (error: any) {
+      // Handle duplicate email error
+      if (error.code === 11000 && error.keyPattern?.email) {
+        throw AppError.badRequest(
+          'A user with this email address already exists. Please use a different email.'
+        )
+      }
+      // Re-throw other errors
+      throw error
     }
-
-    if (!data.password) {
-      data.password = await this.generatePassword()
-    }
-
-    const hashedPassword = await bcrypt.hash(data.password, 10)
-    data.password = hashedPassword
-    data.isVerified = true
-
-    const user = await this.model.create(data)
-    return this.getPopulatedUser(user._id)
   }
 
   // Update user info
