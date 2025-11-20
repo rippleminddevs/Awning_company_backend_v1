@@ -18,6 +18,8 @@ export interface User {
   role?: 'salesperson' | 'manager' | 'superadmin'
   isAdmin?: boolean
   isVerified: boolean
+  city?: string
+  zipCode?: string
 }
 
 export interface UserResponse {
@@ -35,6 +37,8 @@ export interface UserResponse {
   isAdmin?: boolean
   isVerified: boolean
   customersAssigned?: number
+  city?: string
+  zipCode?: string
 }
 
 export interface UserUpdate {
@@ -50,6 +54,8 @@ export interface UserUpdate {
   deviceTokens?: string[]
   isAdmin?: boolean
   isVerified?: boolean
+  city?: string
+  zipCode?: string
 }
 
 export interface UpdateFCMTokens {
@@ -58,10 +64,10 @@ export interface UpdateFCMTokens {
   removefcmToken?: string
 }
 
-export interface GetSalesPersonsParams{
+export interface GetSalesPersonsParams {
   paginate?: number
   page?: number
   perPage?: number
   search?: string
-  duration?: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  duration?: 'daily' | 'weekly' | 'monthly' | 'yearly'
 }

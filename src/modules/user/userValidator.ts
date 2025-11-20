@@ -17,6 +17,8 @@ export const UserValidator = {
       .optional(),
     isAdmin: Joi.boolean().optional().default(false),
     isVerified: Joi.boolean().optional().default(false),
+    city: Joi.string().optional(),
+    zipCode: Joi.string().optional(),
   }),
 
   updateUsers: Joi.object({
@@ -31,6 +33,8 @@ export const UserValidator = {
     }).optional(),
     role: Joi.string().valid('salesperson', 'manager', 'superadmin').default('salesperson'),
     isAdmin: Joi.boolean().optional(),
+    city: Joi.string().optional(),
+    zipCode: Joi.string().optional(),
   }),
 
   updateOwnProfile: Joi.object({
@@ -44,6 +48,8 @@ export const UserValidator = {
       longitude: Joi.number().required(),
     }).optional(),
     role: Joi.string().valid('salesperson', 'manager', 'superadmin').default('salesperson'),
+    city: Joi.string().optional(),
+    zipCode: Joi.string().optional(),
   }),
 
   updateFCMTokens: Joi.object({

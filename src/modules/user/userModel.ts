@@ -79,6 +79,14 @@ const fields: FieldsConfig = {
     type: 'boolean',
     default: false,
   },
+  city: {
+    type: 'string',
+    nullable: true,
+  },
+  zipCode: {
+    type: 'string',
+    nullable: true,
+  },
 }
 
 export class UserModel extends BaseModel<User> {

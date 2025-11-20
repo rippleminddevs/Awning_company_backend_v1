@@ -45,7 +45,26 @@ export class UserService extends BaseService<User> {
     }
 
     delete user.password
-    return user
+
+    // Ensure consistent response structure - add missing fields as null
+    return {
+      _id: user._id?.toString(),
+      name: user.name || '',
+      email: user.email || '',
+      deviceTokens: user.deviceTokens || [],
+      profilePicture: user.profilePicture || null,
+      phoneNumber: user.phoneNumber || null,
+      location: user.location || null,
+      isVerified: user.isVerified || false,
+      role: user.role || 'salesperson',
+      isAdmin: user.isAdmin || false,
+      customersAssigned: user.customersAssigned || 0,
+      city: user.city || null,
+      zipCode: user.zipCode || null,
+      // Include any other fields that might be missing
+      googleId: user.googleId || null,
+      facebookId: user.facebookId || null,
+    }
   }
 
   // generate password for user
