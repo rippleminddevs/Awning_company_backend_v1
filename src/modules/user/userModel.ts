@@ -79,6 +79,10 @@ const fields: FieldsConfig = {
     type: 'boolean',
     default: false,
   },
+  permissions: {
+    type: 'object',
+    nullable: true,
+  },
   city: {
     type: 'string',
     nullable: true,

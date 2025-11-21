@@ -1,6 +1,7 @@
 import { BaseService } from '../../common/core/baseService'
 import { QuoteModel } from './quoteModel'
 import { OrderService } from '../order/orderService'
+import { isValidObjectId } from 'mongoose'
 import {
   CreateOrderForQuote,
   CreateQuote,
@@ -563,7 +564,7 @@ export class QuoteService extends BaseService<Quote> {
       const appointments = await this.appointmentModel.getMongooseModel()?.find(
         {
           $or: [
-            { _id: search },
+            isValidObjectId(search) ? { _id: search } : { _id: null },
             {
               $expr: {
                 $regexMatch: {
@@ -582,8 +583,8 @@ export class QuoteService extends BaseService<Quote> {
 
       if (appointmentIds.length > 0) {
         query.appointmentId = { $in: appointmentIds }
-      } else {
-        // If no appointments found, try searching by quote ID
+      } else if (isValidObjectId(search)) {
+        // If no appointments found, try searching by quote ID only if valid ObjectId
         query._id = search
       }
     }

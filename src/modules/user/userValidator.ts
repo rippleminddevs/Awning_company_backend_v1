@@ -83,6 +83,8 @@ export const UserValidator = {
       salesTracking: Joi.boolean().optional(),
       orderTracking: Joi.boolean().optional(),
       staffPerformance: Joi.boolean().optional(),
-    }).optional(),
+    })
+      .unknown(false)
+      .optional(),
   }),
 }

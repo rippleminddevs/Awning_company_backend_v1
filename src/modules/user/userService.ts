@@ -304,11 +304,23 @@ export class UserService extends BaseService<User> {
       staffPerformance: false,
     }
 
+    // Start with default permissions
     const currentPermissions = user.permissions || defaultPermissions
-    const updatedPermissions = {
-      ...defaultPermissions,
-      ...currentPermissions,
-      ...data,
+
+    // Merge: defaults -> current -> new data (new data wins)
+    const updatedPermissions: any = {
+      salesTracking:
+        data.salesTracking !== undefined
+          ? data.salesTracking
+          : currentPermissions.salesTracking || defaultPermissions.salesTracking,
+      orderTracking:
+        data.orderTracking !== undefined
+          ? data.orderTracking
+          : currentPermissions.orderTracking || defaultPermissions.orderTracking,
+      staffPerformance:
+        data.staffPerformance !== undefined
+          ? data.staffPerformance
+          : currentPermissions.staffPerformance || defaultPermissions.staffPerformance,
     }
 
     const updatedUser = await this.model.update(id, { permissions: updatedPermissions })
