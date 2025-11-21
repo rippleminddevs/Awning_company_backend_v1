@@ -72,3 +72,16 @@ export interface GetSalesPersonsParams {
   search?: string
   duration?: 'daily' | 'weekly' | 'monthly' | 'yearly'
 }
+
+export interface UserPermissions {
+  salesTracking?: boolean
+  orderTracking?: boolean
+  staffPerformance?: boolean
+  _id?: string
+}
+
+export interface UpdatePermissions {
+  salesTracking?: boolean
+  orderTracking?: boolean
+  staffPerformance?: boolean
+}

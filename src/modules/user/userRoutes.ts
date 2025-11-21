@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { UserController } from './userController'
-import { validate, validateQuery } from '../../common/utils/helpers'
+import { validate, validateQuery, validateParams } from '../../common/utils/helpers'
 import { UserValidator } from './userValidator'
 import { UserService } from './userService'
 import { authenticate } from '../../middlewares/authMiddleware'
@@ -49,5 +49,20 @@ router.put(
 )
 router.get('/:id', requiredRole(['superadmin', 'manager']), userController.getUserById)
 router.delete('/:id', requiredRole(['superadmin']), userController.delete)
+
+// Permissions routes
+router.get(
+  '/permissions/:id',
+  requiredRole(['superadmin', 'manager']),
+  validateParams(UserValidator.getPermissions),
+  userController.getPermissions
+)
+router.put(
+  '/permissions/:id',
+  requiredRole(['superadmin']),
+  validateParams(UserValidator.getPermissions),
+  validate(UserValidator.updatePermissions),
+  userController.updatePermissions
+)
 
 export default router

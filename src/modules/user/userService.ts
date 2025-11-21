@@ -6,6 +6,7 @@ import {
   User,
   UserResponse,
   UserUpdate,
+  UpdatePermissions,
 } from './userInterface'
 import { UserModel } from './userModel'
 import { UploadService } from '../upload/uploadService'
@@ -47,6 +48,22 @@ export class UserService extends BaseService<User> {
     delete user.password
 
     // Ensure consistent response structure - add missing fields as null
+    // Default permissions object if not present
+    const defaultPermissions = {
+      salesTracking: false,
+      orderTracking: false,
+      staffPerformance: false,
+    }
+
+    // If permissions exist but are missing some fields, merge with defaults
+    let permissions = defaultPermissions
+    if (user.permissions) {
+      permissions = {
+        ...defaultPermissions,
+        ...user.permissions,
+      }
+    }
+
     return {
       _id: user._id?.toString(),
       name: user.name || '',
@@ -59,7 +76,7 @@ export class UserService extends BaseService<User> {
       role: user.role || 'salesperson',
       isAdmin: user.isAdmin || false,
       customersAssigned: user.customersAssigned || 0,
-      permissions: user.permissions || null,
+      permissions,
       city: user.city || null,
       zipCode: user.zipCode || null,
       // Include any other fields that might be missing
@@ -251,11 +268,58 @@ export class UserService extends BaseService<User> {
     return this.getPopulatedUser(user._id)
   }
 
+  // Get user permissions
+  public getPermissions = async (id: string): Promise<any> => {
+    const user = await this.model.getById(id)
+    if (!user) {
+      throw AppError.notFound('User not found')
+    }
+
+    const defaultPermissions = {
+      salesTracking: false,
+      orderTracking: false,
+      staffPerformance: false,
+    }
+
+    if (user.permissions) {
+      return {
+        ...defaultPermissions,
+        ...user.permissions,
+      }
+    }
+
+    return defaultPermissions
+  }
+
+  // Update user permissions
+  public updatePermissions = async (id: string, data: UpdatePermissions): Promise<any> => {
+    const user = await this.model.getById(id)
+    if (!user) {
+      throw AppError.notFound('User not found')
+    }
+
+    const defaultPermissions = {
+      salesTracking: false,
+      orderTracking: false,
+      staffPerformance: false,
+    }
+
+    const currentPermissions = user.permissions || defaultPermissions
+    const updatedPermissions = {
+      ...defaultPermissions,
+      ...currentPermissions,
+      ...data,
+    }
+
+    const updatedUser = await this.model.update(id, { permissions: updatedPermissions })
+    return this.getPopulatedUser(updatedUser._id)
+  }
+
   // Get all users with populated profile pictures
   public getAllUsers = async (
     params: any = {}
   ): Promise<UserResponse[] | PaginatedResponse<UserResponse>> => {
-    const { search, city, ...restParams } = params
+    const { search, city, role, ...restParams } = params
     let query: any = { ...restParams }
 
     // Search filter for user name
@@ -263,9 +327,14 @@ export class UserService extends BaseService<User> {
       query.name = { $regex: search, $options: 'i' }
     }
 
-    // City filter - checks if location.address contains the city
+    // City filter - checks if city field contains the city
     if (city) {
-      query['location.address'] = { $regex: city, $options: 'i' }
+      query.city = { $regex: city, $options: 'i' }
+    }
+
+    // Role filter
+    if (role) {
+      query.role = role
     }
 
     const users = await this.model.getAll(query)

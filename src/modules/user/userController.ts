@@ -1,6 +1,6 @@
 import { BaseController } from '../../common/core/baseController'
 import { UserService } from './userService'
-import { GetSalesPersonsParams, User, UserUpdate } from './userInterface'
+import { GetSalesPersonsParams, User, UserUpdate, UpdatePermissions } from './userInterface'
 import { Request, Response } from 'express'
 import { apiResponse } from '../../common/utils/apiResponse'
 import { AppError } from '../../common/utils/appError'
@@ -85,6 +85,28 @@ export class UserController extends BaseController<User, UserService> {
     try {
       const data = await this.service.getAllUsers(req.query)
       this.handleResponse(res, data)
+    } catch (error: any) {
+      this.handleError(res, error)
+    }
+  }
+
+  public getPermissions = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params
+      const permissions = await this.service.getPermissions(id)
+      apiResponse(res, permissions, 200, 'Permissions fetched successfully')
+    } catch (error: any) {
+      this.handleError(res, error)
+    }
+  }
+
+  public updatePermissions = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params
+      // Extract permissions from nested structure
+      const permissionsData: UpdatePermissions = req.body.permissions || {}
+      const updatedUser = await this.service.updatePermissions(id, permissionsData)
+      apiResponse(res, updatedUser, 200, 'Permissions updated successfully')
     } catch (error: any) {
       this.handleError(res, error)
     }

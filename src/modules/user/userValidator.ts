@@ -60,6 +60,7 @@ export const UserValidator = {
   getAll: Joi.object({
     search: Joi.string().optional(),
     city: Joi.string().optional(),
+    role: Joi.string().optional(),
     paginate: Joi.boolean().optional().default(true),
     page: Joi.number().optional().default(1),
     perPage: Joi.number().optional().default(10),
@@ -71,5 +72,17 @@ export const UserValidator = {
     page: Joi.number().optional().default(1),
     perPage: Joi.number().optional().default(10),
     duration: Joi.string().optional().valid('daily', 'weekly', 'monthly', 'yearly'),
+  }),
+
+  getPermissions: Joi.object({
+    id: Joi.string().required(),
+  }),
+
+  updatePermissions: Joi.object({
+    permissions: Joi.object({
+      salesTracking: Joi.boolean().optional(),
+      orderTracking: Joi.boolean().optional(),
+      staffPerformance: Joi.boolean().optional(),
+    }).optional(),
   }),
 }
