@@ -53,13 +53,20 @@ export class ProductService extends BaseService<Product> {
       })
       .lean()
 
-    if (item.image) {
-      item.image = item.image.url
+    if (!item) {
+      throw AppError.notFound('Product not found')
     }
-    if (item.type) {
+
+    // Safely handle image - check if image exists and has URL
+    item.image = item.image?.url || null
+
+    // Safely handle type
+    if (item?.type) {
       item.type = item.type.name
     }
-    if (item.parentProduct) {
+
+    // Safely handle parentProduct
+    if (item?.parentProduct) {
       item.parentProductInfo = {
         _id: item.parentProduct._id,
         name: item.parentProduct.name,
@@ -161,8 +168,18 @@ export class ProductService extends BaseService<Product> {
     ]
 
     const products = await this.model.getAll(query)
+
+    if (!products || (Array.isArray(products) && products.length === 0)) {
+      return []
+    }
+
+    // Handle both array and paginated results
+    const productArray = Array.isArray(products) ? products : products.result || []
+
     const populatedProducts = await Promise.all(
-      products.map((product: any) => this.getPopulatedProduct(product._id))
+      productArray
+        .filter((product: any) => product && product._id) // Filter null/invalid products
+        .map((product: any) => this.getPopulatedProduct(product._id))
     )
     return populatedProducts
   }
