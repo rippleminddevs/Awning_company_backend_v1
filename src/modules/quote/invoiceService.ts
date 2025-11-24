@@ -441,6 +441,17 @@ export class InvoiceService {
 
     await browser.close()
 
+    // Validate file size before upload (10MB limit for Cloudinary free tier)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB in bytes
+    const fileSizeMB = (pdfBuffer.length / 1024 / 1024).toFixed(2)
+
+    if (pdfBuffer.length > MAX_FILE_SIZE) {
+      throw new Error(
+        `Invoice PDF file size (${fileSizeMB}MB) exceeds the maximum allowed size of 10MB. ` +
+        `Please reduce the number of items in the quote or contact support for assistance.`
+      )
+    }
+
     // Convert buffer to stream properly
     const pdfStream = new Readable({
       read() {
@@ -453,15 +464,30 @@ export class InvoiceService {
 
     const fileName = `invoice-${Date.now()}.pdf`
 
-    // Save file in db
-    const file = await this.uploadService.create({
-      file: {
-        originalname: fileName,
-        buffer: pdfStream,
-        mimetype: 'application/pdf',
-        size: pdfBuffer.length,
-      },
-    })
+    // Save file in db with proper error handling
+    let file
+    try {
+      file = await this.uploadService.create({
+        file: {
+          originalname: fileName,
+          buffer: pdfStream,
+          mimetype: 'application/pdf',
+          size: pdfBuffer.length,
+        },
+      })
+    } catch (uploadError: any) {
+      console.error('Failed to upload invoice PDF:', uploadError)
+
+      // Re-throw with user-friendly message
+      if (uploadError.message && uploadError.message.includes('File size too large')) {
+        throw new Error(
+          `Invoice PDF file size (${fileSizeMB}MB) exceeds upload limit. ` +
+          `Please contact support for assistance.`
+        )
+      }
+
+      throw new Error(`Failed to save invoice PDF: ${uploadError.message}`)
+    }
 
     // Format file size for human readability
     const humanReadableSize = this.formatFileSize(pdfBuffer.length)
@@ -476,7 +502,7 @@ export class InvoiceService {
       fileId: file._id || '',
     }
 
-    // save file id in quote (background-task)
+    // save file id in quote (background-task with error handling)
     setImmediate(async () => {
       try {
         const quote = await this.quoteModel.getMongooseModel()?.findById({ _id: quoteId })
@@ -493,6 +519,7 @@ export class InvoiceService {
         }
       } catch (error) {
         console.error('Error saving invoice file to quote:', error)
+        // Error is caught and logged, won't crash the server
       }
     })
 
