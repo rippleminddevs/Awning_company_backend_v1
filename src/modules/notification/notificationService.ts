@@ -139,12 +139,23 @@ export class NotificationService extends BaseService<Notification> {
     switch (type) {
       case 'Appointment':
         title = 'Appointment';
-        body = `Your appointment is scheduled today at ${refData?.time.toLocaleDateString()} for ${refData?.firstName} ${refData?.lastName}`;
+        if (refData?.time && refData?.firstName && refData?.lastName) {
+          const timeStr = new Date(refData.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          body = `Your appointment is scheduled today at ${timeStr} for ${refData.firstName} ${refData.lastName}`;
+        } else {
+          body = 'You have an appointment scheduled today';
+        }
         break;
 
       case 'New-Appointment':
         title = 'New Appointment';
-        body = `You have been assigned a new appointment at ${refData?.date.toLocaleDateString()} ${refData?.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} for ${refData?.firstName} ${refData?.lastName}`;
+        if (refData?.date && refData?.time && refData?.firstName && refData?.lastName) {
+          const dateStr = new Date(refData.date).toLocaleDateString();
+          const timeStr = new Date(refData.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          body = `You have been assigned a new appointment at ${dateStr} ${timeStr} for ${refData.firstName} ${refData.lastName}`;
+        } else {
+          body = 'You have been assigned a new appointment';
+        }
         break;
 
       default:
@@ -182,14 +193,13 @@ export class NotificationService extends BaseService<Notification> {
       const populatedResults = await Promise.all(
         result.map((notification: any) =>
           this.getPopulatedNotification(notification._id.toString())
-        )
-      );
+        );
       return populatedResults.filter(Boolean);
     }
 
     return [];
   };
-  
+
   // Mark notification as read
   public markAsRead = async (params: MarkAsReadParams): Promise<Notification | null> => {
     const { notificationId, userId } = params;
