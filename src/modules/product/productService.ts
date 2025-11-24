@@ -7,6 +7,7 @@ import {
   GetSubProductsParams,
 } from './productInterface'
 import { UploadService } from '../../modules/upload/uploadService'
+import { InventoryModel } from '../inventory/inventoryModel'
 import { AppError } from '../../common/utils/appError'
 import { isValidObjectId } from 'mongoose'
 

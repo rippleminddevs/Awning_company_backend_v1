@@ -7,6 +7,7 @@ import { CreateNotificationParam } from '../notification/notificationInterface'
 import { NotificationService } from '../notification/notificationService'
 import { LocationService } from '../../services/locationService'
 import { ChatService } from '../chat/chatService'
+import { DateHelper } from '../../common/utils/dateHelper'
 
 export class AppointmentService extends BaseService<Appointment> {
   private userService: UserService
@@ -195,26 +196,20 @@ export class AppointmentService extends BaseService<Appointment> {
 
     // Handle date filtering
     if (today) {
-      const todayUTC = new Date()
-      todayUTC.setUTCHours(0, 0, 0, 0)
-
-      const tomorrowUTC = new Date(todayUTC)
-      tomorrowUTC.setUTCDate(todayUTC.getUTCDate() + 1)
+      const startOfDay = DateHelper.getStartOfDay()
+      const endOfDay = DateHelper.getEndOfDay()
 
       query.date = {
-        $gte: todayUTC,
-        $lt: tomorrowUTC,
+        $gte: startOfDay,
+        $lt: endOfDay,
       }
     } else if (dateFilter) {
-      const filterDate = new Date(dateFilter)
-      filterDate.setUTCHours(0, 0, 0, 0)
-
-      const nextDay = new Date(filterDate)
-      nextDay.setUTCDate(filterDate.getUTCDate() + 1)
+      const startOfDay = DateHelper.getStartOfDay(dateFilter)
+      const endOfDay = DateHelper.getEndOfDay(dateFilter)
 
       query.date = {
-        $gte: filterDate,
-        $lt: nextDay,
+        $gte: startOfDay,
+        $lt: endOfDay,
       }
     }
 
@@ -249,25 +244,19 @@ export class AppointmentService extends BaseService<Appointment> {
 
     // Apply date filtering if needed
     if (today) {
-      const todayUTC = new Date()
-      todayUTC.setUTCHours(0, 0, 0, 0)
-
-      const tomorrowUTC = new Date(todayUTC)
-      tomorrowUTC.setUTCDate(todayUTC.getUTCDate() + 1)
+      const startOfDay = DateHelper.getStartOfDay()
+      const endOfDay = DateHelper.getEndOfDay()
       query.date = {
-        $gte: todayUTC,
-        $lt: tomorrowUTC,
+        $gte: startOfDay,
+        $lt: endOfDay,
       }
     } else if (dateFilter) {
-      const filterDate = new Date(dateFilter)
-      filterDate.setUTCHours(0, 0, 0, 0)
-
-      const nextDay = new Date(filterDate)
-      nextDay.setUTCDate(filterDate.getUTCDate() + 1)
+      const startOfDay = DateHelper.getStartOfDay(dateFilter)
+      const endOfDay = DateHelper.getEndOfDay(dateFilter)
 
       query.date = {
-        $gte: filterDate,
-        $lt: nextDay,
+        $gte: startOfDay,
+        $lt: endOfDay,
       }
     }
 

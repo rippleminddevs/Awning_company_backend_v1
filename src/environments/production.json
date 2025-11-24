@@ -4,7 +4,8 @@
     "port": 5000,
     "url": "https://awning-company-backend-v1.onrender.com",
     "version": "0.0.1",
-    "corsOrigin": "*"
+    "corsOrigin": "*",
+    "timezone": "Asia/Karachi"
   },
   "database": {
     "connection": "mongodb",

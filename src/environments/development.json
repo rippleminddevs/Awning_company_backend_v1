@@ -4,7 +4,8 @@
     "port": 5002,
     "url": "http://localhost:5002",
     "version": "0.0.1",
-    "corsOrigin": "*"
+    "corsOrigin": "*",
+    "timezone": "Asia/Karachi"
   },
   "database": {
     "connection": "mongodb",
