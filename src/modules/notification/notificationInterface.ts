@@ -43,3 +43,14 @@ export interface MarkAsReadParams {
   notificationId: string;
   userId: string;
 }
+
+export interface GetNotificationsResponse {
+  unreadCount: number;
+  result: (Notification & NotificationMessage)[];
+  pagination?: {
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  };
+}

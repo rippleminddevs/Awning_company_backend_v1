@@ -4,6 +4,7 @@ import {
   CreateNotificationParam,
   GenerateMessageParams,
   GetNotificationParams,
+  GetNotificationsResponse,
   MarkAsReadParams,
   Notification,
   NotificationMessage,
@@ -187,6 +188,25 @@ export class NotificationService extends BaseService<Notification> {
 
     // paginated response
     if (result && 'result' in result && 'pagination' in result) {
+      // Step 1: Count unread notifications BEFORE marking as read
+      const unreadCount = result.result.filter(
+        (notification: any) => !notification.readBy.includes(userId)
+      ).length
+
+      // Step 2: Bulk update to mark all fetched notifications as read
+      const notificationIds = result.result.map((notification: any) => notification._id)
+
+      await this.model.getMongooseModel().updateMany(
+        {
+          _id: { $in: notificationIds },
+          readBy: { $ne: userId }, // Only update if userId not already in readBy
+        },
+        {
+          $addToSet: { readBy: userId }, // Add userId to readBy array
+        }
+      )
+
+      // Step 3: Populate notifications
       const populatedResults = await Promise.all(
         result.result.map((notification: any) =>
           this.getPopulatedNotification(notification._id.toString())
@@ -194,12 +214,16 @@ export class NotificationService extends BaseService<Notification> {
       )
 
       return {
+        unreadCount,
         result: populatedResults.filter(Boolean),
         pagination: result.pagination,
       }
     }
 
-    return []
+    return {
+      unreadCount: 0,
+      result: [],
+    }
   }
 
   // Mark notification as read
