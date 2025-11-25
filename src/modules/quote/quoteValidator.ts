@@ -6,7 +6,13 @@ export const QuoteValidator = {
     paymentStructure: Joi.object().required(),
     paymentDetails: Joi.object().required(),
     paymentSummary: Joi.object().optional(),
-    items: Joi.array().items(Joi.object()).required(),
+    items: Joi.array()
+      .items(
+        Joi.object({
+          unitPrice: Joi.number().optional(),
+        }).unknown(true)
+      )
+      .required(),
     status: Joi.string().valid('Hot', 'Warm', 'Dead').optional().default('Hot'),
     paymentStatus: Joi.string()
       .valid('pending', 'paid', 'partially paid')
