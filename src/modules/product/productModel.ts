@@ -42,6 +42,10 @@ const pricingRule: FieldsConfig = {
     type: 'string',
     nullable: true,
   },
+  conditionSlug: {
+    type: 'string',
+    nullable: true,
+  },
   baseValue: {
     type: 'string',
     nullable: true,

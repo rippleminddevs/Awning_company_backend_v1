@@ -15,6 +15,7 @@ export interface height_ft {
 
 export interface PricingRule {
   condition: string
+  conditionSlug?: string
   baseValue: string | number
   variationIncrement: number
 }

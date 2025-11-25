@@ -25,6 +25,16 @@ const toCamelCase = (str: string): string => {
     .join('')
 }
 
+// Utility function to generate slug from condition
+const generateConditionSlug = (condition: string): string => {
+  return condition
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special chars except spaces and hyphens
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single
+}
+
 export class ProductService extends BaseService<Product> {
   private uploadService: UploadService
   constructor() {
@@ -146,8 +156,21 @@ export class ProductService extends BaseService<Product> {
       userId: payload.createdBy,
     })
 
+    // Process pricing rules to add conditionSlug
+    let processedPricing = rest.pricing
+    if (rest.pricing && rest.pricing.rules && Array.isArray(rest.pricing.rules)) {
+      processedPricing = {
+        ...rest.pricing,
+        rules: rest.pricing.rules.map((rule) => ({
+          ...rule,
+          conditionSlug: rule.condition ? generateConditionSlug(rule.condition) : undefined,
+        })),
+      }
+    }
+
     const data = {
       ...rest,
+      pricing: processedPricing,
       image: upload._id,
       parentProduct: parentProduct || null,
     }
@@ -200,6 +223,17 @@ export class ProductService extends BaseService<Product> {
 
       payload.image = upload._id
       await this.uploadService.delete(existingProduct.image)
+    }
+
+    // Process pricing rules to add conditionSlug
+    if (payload.pricing && payload.pricing.rules && Array.isArray(payload.pricing.rules)) {
+      payload.pricing = {
+        ...payload.pricing,
+        rules: payload.pricing.rules.map((rule) => ({
+          ...rule,
+          conditionSlug: rule.condition ? generateConditionSlug(rule.condition) : undefined,
+        })),
+      }
     }
 
     const updatedProduct = await this.model.update(id, payload)
