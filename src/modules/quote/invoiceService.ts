@@ -152,7 +152,7 @@ export class InvoiceService {
           extendedPrice: this.formatCurrency((order.quantity || 1) * order.unitPrice),
           image: this.optimizeImageUrl(product?.image?.url || '', 400, 300, 70),
           title: product?.name || '',
-          description: product?.description || '',
+          description: order.description || product?.description || '',
           location: quote.appointment.address1 + ' ' + quote.appointment.address2,
           options: features,
           size: `Width: ${order.width_ft}' ${order.width_in || 0}" ${order.widthFraction || '0'}/8"
