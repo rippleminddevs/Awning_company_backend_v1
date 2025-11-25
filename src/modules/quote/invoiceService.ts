@@ -150,7 +150,7 @@ export class InvoiceService {
           qty: order.quantity || 1,
           unitPrice: this.formatCurrency(order.unitPrice),
           extendedPrice: this.formatCurrency((order.quantity || 1) * order.unitPrice),
-          image: product?.image?.url || '',
+          image: this.optimizeImageUrl(product?.image?.url || '', 400, 300, 70),
           title: product?.name || '',
           description: product?.description || '',
           location: quote.appointment.address1 + ' ' + quote.appointment.address2,
@@ -223,10 +223,21 @@ export class InvoiceService {
     }
   }
 
+  // Optimize image URL using Cloudinary transformations
+  private optimizeImageUrl(url: string, width: number, height: number, quality: number = 70): string {
+    if (!url || !url.includes('cloudinary.com')) {
+      return url
+    }
+
+    // Insert transformation parameters into Cloudinary URL
+    const transformation = `w_${width},h_${height},c_fill,q_${quality},f_jpg`
+    return url.replace('/upload/', `/upload/${transformation}/`)
+  }
+
   // Get company info
   private async getCompanyInfo(salespersonName: string) {
     return {
-      logo: `${config.app.url}/static/uploads/companylogo.png`,
+      logo: this.optimizeImageUrl(`${config.app.url}/static/uploads/companylogo.png`, 120, 120, 70),
       address: '16811 HALE AVE. STE-E IRVINE CA 92606',
       email: 'larry@theawningcompanyca.com',
       office: '949.325.5627',
@@ -245,7 +256,8 @@ export class InvoiceService {
       return files
         .filter(file => /\.(jpg|jpeg|png)$/i.test(file))
         .sort()
-        .map(file => `${config.app.url}/static/sponsers/${file}`)
+        .slice(0, 5) // Limit to 5 sponsors max to reduce PDF size
+        .map(file => this.optimizeImageUrl(`${config.app.url}/static/sponsers/${file}`, 150, 80, 60))
     } catch (error) {
       console.error('Error reading sponsor directory:', error)
       return []
@@ -430,13 +442,14 @@ export class InvoiceService {
     // Add a small delay to ensure all styles are applied
     await new Promise(resolve => setTimeout(resolve, 2000))
 
-    // Generate PDF buffer with better settings
+    // Generate PDF buffer with optimized settings for smaller file size
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,
       preferCSSPageSize: true,
-      scale: 1.0,
+      scale: 0.9, // Slightly reduce scale to decrease file size
       displayHeaderFooter: false,
+      margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' },
     })
 
     await browser.close()

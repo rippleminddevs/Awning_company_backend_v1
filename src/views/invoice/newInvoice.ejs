@@ -322,7 +322,7 @@
     <% items.forEach(function(item, index) { %>
     <div class="line-item">
         <div><%= index + 1 %></div>
-        <div>1</div>
+        <div><%= item.qty %></div>
         <div>
             <% if (item.image) { %>
                 <img src="<%= item.image %>" class="item-image" alt="<%= item.title %>">
