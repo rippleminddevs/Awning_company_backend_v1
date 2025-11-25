@@ -114,6 +114,7 @@ export class AppointmentService extends BaseService<Appointment> {
           refId: appointment._id,
           targets: [appointment.staff],
           data: { appointment: appointment._id },
+          sendPush: true,
         })
       } catch (err) {
         console.error('Failed to create notification:', err)
