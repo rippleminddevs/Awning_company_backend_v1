@@ -98,6 +98,18 @@ export class ProductService extends BaseService<Product> {
     // Create the combined field for sub-products only
     const nameWithTypeInCamelCase = isSubProduct ? nameInCamelCase + typeInCamelCase : undefined
 
+    // Add conditionSlug to pricing rules if missing (for existing products)
+    let processedPricing = item.pricing
+    if (item.pricing && item.pricing.rules && Array.isArray(item.pricing.rules)) {
+      processedPricing = {
+        ...item.pricing,
+        rules: item.pricing.rules.map((rule: any) => ({
+          ...rule,
+          conditionSlug: rule.conditionSlug || (rule.condition ? generateConditionSlug(rule.condition) : undefined),
+        })),
+      }
+    }
+
     // Restructure the item to position parentProductInfo after type
     const reorderedItem = {
       _id: item._id,
@@ -115,7 +127,7 @@ export class ProductService extends BaseService<Product> {
       width_in: item.width_in,
       height_ft: item.height_ft,
       image: item.image,
-      pricing: item.pricing,
+      pricing: processedPricing,
       createdBy: item.createdBy,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
