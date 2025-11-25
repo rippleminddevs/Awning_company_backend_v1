@@ -22,7 +22,7 @@ class PushNotificationService {
       console.log('🔔 [PUSH] User IDs:', userIds)
       console.log('🔔 [PUSH] Title:', title)
       console.log('🔔 [PUSH] Body:', body)
-      console.log('🔔 [PUSH] Data:', data)
+      console.log('🔔 [PUSH] Data (raw):', data)
 
       const users: User[] = (await userModel.getAll({ _id: { $in: userIds } })) as User[]
       console.log('🔔 [PUSH] Users found:', users.length)
@@ -36,12 +36,22 @@ class PushNotificationService {
         throw new Error('No device tokens available')
       }
 
+      // Convert all data values to strings for Firebase
+      const stringData: Record<string, string> = {}
+      if (data) {
+        for (const [key, value] of Object.entries(data)) {
+          stringData[key] = String(value)
+        }
+      }
+
+      console.log('🔔 [PUSH] Data (converted to strings):', stringData)
+
       const message: FirebaseMulticastMessage = {
         notification: {
           title,
           body,
         },
-        data,
+        data: stringData,
         tokens,
       }
 
