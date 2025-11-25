@@ -8,6 +8,7 @@ import { NotificationService } from '../notification/notificationService'
 import { LocationService } from '../../services/locationService'
 import { ChatService } from '../chat/chatService'
 import { DateHelper } from '../../common/utils/dateHelper'
+import { AppError } from '../../common/utils/appError'
 
 export class AppointmentService extends BaseService<Appointment> {
   private userService: UserService
@@ -130,6 +131,9 @@ export class AppointmentService extends BaseService<Appointment> {
     payload: Appointment
   ): Promise<Appointment> => {
     const appointment = await this.model.update(appointmentId, payload)
+    if (!appointment) {
+      throw AppError.notFound('Appointment not found')
+    }
     return this.getPopulatedAppointment(appointment._id)
   }
 
@@ -139,6 +143,9 @@ export class AppointmentService extends BaseService<Appointment> {
     status: string
   ): Promise<Appointment> => {
     const appointment = await this.model.update(appointmentId, { status })
+    if (!appointment) {
+      throw AppError.notFound('Appointment not found')
+    }
     return this.getPopulatedAppointment(appointment._id)
   }
 
