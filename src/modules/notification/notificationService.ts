@@ -120,16 +120,27 @@ export class NotificationService extends BaseService<Notification> {
     if (sendPush === true && populatedNotification) {
       const { targets, title, body } = populatedNotification
 
+      console.log('🔔 [NOTIF] Push notification requested:', { sendPush, targets, title, body })
+
       if (Array.isArray(targets) && targets.length > 0 && title && body) {
+        console.log('🔔 [NOTIF] Calling push notification service...')
         try {
-          await pushNotificationService.sendToUsers(targets, title, body, {
+          const pushResponse = await pushNotificationService.sendToUsers(targets, title, body, {
             type: populatedNotification.type,
             refType: populatedNotification.refType,
             refId: populatedNotification.refId,
           })
+          console.log('🔔 [NOTIF] Push notification response:', pushResponse)
         } catch (error) {
-          console.error('Failed to send push notification:', error)
+          console.error('🔔 [NOTIF] Failed to send push notification:', error)
         }
+      } else {
+        console.log('🔔 [NOTIF] Push notification skipped - missing data:', {
+          hasTargets: Array.isArray(targets),
+          targetsCount: targets?.length,
+          hasTitle: !!title,
+          hasBody: !!body,
+        })
       }
     }
 

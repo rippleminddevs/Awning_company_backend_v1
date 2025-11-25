@@ -11,11 +11,28 @@ admin.initializeApp({
 const messaging = admin.messaging()
 
 class PushNotificationService {
-  public sendToUsers = async (userIds: string[], title: string, body: string, data?: Record<string, any>) => {
+  public sendToUsers = async (
+    userIds: string[],
+    title: string,
+    body: string,
+    data?: Record<string, any>
+  ) => {
     try {
+      console.log('🔔 [PUSH] Starting push notification process...')
+      console.log('🔔 [PUSH] User IDs:', userIds)
+      console.log('🔔 [PUSH] Title:', title)
+      console.log('🔔 [PUSH] Body:', body)
+      console.log('🔔 [PUSH] Data:', data)
+
       const users: User[] = (await userModel.getAll({ _id: { $in: userIds } })) as User[]
+      console.log('🔔 [PUSH] Users found:', users.length)
+
       const tokens = users.flatMap(user => user.deviceTokens ?? []).filter(Boolean)
+      console.log('🔔 [PUSH] Total tokens found:', tokens.length)
+      console.log('🔔 [PUSH] Tokens:', tokens)
+
       if (tokens.length === 0) {
+        console.log('🔔 [PUSH] No device tokens available for users:', userIds)
         throw new Error('No device tokens available')
       }
 
@@ -28,11 +45,29 @@ class PushNotificationService {
         tokens,
       }
 
+      console.log('🔔 [PUSH] Sending to', tokens.length, 'tokens...')
       const response = await messaging.sendEachForMulticast(message)
-      console.log('Notification sent successfully:', response)
+
+      console.log('🔔 [PUSH] === RESPONSE START ===')
+      console.log('🔔 [PUSH] Success count:', response.successCount)
+      console.log('🔔 [PUSH] Failure count:', response.failureCount)
+      console.log('🔔 [PUSH] Total responses:', response.responses.length)
+
+      response.responses.forEach((resp, idx) => {
+        if (resp.success) {
+          console.log(`🔔 [PUSH] Token #${idx + 1} SUCCESS:`, resp.success)
+        } else {
+          console.log(`🔔 [PUSH] Token #${idx + 1} FAILED:`, resp.error)
+          console.log(`🔔 [PUSH] Token #${idx + 1} was:`, tokens[idx])
+        }
+      })
+
+      console.log('🔔 [PUSH] === RESPONSE END ===')
+
       return response
     } catch (error) {
-      console.error('Error sending notification:', error)
+      console.error('🔔 [PUSH] ERROR sending notification:', error)
+      throw error
     }
   }
 }
