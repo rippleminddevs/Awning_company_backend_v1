@@ -6,6 +6,7 @@ import { User } from '../modules/user/userInterface'
 
 const userModel = UserModel.getInstance()
 const serviceAccount = require('../../serviceAccountKey.json') // Download from Firebase Console
+console.log('serviceAccount', serviceAccount);
 // const serviceAccount = config?.serviceAccountJSON;
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
