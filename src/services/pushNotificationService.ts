@@ -4,7 +4,7 @@ import { FirebaseMulticastMessage } from '../common/interfaces/globalInterfaces'
 import { User } from '../modules/user/userInterface'
 
 const userModel = UserModel.getInstance()
-const serviceAccount = require('../../serviceAccountKey.json') // Download from Firebase Console
+const serviceAccount = require('../../serviceAccountKey.sample.json') // Download from Firebase Console
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 })
