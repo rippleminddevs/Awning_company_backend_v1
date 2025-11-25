@@ -190,19 +190,20 @@ export class NotificationService extends BaseService<Notification> {
     if (result && 'result' in result && 'pagination' in result) {
       // Step 1: Count unread notifications BEFORE marking as read
       const unreadCount = result.result.filter(
-        (notification: any) => !notification.readBy.includes(userId)
+        (notification: any) => !notification.readBy.some((id: any) => id.toString() === userId)
       ).length
 
       // Step 2: Bulk update to mark all fetched notifications as read
       const notificationIds = result.result.map((notification: any) => notification._id)
 
+      const mongoose = await import('mongoose')
       await this.model.getMongooseModel().updateMany(
         {
           _id: { $in: notificationIds },
-          readBy: { $ne: userId }, // Only update if userId not already in readBy
+          readBy: { $ne: new mongoose.Types.ObjectId(userId) }, // Only update if userId not already in readBy
         },
         {
-          $addToSet: { readBy: userId }, // Add userId to readBy array
+          $addToSet: { readBy: new mongoose.Types.ObjectId(userId) }, // Add userId to readBy array
         }
       )
 
