@@ -50,12 +50,12 @@ fs.writeFileSync(distPkgPath, JSON.stringify(newPkg, null, 2));
 
 console.log('✅ dist/package.json created.');
 
-const mainServiceAccountJsonPath = path.join(rootDir, 'serviceAccountKey.json');
-const distServiceAccountJsonPath = path.join(distDir, 'serviceAccountKey.json');
-const mainServiceAccountJson = JSON.parse(fs.readFileSync(mainServiceAccountJsonPath, 'utf-8'));
-fs.writeFileSync(distServiceAccountJsonPath, JSON.stringify(mainServiceAccountJson, null, 2));
+// const mainServiceAccountJsonPath = path.join(rootDir, 'serviceAccountKey.json');
+// const distServiceAccountJsonPath = path.join(distDir, 'serviceAccountKey.json');
+// const mainServiceAccountJson = JSON.parse(fs.readFileSync(mainServiceAccountJsonPath, 'utf-8'));
+// fs.writeFileSync(distServiceAccountJsonPath, JSON.stringify(mainServiceAccountJson, null, 2));
 
-console.log('✅ dist/serviceAccountKey.json created.');
+// console.log('✅ dist/serviceAccountKey.json created.');
 
 // COPY EJS VIEWS
 const viewsSrc = path.join(rootDir, 'src/views');

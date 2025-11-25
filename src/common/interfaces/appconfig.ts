@@ -115,4 +115,5 @@ export interface EnvConfig {
   payment: PaymentConfig
   socialLogin: SocialLoginConfig
   upload: UploadConfig
+  serviceAccountJSON: any
 }

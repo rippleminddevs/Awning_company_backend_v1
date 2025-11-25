@@ -76,5 +76,18 @@
       "apiKey": "AIzaSyBu2nmQezZDJsSN6JE5YIkcEs3ZQgi24ag",
       "baseUrl": "https://maps.googleapis.com/maps/api/geocode/json"
     }
+  },
+  "serviceAccountJSON":{
+    "type": "service_account",
+    "project_id": "awning-ef5ec",
+    "private_key_id": "d338c031c4ea9be502df3709fd0f427c99efee30",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC8uFg9SPcUVNb+\n0H7C0jgKdYRgcfJU4CTP117/NSvSUD0gZUpTkbhGlvykP2dh4AQMNtsUf7qCiofF\nwZRyxxEa7k880h2fHI30AbxjRuNM4dzmv0PyeK7NTju57MqNYrmUVIpRjOX5x945\ngvVBDnGu3MoLoPK8I0sHc/Hc3eXaaP8HxIvRf1qBhEXj5SSp7v6IllRY12WY7nN3\ndZZAXjpZVqEqI/Cg0Vn+oe26SpjwOIcJ+9p3RiYT3Id2WaHFO2CTA91L34kYHv7N\nyYRc23dwyH4CYVRqxUqZBN9uHJD1pc8edeNfB0bz0lJGXA0qeANKmXyEa9ZtRA17\nRsx9XF9lAgMBAAECggEABD1p4dAHhw5x5xu+IVPj98mdwknyyxRxYGy+d9ACwNoM\n286SxJirRCngUGo4HJD/sJFGgkVtXS8XOJhb5LJlmZdmsmhv79xOQ7bT1165hdC0\nPjXoN1uLih7IYIVMW0J4hkC1jh7Xgt8TWvM1y5d8crkZy/hxeoMaVZu1t2htj0JG\nGiv4wVEVWnd4OZyOk+5wN77YaTkEhCUYcUO+YUig+BtcvWC7iGJmnzr5kJaHdIGk\nPz2ayMJW8mBZmfFjj3UZkN5WDC4SnXDGGmP1viwkXWNob00BENiDLGxVFgTjRhoQ\nN11Malpp3Qm9HevxFqkFWTlpqAWjhDPsDSz36tj54QKBgQDlUkH8qlNB3kQwvYWJ\n6S2UkRCyhBjgvM+VVAisci0PrkOuCaQySijCghxdoqcobRnPMd3twZ30kR89CMIv\nY2m4d428AupevsxKCeYXse6KSPrZhnAbTWggZXvX3iaSohqzXPgzoQmS7VKXKCED\nAoe2PsxKB8By3FHNGvt7xiEXYQKBgQDSrOJw00KOu+7SkECvdrdwumcyaG52JvtX\nHJ5Vp2S3tr8GDJCmIdCMhb0LFfoBUxKQxP+seiXzOphinOjr35Cjj6o0i0xFYG1u\nNw7P5DdHaW2DOhanB92JhCo2+RlRdH0GmzgXVx3WTEa2hrVEIp3hZHciptFvJ+d+\n7rmLAWd6hQKBgQC7jlB7906LA9/fwVIT3ouyBAeVCedS//oDlyxU5jkmpw+hqy8J\nFpBJraLHjn2K2diPFqj9iSrIWV0kTSKNIZDZF6bri7LmdMSfFYOEA7omjdPkz0in\ne+LbBEWK453GtiCCbFpv15j9+25eRKrjTFF0492v+rETAFFDIHto2z47YQKBgDaz\nHLgeohFdSkzxl1n3gPmL7G9yHfwfcvLTQ2kJ5WSt1jtD1+rKrNNPhh3yvs7JOvDL\ntXaa4G+eryIri25yxaMyEgdCg7MfrkoHkZj4sEGiZgTEeE02BZdG8Y8EbkZv8GZe\nttmYjO6vL00E/NuMAWIcK7KbjZVGzxxt707gNnXhAoGADPxPrsRKSkXgo1mbxcE8\nnS6J52BcCP8b/IvHLN6lf1UT7mmMU2tcimE0secfpGWSAxcQPIPuTV4H3zke1tHs\nDOPoVMw1POVucGlhaMthdlKSM7u81LAtTD2sZr1Lo5O4uMtDYdfqdkEUSECOn6cb\nc2OVQMH2AHkK2a12QanTDOc=\n-----END PRIVATE KEY-----\n",
+    "client_email": "firebase-adminsdk-fbsvc@awning-ef5ec.iam.gserviceaccount.com",
+    "client_id": "111204887881991631914",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40awning-ef5ec.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
   }
 }
