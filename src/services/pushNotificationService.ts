@@ -2,11 +2,11 @@ import * as admin from 'firebase-admin'
 import { UserModel } from '../modules/user/userModel'
 import { FirebaseMulticastMessage } from '../common/interfaces/globalInterfaces'
 import { User } from '../modules/user/userInterface'
-import { config } from './configService'
+// import { config } from './configService'
 
 const userModel = UserModel.getInstance()
-// const serviceAccount = require('../../serviceAccountKey.json') // Download from Firebase Console
-const serviceAccount = config?.serviceAccountJSON;
+const serviceAccount = require('../../serviceAccountKey.json') // Download from Firebase Console
+// const serviceAccount = config?.serviceAccountJSON;
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 })
