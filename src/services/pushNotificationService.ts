@@ -2,12 +2,32 @@ import * as admin from 'firebase-admin'
 import { UserModel } from '../modules/user/userModel'
 import { FirebaseMulticastMessage } from '../common/interfaces/globalInterfaces'
 import { User } from '../modules/user/userInterface'
+import { readFileSync } from 'fs'
+import CryptoJS from 'crypto-js';
+import path from 'path'
+import dotenv from 'dotenv';
+dotenv.config();
 // import { config } from './configService'
 
+const decryptServiceAccount = () => {
+  const env = process.env.NODE_ENV || 'production';
+  if (env !== 'development') {
+    const secretKey = process.env.SECRET_KEY!;
+    console.log('secretKey', secretKey);
+    const encryptedEnvPath = path.join(__dirname, `../../serviceAccountKey.enc.json`);
+    const encryptedData = JSON.parse(readFileSync(encryptedEnvPath, 'utf-8')).data;
+    const decryptedData = CryptoJS.AES.decrypt(encryptedData, secretKey).toString(CryptoJS.enc.Utf8);
+    const decryptedServiceAccount: any = JSON.parse(decryptedData);
+    return decryptedServiceAccount;
+  }
+  const serviceAccount = require('../../serviceAccountKey.json') // Download from Firebase Console
+  return serviceAccount;
+}
+
 const userModel = UserModel.getInstance()
-const serviceAccount = require('../../serviceAccountKey.json') // Download from Firebase Console
-console.log('serviceAccount', serviceAccount);
-// const serviceAccount = config?.serviceAccountJSON;
+const decryptedServiceAccount: any = decryptServiceAccount();
+console.log('decryptedServiceAccount', decryptedServiceAccount);
+const serviceAccount = decryptedServiceAccount;
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 })
