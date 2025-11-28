@@ -24,4 +24,12 @@ export const CustomerValidator = {
     serviceRequested: Joi.string().optional(),
     source: Joi.string().optional(),
   }),
+
+  getAll: Joi.object({
+    paginate: Joi.boolean().optional(),
+    page: Joi.number().optional(),
+    perPage: Joi.number().optional(),
+    search: Joi.string().optional(),
+    dateFilter: Joi.string().valid('MTD', 'YTD').optional(),
+  }),
 }
