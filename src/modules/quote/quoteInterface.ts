@@ -152,6 +152,7 @@ export interface GetQuotesParams {
   sort?: string
   source?: string
   status?: string
+  dateFilter?: string
 }
 
 export interface InvoiceData {

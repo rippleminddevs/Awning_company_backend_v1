@@ -45,6 +45,7 @@ export const QuoteValidator = {
     sort: Joi.string().optional().valid('Hot', 'Warm', 'Dead', 'hot', 'warm', 'dead'),
     source: Joi.string().optional(),
     status: Joi.string().optional(),
+    dateFilter: Joi.string().valid('MTD', 'YTD').optional(),
   }),
 
   getTransactions: Joi.object({

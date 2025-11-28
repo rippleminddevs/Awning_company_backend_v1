@@ -423,7 +423,7 @@ export class QuoteService extends BaseService<Quote> {
     params: GetQuotesParams,
     userId: string
   ): Promise<QuoteResponse[] | QuotePaginatedResponse<QuoteResponse>> => {
-    const { search, sort, source, status, ...restParams } = params
+    const { search, sort, source, status, dateFilter, ...restParams } = params
     let query: any = { ...restParams }
 
     // Get user data
@@ -473,6 +473,18 @@ export class QuoteService extends BaseService<Quote> {
     if (sort) {
       query.status = { $regex: new RegExp(`^${sort}$`, 'i') }
     }
+
+    // Apply date filter for MTD (Month-to-Date) or YTD (Year-to-Date)
+    if (dateFilter === 'MTD') {
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      query.createdAt = { $gte: startOfMonth, $lte: now }
+    } else if (dateFilter === 'YTD') {
+      const now = new Date()
+      const startOfYear = new Date(now.getFullYear(), 0, 1)
+      query.createdAt = { $gte: startOfYear, $lte: now }
+    }
+
     const quotes = await this.model.getAll(query)
 
     // Helper to calculate totalGrandTotal
