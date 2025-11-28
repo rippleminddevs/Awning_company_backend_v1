@@ -9,18 +9,21 @@ import { LocationService } from '../../services/locationService'
 import { ChatService } from '../chat/chatService'
 import { DateHelper } from '../../common/utils/dateHelper'
 import { AppError } from '../../common/utils/appError'
+import { EmailService } from '../../services/emailService'
 
 export class AppointmentService extends BaseService<Appointment> {
   private userService: UserService
   private notificationService: NotificationService
   private locationService: LocationService
   private chatService: ChatService
+  private emailService: EmailService
   constructor() {
     super(AppointmentModel.getInstance())
     this.userService = new UserService()
     this.notificationService = new NotificationService()
     this.locationService = new LocationService()
     this.chatService = new ChatService()
+    this.emailService = new EmailService()
   }
 
   // Common function to get populated item data
@@ -119,6 +122,72 @@ export class AppointmentService extends BaseService<Appointment> {
         })
       } catch (err) {
         console.error('Failed to create notification:', err)
+      }
+    })
+
+    // Send emails based on notification flags (background-task)
+    setImmediate(async () => {
+      try {
+        console.log('📧 [APPOINTMENT] Starting email sending process...')
+        console.log('📧 [APPOINTMENT] Appointment ID:', appointment._id)
+        console.log('📧 [APPOINTMENT] Notifications flags:', appointment.notifications)
+
+        const notifications = appointment.notifications || {}
+
+        // Send email to customer if flag is set
+        if (notifications.emailToCustomer) {
+          console.log('📧 [APPOINTMENT] Email to customer flag is TRUE')
+          try {
+            await this.emailService.sendAppointmentToCustomer(appointment)
+            console.log('📧 [APPOINTMENT] Customer email sent successfully')
+          } catch (err) {
+            console.error('❌ [APPOINTMENT] Failed to send customer email:', err)
+          }
+        } else {
+          console.log('📧 [APPOINTMENT] Email to customer flag is FALSE or not set')
+        }
+
+        // Send email to managers if flag is set
+        if (notifications.emailToManager) {
+          console.log('📧 [APPOINTMENT] Email to manager flag is TRUE')
+          try {
+            console.log('📧 [APPOINTMENT] Fetching all managers...')
+            const managers = await this.userService.getAllManagers()
+            console.log('📧 [APPOINTMENT] Managers fetched:', managers.length)
+            console.log(
+              '📧 [APPOINTMENT] Manager emails:',
+              managers.map(m => m.email)
+            )
+
+            const managerEmails = managers.map(manager => manager.email)
+
+            if (managerEmails.length > 0) {
+              console.log('📧 [APPOINTMENT] Getting salesperson name...')
+              const salesperson = await this.userService.getById(appointment.createdBy.toString())
+              console.log('📧 [APPOINTMENT] Salesperson:', salesperson.name)
+
+              console.log('📧 [APPOINTMENT] Sending manager emails...')
+              await this.emailService.sendAppointmentToManagers(
+                {
+                  ...appointment,
+                  salespersonName: salesperson.name,
+                },
+                managerEmails
+              )
+              console.log(
+                `✅ [APPOINTMENT] Manager emails sent to ${managerEmails.length} manager(s)`
+              )
+            } else {
+              console.log('⚠️ [APPOINTMENT] No managers found to notify')
+            }
+          } catch (err) {
+            console.error('❌ [APPOINTMENT] Failed to send manager emails:', err)
+          }
+        } else {
+          console.log('📧 [APPOINTMENT] Email to manager flag is FALSE or not set')
+        }
+      } catch (err) {
+        console.error('❌ [APPOINTMENT] Failed to send appointment emails:', err)
       }
     })
 

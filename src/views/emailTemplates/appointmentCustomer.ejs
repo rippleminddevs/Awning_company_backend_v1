@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Appointment Confirmation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background-color: #2563eb;
+      color: white;
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px 8px 0 0;
+    }
+    .content {
+      background-color: #f9fafb;
+      padding: 30px;
+      border-radius: 0 0 8px 8px;
+    }
+    .info-box {
+      background-color: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .info-row {
+      display: flex;
+      padding: 10px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: bold;
+      width: 150px;
+      color: #6b7280;
+    }
+    .info-value {
+      flex: 1;
+      color: #111827;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding: 20px;
+      color: #6b7280;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Appointment Confirmation</h1>
+  </div>
+
+  <div class="content">
+    <p>Hello <%= customerName %>,</p>
+
+    <p>This email confirms your appointment with our team. Here are the details:</p>
+
+    <div class="info-box">
+      <div class="info-row">
+        <div class="info-label">Appointment Date:</div>
+        <div class="info-value"><%= date %></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Time:</div>
+        <div class="info-value"><%= time %></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Service:</div>
+        <div class="info-value"><%= service %></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Duration:</div>
+        <div class="info-value"><%= duration %></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Customer Type:</div>
+        <div class="info-value"><%= customerType %></div>
+      </div>
+    </div>
+
+    <p><strong>Appointment Address:</strong></p>
+    <div class="info-box">
+      <%= address1 %><br>
+      <% if (address2) { %><%= address2 %><br><% } %>
+      <%= city %>, <%= zipCode %>
+    </div>
+
+    <% if (customerNotes) { %>
+      <p><strong>Your Notes:</strong></p>
+      <p><%= customerNotes %></p>
+    <% } %>
+
+    <p>If you have any questions or need to reschedule, please contact us using the information provided below.</p>
+
+    <p>Thank you for choosing our services!</p>
+  </div>
+
+  <div class="footer">
+    <p>This is an automated message, please do not reply to this email.</p>
+  </div>
+</body>
+</html>

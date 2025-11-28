@@ -31,10 +31,10 @@
     "refreshTokenExpiry": "7d"
   },
   "email": {
-    "host": "sandbox.smtp.mailtrap.io",
-    "port": 2525,
-    "username": "bd43b165be85f8",
-    "password": "a6c392908db4b1",
+   "host": "sandbox.smtp.mailtrap.io",
+   "port": 2525,
+   "username": "9f8fb0f6ec36d8",
+   "password": "e0939a5fe22291",
     "fromAddress": "no-reply@awningcompany.com",
     "secure": false
   },

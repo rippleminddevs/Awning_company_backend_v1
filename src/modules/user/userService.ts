@@ -514,4 +514,25 @@ export class UserService extends BaseService<User> {
 
     return { $gte: startDate }
   }
+
+  // Get all managers
+  public getAllManagers = async (): Promise<UserResponse[]> => {
+    try {
+      const users = await this.model.getAll({ role: 'manager' })
+
+      // Handle both paginated and non-paginated responses
+      const userList = Array.isArray(users) ? users : users.result || []
+
+      const populatedUsers = await Promise.all(
+        userList.map(async (user: User) => {
+          return await this.getPopulatedUser(user._id)
+        })
+      )
+
+      return populatedUsers
+    } catch (error: any) {
+      console.error('Error fetching managers:', error)
+      throw new AppError('Failed to fetch managers', 500)
+    }
+  }
 }
