@@ -9,13 +9,24 @@ export class CustomerController extends BaseController<Customer, CustomerService
     super(customerService)
   }
 
+  public getAll = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { query } = req
+      const data = await this.service.getAllCustomers(query)
+      apiResponse(res, data, 200, 'Customers fetched successfully')
+    } catch (error: any) {
+      console.log('error', error)
+      apiResponse(res, error, error.statusCode || 500, error.message || 'Failed to fetch customers')
+    }
+  }
+
   public create = async (req: Request, res: Response): Promise<void> => {
     const customer: Customer = {
       ...req.body,
       createdBy: req.user!.id,
     }
     const createdCustomer: CustomerResponse = await this.service.createCustomer(customer)
-    apiResponse(res, createdCustomer, 201, "Customer created successfully")
+    apiResponse(res, createdCustomer, 201, 'Customer created successfully')
   }
 
   public update = async (req: Request, res: Response): Promise<void> => {
@@ -23,12 +34,15 @@ export class CustomerController extends BaseController<Customer, CustomerService
       ...req.body,
       createdBy: req.user!.id,
     }
-    const updatedCustomer: CustomerResponse = await this.service.updateCustomer(customer, req.params.id)
-    apiResponse(res, updatedCustomer, 200, "Customer updated successfully")
+    const updatedCustomer: CustomerResponse = await this.service.updateCustomer(
+      customer,
+      req.params.id
+    )
+    apiResponse(res, updatedCustomer, 200, 'Customer updated successfully')
   }
 
   public delete = async (req: Request, res: Response): Promise<void> => {
     const deletedCustomer: CustomerResponse = await this.service.deleteCustomer(req.params.id)
-    apiResponse(res, deletedCustomer, 200, "Customer deleted successfully")
+    apiResponse(res, deletedCustomer, 200, 'Customer deleted successfully')
   }
 }

@@ -1,4 +1,5 @@
 export interface Customer {
+  _id?: string
   name: string
   emailAddress: string
   phone: string
@@ -12,6 +13,7 @@ export interface Customer {
 }
 
 export interface CustomerResponse {
+  _id?: string
   name: string
   emailAddress: string
   phone: string
