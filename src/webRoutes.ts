@@ -1,5 +1,7 @@
 import { Router } from 'express'
 import path from 'path';
+import contentPages from './modules/content/contentPages';
+
 
 class WebRoutes {
     public router: Router
@@ -17,6 +19,7 @@ class WebRoutes {
             // res.setHeader('Content-Type', 'application/json');
             res.sendFile(path.join(__dirname, '../.well-known/apple-app-site-association'));
         });
+        this.router.use('/', contentPages);
     }
 }
 

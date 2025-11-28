@@ -3,35 +3,61 @@ import { UserModel } from '../modules/user/userModel'
 import { FirebaseMulticastMessage } from '../common/interfaces/globalInterfaces'
 import { User } from '../modules/user/userInterface'
 import { readFileSync } from 'fs'
-import CryptoJS from 'crypto-js';
+import CryptoJS from 'crypto-js'
 import path from 'path'
-import dotenv from 'dotenv';
-dotenv.config();
+import dotenv from 'dotenv'
+dotenv.config()
 // import { config } from './configService'
 
 const decryptServiceAccount = () => {
-  const env = process.env.NODE_ENV || 'production';
+  const env = process.env.NODE_ENV || 'production'
   if (env !== 'development') {
-    const secretKey = process.env.SECRET_KEY!;
-    console.log('secretKey', secretKey);
-    const encryptedEnvPath = path.join(__dirname, `../../serviceAccountKey.enc.json`);
-    const encryptedData = JSON.parse(readFileSync(encryptedEnvPath, 'utf-8')).data;
-    const decryptedData = CryptoJS.AES.decrypt(encryptedData, secretKey).toString(CryptoJS.enc.Utf8);
-    const decryptedServiceAccount: any = JSON.parse(decryptedData);
-    return decryptedServiceAccount;
+    const secretKey = process.env.SECRET_KEY!
+    console.log('secretKey', secretKey)
+    const encryptedEnvPath = path.join(__dirname, `../../serviceAccountKey.enc.json`)
+    const encryptedData = JSON.parse(readFileSync(encryptedEnvPath, 'utf-8')).data
+    const decryptedData = CryptoJS.AES.decrypt(encryptedData, secretKey).toString(CryptoJS.enc.Utf8)
+    const decryptedServiceAccount: any = JSON.parse(decryptedData)
+    return decryptedServiceAccount
   }
-  const serviceAccount = require('../../serviceAccountKey.json') // Download from Firebase Console
-  return serviceAccount;
+
+  try {
+    const serviceAccountPath = path.join(__dirname, '../../serviceAccountKey.json')
+    const serviceAccountFile = readFileSync(serviceAccountPath, 'utf-8')
+
+    if (!serviceAccountFile.trim()) {
+      console.warn('⚠️ serviceAccountKey.json is empty. Push notifications will be disabled.')
+      return null
+    }
+
+    const serviceAccount = JSON.parse(serviceAccountFile)
+    return serviceAccount
+  } catch (error: any) {
+    console.warn('⚠️ Could not load serviceAccountKey.json:', error.message)
+    console.warn('📝 Push notifications will be disabled. Please configure Firebase credentials.')
+    return null
+  }
 }
 
 const userModel = UserModel.getInstance()
-const decryptedServiceAccount: any = decryptServiceAccount();
-console.log('decryptedServiceAccount', decryptedServiceAccount);
-const serviceAccount = decryptedServiceAccount;
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-})
-const messaging = admin.messaging()
+const decryptedServiceAccount: any = decryptServiceAccount()
+
+let messaging: admin.messaging.Messaging | null = null
+
+if (decryptedServiceAccount) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert(decryptedServiceAccount),
+    })
+    messaging = admin.messaging()
+    console.log('✅ Firebase push notifications initialized')
+  } catch (error: any) {
+    console.error('❌ Failed to initialize Firebase:', error.message)
+    console.warn('📝 Push notifications will be disabled.')
+  }
+} else {
+  console.warn('⚠️ Push notifications service not initialized (no credentials)')
+}
 
 class PushNotificationService {
   public sendToUsers = async (
@@ -41,6 +67,11 @@ class PushNotificationService {
     data?: Record<string, any>
   ) => {
     try {
+      if (!messaging) {
+        console.warn('🔔 [PUSH] Push notifications not initialized. Skipping notification.')
+        return
+      }
+
       console.log('🔔 [PUSH] Starting push notification process...')
       console.log('🔔 [PUSH] User IDs:', userIds)
       console.log('🔔 [PUSH] Title:', title)

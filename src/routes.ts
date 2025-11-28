@@ -18,6 +18,10 @@ import trackingRoutes from './modules/tracking/trackingRoutes'
 import inventoryRoutes from './modules/inventory/inventoryRoutes'
 import integrationRoutes from './modules/integration/integrationRoutes'
 import adminRoutes from './modules/admin/adminRoutes'
+import contentRoutes from './modules/content/contentRoutes';
+import { ContentService } from './modules/content/contentService';
+import { apiResponse } from './common/utils/apiResponse';
+
 // {{modulePath}}
 
 class Routes {
@@ -47,6 +51,21 @@ class Routes {
     this.router.use('/inventories', inventoryRoutes)
     this.router.use('/integrations', integrationRoutes)
     this.router.use('/admin', adminRoutes)
+    
+    // With other route registrations
+    this.router.use('/content', contentRoutes);
+    
+    // App config endpoint - get all content URLs
+    this.router.get('/app/config', async (req: any, res: any) => {
+      try {
+        const contentService = new ContentService();
+        const config = await contentService.getAppConfig();
+        apiResponse(res, config, 200);
+      } catch (error: any) {
+        apiResponse(res, error, error.statusCode || 500);
+      }
+    });
+
     // {{moduleRoute}}
   }
 }

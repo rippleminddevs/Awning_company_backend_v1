@@ -14,6 +14,7 @@ import { AppError } from './common/utils/appError'
 import { apiResponse } from './common/utils/apiResponse'
 import socketService from './services/socketService'
 import authViewRoutes from './modules/auth/authViewRoutes';
+import { ContentSeeder } from './services/contentSeeder';
 import path from 'path'
 import fs from 'fs'
 
@@ -106,6 +107,8 @@ class App {
 
   private configureDatabase = async (): Promise<void> => {
     DatabaseService.getInstance()
+    const contentSeeder = new ContentSeeder();
+    await contentSeeder.seed();
   }
 
   private configureSocketIO = async (): Promise<void> => {
