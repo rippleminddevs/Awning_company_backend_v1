@@ -5,21 +5,21 @@ import { Appointment } from './appointmentInterface'
 import { createMongooseSchema } from '../../common/utils/schemaUtils'
 
 const notificationsSchema: FieldsConfig = {
-  emailToCustomer:{
+  emailToCustomer: {
     type: 'boolean',
     nullable: true,
-    default: false
+    default: false,
   },
-  emailToManager:{
+  emailToManager: {
     type: 'boolean',
     nullable: true,
-    default: false
+    default: false,
   },
-  textMessages:{
+  textMessages: {
     type: 'boolean',
     nullable: true,
-    default: false
-  }
+    default: false,
+  },
 }
 
 const fields: FieldsConfig = {
@@ -30,41 +30,41 @@ const fields: FieldsConfig = {
   firstName: {
     type: 'string',
     nullable: true,
-    default: null
+    default: null,
   },
   lastName: {
     type: 'string',
     nullable: true,
-    default: null
+    default: null,
   },
   businessName: {
     type: 'string',
     nullable: true,
-    default: null
+    default: null,
   },
   billAddress: {
     type: 'string',
     nullable: true,
-    default: null
+    default: null,
   },
   projectManagerContact: {
     type: 'string',
     nullable: true,
-    default: null
+    default: null,
   },
   companyContact: {
     type: 'string',
     nullable: true,
-    default: null
+    default: null,
   },
   source: {
     type: 'string',
     nullable: true,
-    default: null
+    default: null,
   },
   emailAddress: {
     type: 'string',
-    nullable: false
+    nullable: false,
   },
   address1: {
     type: 'string',
@@ -73,81 +73,116 @@ const fields: FieldsConfig = {
   address2: {
     type: 'string',
     nullable: true,
-    default: null
+    default: null,
   },
   city: {
     type: 'string',
-    nullable:false
+    nullable: false,
   },
   zipCode: {
     type: 'string',
-    nullable:false
+    nullable: false,
   },
   bestContact: {
     type: 'string',
-    nullable:false
+    nullable: false,
   },
   customerNotes: {
     type: 'string',
-    nullable:true,
-    default: null
+    nullable: true,
+    default: null,
   },
   service: {
     type: 'string',
     mongooseType: 'ObjectId',
     ref: 'Service',
-    nullable:false
+    nullable: false,
   },
   staff: {
     type: 'string',
     mongooseType: 'ObjectId',
     ref: 'User',
-    nullable:false
+    nullable: false,
   },
   date: {
     type: 'date',
-    nullable:false
+    nullable: false,
   },
   time: {
     type: 'date',
-    nullable:false
+    nullable: false,
   },
   duration: {
     type: 'string',
-    nullable:false
+    nullable: false,
   },
   status: {
     type: 'string',
-    nullable:false
+    nullable: false,
   },
   internalNotes: {
     type: 'string',
-    nullable:true,
-    default: null
+    nullable: true,
+    default: null,
   },
   notifications: {
     type: 'subdocument',
     document: notificationsSchema,
-    nullable:true,
-    default: null
+    nullable: true,
+    default: null,
   },
   phoneNumber: {
     type: 'string',
-    nullable:true,
-    default: null
+    nullable: true,
+    default: null,
   },
   createdBy: {
     type: 'string',
     mongooseType: 'ObjectId',
     ref: 'User',
-    nullable:false
-  }
+    nullable: false,
+  },
+  billingCity: {
+    type: 'string',
+    nullable: true,
+    default: null,
+  },
+  billingContactName: {
+    type: 'string',
+    nullable: true,
+    default: null,
+  },
+  billingDept: {
+    type: 'string',
+    nullable: true,
+    default: null,
+  },
+  billingPhone: {
+    type: 'string',
+    nullable: true,
+    default: null,
+  },
+  billingZip: {
+    type: 'string',
+    nullable: true,
+    default: null,
+  },
+  onSiteProjectContactName: {
+    type: 'string',
+    nullable: true,
+    default: null,
+  },
+  onSiteProjectContactNumber: {
+    type: 'string',
+    nullable: true,
+    default: null,
+  },
 }
 
 export class AppointmentModel extends BaseModel<Appointment> {
-  private static instance: AppointmentModel;
+  private static instance: AppointmentModel
   constructor() {
-    const schema = createMongooseSchema(fields,{
+    const schema = createMongooseSchema(fields, {
       includeTimestamps: true,
     })
     super('Appointment', fields, schema)
@@ -155,8 +190,8 @@ export class AppointmentModel extends BaseModel<Appointment> {
 
   public static getInstance(): AppointmentModel {
     if (!AppointmentModel.instance) {
-      AppointmentModel.instance = new AppointmentModel();
+      AppointmentModel.instance = new AppointmentModel()
     }
-    return AppointmentModel.instance;
+    return AppointmentModel.instance
   }
 }

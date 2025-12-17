@@ -80,6 +80,13 @@ const baseAppointmentSchema = {
   })
     .optional()
     .default(null),
+  billingCity: Joi.string().optional().allow('', null),
+  billingContactName: Joi.string().optional().allow('', null),
+  billingDept: Joi.string().optional().allow('', null),
+  billingPhone: Joi.string().optional().allow('', null),
+  billingZip: Joi.string().optional().allow('', null),
+  onSiteProjectContactName: Joi.string().optional().allow('', null),
+  onSiteProjectContactNumber: Joi.string().optional().allow('', null),
 }
 
 export const AppointmentValidator = {

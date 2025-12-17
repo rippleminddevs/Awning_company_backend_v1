@@ -50,6 +50,13 @@ export interface Appointment {
   createdBy: string
   location?: LocationCoordinates
   chatId?: string | null
+  billingCity?: string
+  billingContactName?: string
+  billingDept?: string
+  billingPhone?: string
+  billingZip?: string
+  onSiteProjectContactName?: string
+  onSiteProjectContactNumber?: string
 }
 
 export interface GetAppointmentParams {
