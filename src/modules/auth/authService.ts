@@ -9,7 +9,7 @@ import {
   ResetPasswordRequest,
   ResetPasswordConfirm,
   OtpData,
-  changePassword
+  changePassword,
 } from './authInterface'
 import { AppError } from '../../common/utils/appError'
 import { BaseService } from '../../common/core/baseService'
@@ -24,18 +24,17 @@ import { LocationService } from '../../services/locationService'
 import axios from 'axios'
 
 export class AuthService extends BaseService<User> {
-
   private otpCache: { [email: string]: OtpData } = {}
   private OTP_EXPIRY_MS = 5 * 60 * 1000
-  private resetTokens: { [key: string]: ResetTokenData } = {};
-  private RESET_TOKEN_EXPIRY = 30 * 60 * 1000;
-  private uploadService = new UploadService();
-  private locationService = new LocationService();
+  private resetTokens: { [key: string]: ResetTokenData } = {}
+  private RESET_TOKEN_EXPIRY = 30 * 60 * 1000
+  private uploadService = new UploadService()
+  private locationService = new LocationService()
 
   constructor() {
     super(UserModel.getInstance())
-    this.uploadService = new UploadService();
-    this.locationService = new LocationService();
+    this.uploadService = new UploadService()
+    this.locationService = new LocationService()
   }
 
   public register = async (credentials: UserCredentials): Promise<AuthResponse> => {
@@ -49,32 +48,41 @@ export class AuthService extends BaseService<User> {
     const hashedPassword = await bcrypt.hash(password, 10)
 
     // create default avatar
-    const defaultAvatar = await this.uploadService.createDefaultAvatar();
-    const profilePicture = defaultAvatar._id;
+    const defaultAvatar = await this.uploadService.createDefaultAvatar()
+    const profilePicture = defaultAvatar._id
 
     if (location?.latitude && location?.longitude) {
       try {
-        const address = await this.locationService.getFullAddress(location.latitude, location.longitude);
-        location.address = address || '';
+        const address = await this.locationService.getFullAddress(
+          location.latitude,
+          location.longitude
+        )
+        location.address = address || ''
       } catch (error: any) {
-        throw AppError.badRequest(error.message);
+        throw AppError.badRequest(error.message)
       }
     }
 
-    const newUser: User = await this.model.create({ name, email, password: hashedPassword, location, profilePicture })
+    const newUser: User = await this.model.create({
+      name,
+      email,
+      password: hashedPassword,
+      location,
+      profilePicture,
+    })
     const token = this.generateToken({ id: newUser._id, email: newUser.email })
 
     // Send OTP to email
     let otp = await this.sendOTP({ email })
 
     // Generate URL for default profile picture
-    const baseUrl = config.app.url;
-    const defaultProfilePicturePath = "/static/uploads/defaults/default_avatar.png";
-    const profilePictureUrl = `${baseUrl}${defaultProfilePicturePath}`;
+    const baseUrl = config.app.url
+    const defaultProfilePicturePath = '/static/uploads/defaults/default_avatar.png'
+    const profilePictureUrl = `${baseUrl}${defaultProfilePicturePath}`
     const userResponse = {
       ...newUser,
-      profilePicture: profilePictureUrl
-    };
+      profilePicture: profilePictureUrl,
+    }
 
     delete userResponse.password
     return { otp, token, user: userResponse }
@@ -84,22 +92,32 @@ export class AuthService extends BaseService<User> {
     const { email, password } = credentials
 
     const user: User = await this.model.getMongooseModel().findOne({
-      email: { $regex: new RegExp(`^${email}$`, 'i') }
+      email: { $regex: new RegExp(`^${email}$`, 'i') },
     })
     if (!user || !user.password) {
       throw AppError.unauthorized('Invalid credentials')
     }
 
+    const defaultPermissions = {
+      salesTracking: false,
+      orderTracking: false,
+      staffPerformance: false,
+    }
+
+    const userPermissions = user.permissions
+      ? { ...defaultPermissions, ...user.permissions }
+      : defaultPermissions
+
     const userObj = {
       ...(user as any).toObject(),
-      password: undefined
+      password: undefined,
+      permissions: userPermissions,
     }
 
     if (user.profilePicture) {
-      const profilePicture = await this.uploadService.getById(user.profilePicture);
-      userObj.profilePicture = profilePicture?.url || null;
+      const profilePicture = await this.uploadService.getById(user.profilePicture)
+      userObj.profilePicture = profilePicture?.url || null
     }
-
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
@@ -121,37 +139,36 @@ export class AuthService extends BaseService<User> {
     }
 
     let user: User = await this.model.getOne({ email: payload.email })
-    const userId = user?._id;
+    const userId = user?._id
     if (!user) {
-
       // Fetch profile picture
-      let profilePictureRef = null;
+      let profilePictureRef = null
 
       if (payload.picture) {
         try {
-          const response = await axios.get(payload.picture, { responseType: 'arraybuffer' });
-          const buffer = Buffer.from(response.data, 'binary');
+          const response = await axios.get(payload.picture, { responseType: 'arraybuffer' })
+          const buffer = Buffer.from(response.data, 'binary')
 
-          const contentType = response.headers['content-type'] || 'image/jpeg';
+          const contentType = response.headers['content-type'] || 'image/jpeg'
 
           const file = {
             originalname: 'profile.jpg',
             buffer: buffer,
             mimetype: contentType,
-            size: buffer.length
-          };
+            size: buffer.length,
+          }
 
           profilePictureRef = await this.uploadService.create({
             file: file,
-            userId: userId
-          });
+            userId: userId,
+          })
         } catch (error) {
-          console.error('Error processing profile picture:', error);
+          console.error('Error processing profile picture:', error)
         }
       }
 
       // Generate random password
-      const hashedPassword = await this.generateRandomPassword();
+      const hashedPassword = await this.generateRandomPassword()
 
       user = await this.model.create({
         name: payload.name,
@@ -179,36 +196,37 @@ export class AuthService extends BaseService<User> {
     }
 
     let user: User = await this.model.getOne({ email: payload.email })
-    const userId = user?._id;
+    const userId = user?._id
     if (!user) {
-
       // Fetch profile picture
-      let profilePictureRef = null;
+      let profilePictureRef = null
 
       if (payload.picture?.data?.url) {
         try {
-          const response = await axios.get(payload.picture.data.url, { responseType: 'arraybuffer' });
-          const buffer = Buffer.from(response.data, 'binary');
-          const contentType = response.headers['content-type'] || 'image/jpeg';
+          const response = await axios.get(payload.picture.data.url, {
+            responseType: 'arraybuffer',
+          })
+          const buffer = Buffer.from(response.data, 'binary')
+          const contentType = response.headers['content-type'] || 'image/jpeg'
 
           const file = {
             originalname: 'profile.jpg',
             buffer: buffer,
             mimetype: contentType,
-            size: buffer.length
-          };
+            size: buffer.length,
+          }
 
           profilePictureRef = await this.uploadService.create({
             file: file,
-            userId: userId
-          });
+            userId: userId,
+          })
         } catch (error) {
-          console.error('Error processing Facebook profile picture:', error);
+          console.error('Error processing Facebook profile picture:', error)
         }
       }
 
       // Generate random password
-      const hashedPassword = await this.generateRandomPassword();
+      const hashedPassword = await this.generateRandomPassword()
 
       user = await this.model.create({
         name: payload.name,
@@ -225,7 +243,7 @@ export class AuthService extends BaseService<User> {
   }
 
   public resendOtp = async (data: { email: string }): Promise<{ otp: string }> => {
-    const { email } = data;
+    const { email } = data
     const existingUser = await this.model.getOne({ email })
     if (!existingUser) {
       throw AppError.badRequest('This email does not exists')
@@ -242,7 +260,7 @@ export class AuthService extends BaseService<User> {
   }
 
   public async sendOTP(otpData: OtpData): Promise<string> {
-    const { email } = otpData;
+    const { email } = otpData
     const emailService = new EmailService()
 
     if (!email) throw AppError.badRequest('Email is required')
@@ -259,111 +277,115 @@ export class AuthService extends BaseService<User> {
 
     // Send OTP email
     await emailService.sendOtpEmail(email, otp)
-    return otp;
+    return otp
   }
 
   public async verifyOTP(payload: OtpData): Promise<{ message: string }> {
-    const { email, otp } = payload;
+    const { email, otp } = payload
 
     if (!email || !otp) {
       throw AppError.badRequest('Email and OTP are required')
     }
 
-    const cachedOTP = this.otpCache[email];
+    const cachedOTP = this.otpCache[email]
 
     if (!cachedOTP) {
       throw AppError.badRequest('No OTP found for this email')
     }
 
     if (Date.now() > (cachedOTP.expiresAt || 0)) {
-      delete this.otpCache[email];
-      throw AppError.badRequest('OTP has expired');
+      delete this.otpCache[email]
+      throw AppError.badRequest('OTP has expired')
     }
 
     if (cachedOTP.otp !== otp) {
-      throw AppError.badRequest('Invalid OTP');
+      throw AppError.badRequest('Invalid OTP')
     }
 
     // Remove used OTP
-    delete this.otpCache[email];
+    delete this.otpCache[email]
 
     // Get user and update isVerified status
-    const user = await this.model.getOne({ email });
+    const user = await this.model.getOne({ email })
     if (user) {
-      await this.model.update(user._id, { isVerified: true });
+      await this.model.update(user._id, { isVerified: true })
     }
 
-    return { message: 'OTP verified successfully' };
+    return { message: 'OTP verified successfully' }
   }
 
-  public requestPasswordReset = async (data: ResetPasswordRequest): Promise<{ message: string }> => {
-    const { email } = data;
-    const user = await this.model.getOne({ email });
+  public requestPasswordReset = async (
+    data: ResetPasswordRequest
+  ): Promise<{ message: string }> => {
+    const { email } = data
+    const user = await this.model.getOne({ email })
     if (!user) {
-      throw AppError.notFound('No user found with this email');
+      throw AppError.notFound('No user found with this email')
     }
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetToken = crypto.randomBytes(32).toString('hex')
 
     this.resetTokens[resetToken] = {
       email: user.email,
-      expiry: Date.now() + this.RESET_TOKEN_EXPIRY
-    };
+      expiry: Date.now() + this.RESET_TOKEN_EXPIRY,
+    }
 
-    const resetLink = `${config.app.url}/auth/reset-password?token=${resetToken}`;
+    const resetLink = `${config.app.url}/auth/reset-password?token=${resetToken}`
 
-    const emailService = new EmailService();
-    await emailService.sendPasswordResetEmail(user.email, resetLink);
-    return { message: 'Password reset link sent to your email' };
+    const emailService = new EmailService()
+    await emailService.sendPasswordResetEmail(user.email, resetLink)
+    return { message: 'Password reset link sent to your email' }
   }
 
   public resetPassword = async (data: ResetPasswordConfirm): Promise<{ message: string }> => {
-    const { token, newPassword } = data;
+    const { token, newPassword } = data
 
-    const resetData = this.resetTokens[token];
+    const resetData = this.resetTokens[token]
     if (!resetData) {
-      throw AppError.badRequest('Invalid or expired reset token');
+      throw AppError.badRequest('Invalid or expired reset token')
     }
 
     if (Date.now() > resetData.expiry) {
-      delete this.resetTokens[token];
-      throw AppError.badRequest('Reset token has expired');
+      delete this.resetTokens[token]
+      throw AppError.badRequest('Reset token has expired')
     }
 
-    const user = await this.model.getOne({ email: resetData.email });
+    const user = await this.model.getOne({ email: resetData.email })
     if (!user) {
-      throw AppError.notFound('User not found');
+      throw AppError.notFound('User not found')
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await this.model.update(user._id, { password: hashedPassword });
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    await this.model.update(user._id, { password: hashedPassword })
 
-    delete this.resetTokens[token];
+    delete this.resetTokens[token]
 
-    return { message: 'Password reset successfully' };
-
+    return { message: 'Password reset successfully' }
   }
 
-  public changePassword = async (data: changePassword, userId: string): Promise<{ message: string }> => {
-    const { oldPassword, newPassword } = data;
-    const user = await this.model.getOne({ _id: userId });
+  public changePassword = async (
+    data: changePassword,
+    userId: string
+  ): Promise<{ message: string }> => {
+    const { oldPassword, newPassword } = data
+    const user = await this.model.getOne({ _id: userId })
     if (!user) {
-      throw AppError.notFound('User not found');
+      throw AppError.notFound('User not found')
     }
 
-    const isPasswordValid = await bcrypt.compare(oldPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(oldPassword, user.password)
     if (!isPasswordValid) {
-      throw AppError.badRequest('Invalid old password');
+      throw AppError.badRequest('Invalid old password')
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await this.model.update(user._id, { password: hashedPassword });
-    return { message: 'Password changed successfully' };
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    await this.model.update(user._id, { password: hashedPassword })
+    return { message: 'Password changed successfully' }
   }
 
   public async generateRandomPassword(): Promise<string> {
-    const rawPassword = crypto.randomBytes(12).toString('hex'); // 24-char
-    const hashedPassword = await bcrypt.hash(rawPassword, 10);
-    return hashedPassword;
-  };
+    const rawPassword = crypto.randomBytes(12).toString('hex') // 24-char
+    const hashedPassword = await bcrypt.hash(rawPassword, 10)
+    return hashedPassword
+  }
 }
