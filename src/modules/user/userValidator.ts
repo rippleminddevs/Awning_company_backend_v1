@@ -44,10 +44,10 @@ export const UserValidator = {
     profilePicture: Joi.string().optional(),
     location: Joi.object({
       address: Joi.string().optional(),
-      latitude: Joi.number().required(),
-      longitude: Joi.number().required(),
+      latitude: Joi.number().optional(),
+      longitude: Joi.number().optional(),
     }).optional(),
-    role: Joi.string().valid('salesperson', 'manager', 'superadmin').default('salesperson'),
+    role: Joi.string().valid('salesperson', 'manager', 'superadmin').optional(),
     city: Joi.string().optional(),
     zipCode: Joi.string().optional(),
   }),
