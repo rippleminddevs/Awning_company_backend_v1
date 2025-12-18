@@ -589,9 +589,6 @@ export class QuoteService extends BaseService<Quote> {
         '_id'
       )
       const appointmentIds = appointments?.map(p => p?._id) || []
-      if (appointmentIds.length > 0) {
-        matchingQuoteIds.push(...appointmentIds.map(id => id.toString()))
-      }
 
       // 2. Search by PRODUCT name
       const products = await this.productModel.getMongooseModel()?.find(
@@ -625,8 +622,23 @@ export class QuoteService extends BaseService<Quote> {
         matchingQuoteIds.push(search)
       }
 
+      // Combine all quote IDs
+      const allQuoteIds = [...matchingQuoteIds]
+
+      // Add quotes from customer search (convert appointment IDs to quote IDs)
+      if (appointmentIds.length > 0) {
+        const quotes = await this.model.getMongooseModel()?.find(
+          {
+            appointmentId: { $in: appointmentIds },
+          },
+          '_id'
+        )
+        const quoteIdsFromCustomers = quotes?.map((q: any) => q?._id?.toString()) || []
+        allQuoteIds.push(...quoteIdsFromCustomers)
+      }
+
       // Remove duplicates and apply filter
-      const uniqueQuoteIds = [...new Set(matchingQuoteIds)]
+      const uniqueQuoteIds = [...new Set(allQuoteIds)]
       if (uniqueQuoteIds.length > 0) {
         query._id = { $in: uniqueQuoteIds }
       }
