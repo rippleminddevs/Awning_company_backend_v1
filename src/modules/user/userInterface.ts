@@ -20,6 +20,11 @@ export interface User {
   isVerified: boolean
   city?: string
   zipCode?: string
+  permissions?: {
+    salesTracking?: boolean
+    orderTracking?: boolean
+    staffPerformance?: boolean
+  }
 }
 
 export interface UserResponse {
