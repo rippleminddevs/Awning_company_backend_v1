@@ -571,33 +571,64 @@ export class QuoteService extends BaseService<Quote> {
       query.paymentStatus = status
     }
 
-    // Search by customer name or quote ID
+    // Search by customer name, product name, order ID, or quote ID
     if (search) {
+      const matchingQuoteIds: string[] = []
+
+      // 1. Search by CUSTOMER name
       const appointments = await this.appointmentModel.getMongooseModel()?.find(
         {
-          $or: [
-            isValidObjectId(search) ? { _id: search } : { _id: null },
-            {
-              $expr: {
-                $regexMatch: {
-                  input: { $concat: ['$firstName', ' ', '$lastName'] },
-                  regex: search,
-                  options: 'i',
-                },
-              },
+          $expr: {
+            $regexMatch: {
+              input: { $concat: ['$firstName', ' ', '$lastName'] },
+              regex: search,
+              options: 'i',
             },
-          ],
+          },
         },
         '_id'
       )
-
       const appointmentIds = appointments?.map(p => p?._id) || []
-
       if (appointmentIds.length > 0) {
-        query.appointmentId = { $in: appointmentIds }
-      } else if (isValidObjectId(search)) {
-        // If no appointments found, try searching by quote ID only if valid ObjectId
-        query._id = search
+        matchingQuoteIds.push(...appointmentIds.map(id => id.toString()))
+      }
+
+      // 2. Search by PRODUCT name
+      const products = await this.productModel.getMongooseModel()?.find(
+        {
+          name: { $regex: search, $options: 'i' },
+        },
+        '_id'
+      )
+      const productIds = products?.map(p => p?._id) || []
+      if (productIds.length > 0) {
+        const orders = await this.orderModel.getMongooseModel()?.find(
+          {
+            product: { $in: productIds },
+          },
+          'quoteId'
+        )
+        const quoteIdsFromProducts = orders?.map(o => o?.quoteId?.toString()).filter(Boolean) || []
+        matchingQuoteIds.push(...quoteIdsFromProducts)
+      }
+
+      // 3. Search by ORDER ID (if valid ObjectId)
+      if (isValidObjectId(search)) {
+        const order = await this.orderModel.getMongooseModel()?.findById(search, 'quoteId')
+        if (order?.quoteId) {
+          matchingQuoteIds.push(order.quoteId.toString())
+        }
+      }
+
+      // 4. Search by QUOTE ID (if valid ObjectId)
+      if (isValidObjectId(search)) {
+        matchingQuoteIds.push(search)
+      }
+
+      // Remove duplicates and apply filter
+      const uniqueQuoteIds = [...new Set(matchingQuoteIds)]
+      if (uniqueQuoteIds.length > 0) {
+        query._id = { $in: uniqueQuoteIds }
       }
     }
 
