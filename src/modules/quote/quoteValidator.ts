@@ -32,7 +32,9 @@ export const QuoteValidator = {
         'SALE PENDING',
         'TENTATIVE APT',
         'SCHEDULED',
-        'LEFT VOICEMAIL'
+        'LEFT VOICEMAIL',
+        'COMPLETE',
+        'NEW LEADS'
       )
       .optional()
       .default('Hot'),
@@ -69,7 +71,9 @@ export const QuoteValidator = {
         'SALE PENDING',
         'TENTATIVE APT',
         'SCHEDULED',
-        'LEFT VOICEMAIL'
+        'LEFT VOICEMAIL',
+        'COMPLETE',
+        'NEW LEADS'
       )
       .optional()
       .default('Hot'),
@@ -106,7 +110,9 @@ export const QuoteValidator = {
         'SALE PENDING',
         'TENTATIVE APT',
         'SCHEDULED',
-        'LEFT VOICEMAIL'
+        'LEFT VOICEMAIL',
+        'COMPLETE',
+        'NEW LEADS'
       )
       .optional(),
     dateFilter: Joi.string().valid('MTD', 'YTD').optional(),

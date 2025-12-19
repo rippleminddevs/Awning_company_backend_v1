@@ -100,6 +100,8 @@ export interface Quote {
     | 'TENTATIVE APT'
     | 'SCHEDULED'
     | 'LEFT VOICEMAIL'
+    | 'COMPLETE'
+    | 'NEW LEADS'
   paymentStructure: PaymentStructure
   paymentDetails: PaymentDetails
   paymentSummary: PaymentSummary

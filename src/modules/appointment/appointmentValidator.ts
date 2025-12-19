@@ -70,7 +70,9 @@ const baseAppointmentSchema = {
       'SALE PENDING',
       'TENTATIVE APT',
       'SCHEDULED',
-      'LEFT VOICEMAIL'
+      'LEFT VOICEMAIL',
+      'COMPLETE',
+      'NEW LEADS'
     ),
   internalNotes: Joi.string().optional().allow('', null),
   phoneNumber: Joi.string().optional().allow('', null),
@@ -121,7 +123,9 @@ export const AppointmentValidator = {
       'SALE PENDING',
       'TENTATIVE APT',
       'SCHEDULED',
-      'LEFT VOICEMAIL'
+      'LEFT VOICEMAIL',
+      'COMPLETE',
+      'NEW LEADS'
     ),
   }).min(1),
 
@@ -154,7 +158,9 @@ export const AppointmentValidator = {
         'SALE PENDING',
         'TENTATIVE APT',
         'SCHEDULED',
-        'LEFT VOICEMAIL'
+        'LEFT VOICEMAIL',
+        'COMPLETE',
+        'NEW LEADS'
       ),
   }),
 }
