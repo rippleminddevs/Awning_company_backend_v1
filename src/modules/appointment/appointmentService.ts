@@ -30,7 +30,7 @@ export class AppointmentService extends BaseService<Appointment> {
   private getPopulatedAppointment = async (
     appointmentId: string,
     authUserId?: string
-  ): Promise<Appointment> => {
+  ): Promise<Appointment | null> => {
     const appointmentModel = this.model.getMongooseModel()
     const appointment = await appointmentModel
       .findById(appointmentId)
@@ -50,6 +50,12 @@ export class AppointmentService extends BaseService<Appointment> {
         },
       })
       .lean()
+
+    // Handle case where appointment doesn't exist
+    if (!appointment) {
+      console.warn(`Appointment not found: ${appointmentId}`)
+      return null
+    }
 
     if (appointment.service) {
       // Return service as object with both id and name
@@ -108,6 +114,10 @@ export class AppointmentService extends BaseService<Appointment> {
   public createAppointment = async (payload: Appointment): Promise<Appointment> => {
     const appointment = await this.model.create(payload)
     const populatedAppointment = await this.getPopulatedAppointment(appointment._id)
+
+    if (!populatedAppointment) {
+      throw AppError.notFound('Failed to populate created appointment')
+    }
 
     // Create new appointment notification for salesperson (background-task)
     setImmediate(async () => {
@@ -203,7 +213,11 @@ export class AppointmentService extends BaseService<Appointment> {
     if (!appointment) {
       throw AppError.notFound('Appointment not found')
     }
-    return this.getPopulatedAppointment(appointment._id)
+    const populatedAppointment = await this.getPopulatedAppointment(appointment._id)
+    if (!populatedAppointment) {
+      throw AppError.notFound('Failed to populate updated appointment')
+    }
+    return populatedAppointment
   }
 
   // Update appointment status only
@@ -215,12 +229,20 @@ export class AppointmentService extends BaseService<Appointment> {
     if (!appointment) {
       throw AppError.notFound('Appointment not found')
     }
-    return this.getPopulatedAppointment(appointment._id)
+    const populatedAppointment = await this.getPopulatedAppointment(appointment._id)
+    if (!populatedAppointment) {
+      throw AppError.notFound('Failed to populate updated appointment')
+    }
+    return populatedAppointment
   }
 
   // Override getById to accept authUserId
   public getById = async (id: string, authUserId?: string): Promise<Appointment> => {
-    return this.getPopulatedAppointment(id, authUserId)
+    const appointment = await this.getPopulatedAppointment(id, authUserId)
+    if (!appointment) {
+      throw AppError.notFound('Appointment not found')
+    }
+    return appointment
   }
 
   // Get all appointment
@@ -295,21 +317,25 @@ export class AppointmentService extends BaseService<Appointment> {
     // paginated response
     if (appointments && 'result' in appointments && 'pagination' in appointments) {
       const populatedAppointments = await Promise.all(
-        appointments.result.map((appointment: Appointment) =>
-          this.getPopulatedAppointment(appointment._id!)
-        )
+        appointments.result
+          .filter((appointment: Appointment) => appointment._id) // Remove invalid IDs
+          .map((appointment: Appointment) => this.getPopulatedAppointment(appointment._id!))
       )
+      // Filter out null results from orphaned/deleted appointments
+      const validAppointments = populatedAppointments.filter((a): a is Appointment => a !== null)
 
       return {
-        result: populatedAppointments,
+        result: validAppointments,
         pagination: appointments.pagination,
       }
     }
 
     // non-paginated response
-    return Promise.all(
+    const nonPaginatedResults = await Promise.all(
       appointments.map((appointment: Appointment) => this.getPopulatedAppointment(appointment._id!))
     )
+    // Filter out null results
+    return nonPaginatedResults.filter((a): a is Appointment => a !== null)
   }
 
   // Get appointments for manager/admin
