@@ -185,7 +185,6 @@ export interface GetQuotesParams {
   page?: number
   perPage?: number
   search?: string
-  sort?: string
   source?: string
   status?: string
   dateFilter?: string

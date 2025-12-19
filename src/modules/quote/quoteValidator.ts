@@ -86,9 +86,29 @@ export const QuoteValidator = {
     page: Joi.number().optional(),
     perPage: Joi.number().optional(),
     search: Joi.string().optional(),
-    sort: Joi.string().optional().valid('Hot', 'Warm', 'Dead', 'hot', 'warm', 'dead'),
     source: Joi.string().optional(),
-    status: Joi.string().optional(),
+    status: Joi.string()
+      .valid(
+        'Hot',
+        'Warm',
+        'Dead',
+        'SOLD',
+        'CALL BACK',
+        'LEFT PHONE MESSAGE',
+        'QUOTED',
+        'CANCELLED',
+        'NO SHOW',
+        'FOLLOWED UP',
+        'UNAVAILABLE',
+        'CONFIRMED',
+        'NO CAN DO',
+        'AWAITING QUOTE',
+        'SALE PENDING',
+        'TENTATIVE APT',
+        'SCHEDULED',
+        'LEFT VOICEMAIL'
+      )
+      .optional(),
     dateFilter: Joi.string().valid('MTD', 'YTD').optional(),
   }),
 

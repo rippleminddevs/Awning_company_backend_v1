@@ -423,7 +423,7 @@ export class QuoteService extends BaseService<Quote> {
     params: GetQuotesParams,
     userId: string
   ): Promise<QuoteResponse[] | QuotePaginatedResponse<QuoteResponse>> => {
-    const { search, sort, source, status, dateFilter, ...restParams } = params
+    const { search, source, status, dateFilter, ...restParams } = params
     let query: any = { ...restParams }
 
     // Get user data
@@ -432,8 +432,8 @@ export class QuoteService extends BaseService<Quote> {
       query.createdBy = userId
     }
 
-    // Build search query
-    if (search || source || status) {
+    // Build search query (for appointments)
+    if (search || source) {
       const appointmentQuery: any = {}
 
       if (search) {
@@ -459,19 +459,15 @@ export class QuoteService extends BaseService<Quote> {
         appointmentQuery.source = source
       }
 
-      if (status) {
-        appointmentQuery.status = { $regex: new RegExp(`^${status}$`, 'i') }
-      }
-
       const appointmentModel = this.appointmentModel.getMongooseModel()
       const matchingAppointments = await appointmentModel?.find(appointmentQuery).distinct('_id')
 
       query.appointmentId = { $in: matchingAppointments }
     }
 
-    // Sort query
-    if (sort) {
-      query.status = { $regex: new RegExp(`^${sort}$`, 'i') }
+    // Filter quotes by their status (not appointment status)
+    if (status) {
+      query.status = { $regex: new RegExp(`^${status}$`, 'i') }
     }
 
     // Apply date filter for MTD (Month-to-Date) or YTD (Year-to-Date)
