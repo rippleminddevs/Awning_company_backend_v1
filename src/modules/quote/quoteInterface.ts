@@ -81,7 +81,25 @@ export interface Quote {
   _id?: string
   appointmentId: string
   documents: string[]
-  status?: string
+  status?:
+    | 'Hot'
+    | 'Warm'
+    | 'Dead'
+    | 'SOLD'
+    | 'CALL BACK'
+    | 'LEFT PHONE MESSAGE'
+    | 'QUOTED'
+    | 'CANCELLED'
+    | 'NO SHOW'
+    | 'FOLLOWED UP'
+    | 'UNAVAILABLE'
+    | 'CONFIRMED'
+    | 'NO CAN DO'
+    | 'AWAITING QUOTE'
+    | 'SALE PENDING'
+    | 'TENTATIVE APT'
+    | 'SCHEDULED'
+    | 'LEFT VOICEMAIL'
   paymentStructure: PaymentStructure
   paymentDetails: PaymentDetails
   paymentSummary: PaymentSummary
@@ -96,7 +114,25 @@ export interface QuoteResponse {
   _id?: string
   appointmentId: string
   documents: string[]
-  status?: string
+  status?:
+    | 'Hot'
+    | 'Warm'
+    | 'Dead'
+    | 'SOLD'
+    | 'CALL BACK'
+    | 'LEFT PHONE MESSAGE'
+    | 'QUOTED'
+    | 'CANCELLED'
+    | 'NO SHOW'
+    | 'FOLLOWED UP'
+    | 'UNAVAILABLE'
+    | 'CONFIRMED'
+    | 'NO CAN DO'
+    | 'AWAITING QUOTE'
+    | 'SALE PENDING'
+    | 'TENTATIVE APT'
+    | 'SCHEDULED'
+    | 'LEFT VOICEMAIL'
   paymentStructure: PaymentStructure
   paymentDetails: PaymentDetails
   paymentSummary: PaymentSummary

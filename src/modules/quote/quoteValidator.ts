@@ -13,7 +13,29 @@ export const QuoteValidator = {
         }).unknown(true)
       )
       .required(),
-    status: Joi.string().valid('Hot', 'Warm', 'Dead').optional().default('Hot'),
+    status: Joi.string()
+      .valid(
+        'Hot',
+        'Warm',
+        'Dead',
+        'SOLD',
+        'CALL BACK',
+        'LEFT PHONE MESSAGE',
+        'QUOTED',
+        'CANCELLED',
+        'NO SHOW',
+        'FOLLOWED UP',
+        'UNAVAILABLE',
+        'CONFIRMED',
+        'NO CAN DO',
+        'AWAITING QUOTE',
+        'SALE PENDING',
+        'TENTATIVE APT',
+        'SCHEDULED',
+        'LEFT VOICEMAIL'
+      )
+      .optional()
+      .default('Hot'),
     paymentStatus: Joi.string()
       .valid('pending', 'paid', 'partially paid')
       .optional()
@@ -28,7 +50,29 @@ export const QuoteValidator = {
     items: Joi.array().items(Joi.object()).optional(),
     invoice: Joi.string().optional(),
     documents: Joi.array().items(Joi.string()).optional(),
-    status: Joi.string().valid('Hot', 'Warm', 'Dead').optional().default('Hot'),
+    status: Joi.string()
+      .valid(
+        'Hot',
+        'Warm',
+        'Dead',
+        'SOLD',
+        'CALL BACK',
+        'LEFT PHONE MESSAGE',
+        'QUOTED',
+        'CANCELLED',
+        'NO SHOW',
+        'FOLLOWED UP',
+        'UNAVAILABLE',
+        'CONFIRMED',
+        'NO CAN DO',
+        'AWAITING QUOTE',
+        'SALE PENDING',
+        'TENTATIVE APT',
+        'SCHEDULED',
+        'LEFT VOICEMAIL'
+      )
+      .optional()
+      .default('Hot'),
     paymentStatus: Joi.string().valid('pending', 'paid', 'partially paid').optional(),
   }),
 
