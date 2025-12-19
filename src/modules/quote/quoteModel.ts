@@ -35,16 +35,16 @@ const PaymentDetails: FieldsConfig = {
   cardNumber: { type: 'string', nullable: true },
   cardExpiry: { type: 'string', nullable: true },
   emailAddress: { type: 'string', nullable: true },
-  
+
   // Check
   checkNumber: { type: 'string', nullable: true },
-  checkImage:{
+  checkImage: {
     type: 'string',
     mongooseType: 'ObjectId',
     ref: 'Upload',
-    nullable: true
+    nullable: true,
   },
-  
+
   // Wire Transfer
   accountHolderName: { type: 'string', nullable: true },
   billingAddress: { type: 'string', nullable: true },
@@ -53,7 +53,7 @@ const PaymentDetails: FieldsConfig = {
   accountNumber: { type: 'string', nullable: true },
   swiftBIC: { type: 'string', nullable: true },
   routingNumber: { type: 'string', nullable: true },
-  
+
   // ACH Transfer
   accountType: { type: 'string', nullable: true },
   authorization: { type: 'string', nullable: true },
@@ -79,39 +79,60 @@ const fields: FieldsConfig = {
   status: {
     type: 'string',
     nullable: true,
-    enum: ['Hot', 'Warm', 'Dead'],
-    default: 'Hot'
+    enum: [
+      'Hot',
+      'Warm',
+      'Dead',
+      'SOLD',
+      'CALL BACK',
+      'LEFT PHONE MESSAGE',
+      'QUOTED',
+      'CANCELLED',
+      'NO SHOW',
+      'FOLLOWED UP',
+      'UNAVAILABLE',
+      'CONFIRMED',
+      'NO CAN DO',
+      'AWAITING QUOTE',
+      'SALE PENDING',
+      'TENTATIVE APT',
+      'SCHEDULED',
+      'LEFT VOICEMAIL',
+      'COMPLETE',
+      'NEW LEADS',
+    ],
+    default: 'Hot',
   },
   paymentStructure: {
     type: 'object',
     document: PaymentStructure,
     nullable: false,
-    default: null
+    default: null,
   },
   paymentDetails: {
     type: 'object',
     document: PaymentDetails,
     nullable: false,
-    default: null
+    default: null,
   },
   paymentSummary: {
     type: 'object',
     document: PaymentSummary,
     nullable: true,
-    default: null
+    default: null,
   },
   invoice: {
     type: 'string',
     mongooseType: 'ObjectId',
     ref: 'Upload',
     nullable: true,
-    default: null
+    default: null,
   },
   paymentStatus: {
     type: 'string',
     nullable: true,
     enum: ['pending', 'paid', 'partially paid'],
-    default: 'pending'
+    default: 'pending',
   },
   createdBy: {
     type: 'string',
@@ -122,9 +143,9 @@ const fields: FieldsConfig = {
 }
 
 export class QuoteModel extends BaseModel<Quote> {
-  private static instance: QuoteModel;
+  private static instance: QuoteModel
   constructor() {
-    const schema = createMongooseSchema(fields,{
+    const schema = createMongooseSchema(fields, {
       includeTimestamps: true,
     })
     super('Quote', fields, schema)
@@ -132,8 +153,8 @@ export class QuoteModel extends BaseModel<Quote> {
 
   public static getInstance(): QuoteModel {
     if (!QuoteModel.instance) {
-      QuoteModel.instance = new QuoteModel();
+      QuoteModel.instance = new QuoteModel()
     }
-    return QuoteModel.instance;
+    return QuoteModel.instance
   }
 }
