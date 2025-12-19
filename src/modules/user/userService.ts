@@ -11,6 +11,7 @@ import {
 import { UserModel } from './userModel'
 import { UploadService } from '../upload/uploadService'
 import { LocationService } from '../../services/locationService'
+import { EmailService } from '../../services/emailService'
 import bcrypt from 'bcryptjs'
 import { PaginatedResponse } from '../../common/interfaces/globalInterfaces'
 import { AppointmentModel } from '../appointment/appointmentModel'
@@ -22,12 +23,14 @@ export class UserService extends BaseService<User> {
   private locationService: LocationService
   private appointmentModel: AppointmentModel
   private quoteModel: QuoteModel
+  private emailService: EmailService
   constructor() {
     super(UserModel.getInstance())
     this.uploadService = new UploadService()
     this.locationService = new LocationService()
     this.appointmentModel = AppointmentModel.getInstance()
     this.quoteModel = QuoteModel.getInstance()
+    this.emailService = new EmailService()
   }
 
   // common function to populated user data
@@ -85,8 +88,8 @@ export class UserService extends BaseService<User> {
     }
   }
 
-  // generate password for user
-  private generatePassword = async (): Promise<string> => {
+  // generate plain password for user
+  private generatePassword = (): string => {
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
     const lowercase = 'abcdefghijklmnopqrstuvwxyz'
     const numbers = '0123456789'
@@ -113,8 +116,7 @@ export class UserService extends BaseService<User> {
       ...remaining,
     ]
     const password = passwordChars.join('')
-    const hashedPassword = await bcrypt.hash(password, 10)
-    return hashedPassword
+    return password
   }
 
   // Create user
@@ -129,8 +131,12 @@ export class UserService extends BaseService<User> {
         data.profilePicture = upload._id
       }
 
+      let plainPassword = ''
       if (!data.password) {
-        data.password = await this.generatePassword()
+        plainPassword = await this.generatePassword()
+        data.password = plainPassword
+      } else {
+        plainPassword = data.password
       }
 
       const hashedPassword = await bcrypt.hash(data.password, 10)
@@ -138,6 +144,21 @@ export class UserService extends BaseService<User> {
       data.isVerified = true
 
       const user = await this.model.create(data)
+
+      // Send welcome email with password
+      try {
+        await this.emailService.sendWelcomeEmailWithPassword(
+          data.email,
+          data.name,
+          data.email,
+          plainPassword
+        )
+        console.log(`✅ Welcome email sent to user: ${data.email}`)
+      } catch (emailError) {
+        // Log error but don't fail user creation
+        console.error(`❌ Failed to send welcome email to ${data.email}:`, emailError)
+      }
+
       return this.getPopulatedUser(user._id)
     } catch (error: any) {
       // Handle duplicate email error

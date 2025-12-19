@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome - Your Account Details</title>
+    <style>
+      body {
+        background-color: #f5f7fa;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        padding: 40px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        text-align: left;
+        border-radius: 8px;
+      }
+      h2 {
+        color: #333333;
+        margin-bottom: 24px;
+        text-align: center;
+      }
+      p {
+        font-size: 16px;
+        color: #555555;
+        line-height: 1.6;
+        margin-bottom: 15px;
+      }
+      .credentials-box {
+        background-color: #f8f9fa;
+        border: 2px solid #007bff;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 30px 0;
+      }
+      .credentials-box h3 {
+        color: #007bff;
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+      .credential-item {
+        margin-bottom: 12px;
+        font-size: 15px;
+      }
+      .credential-label {
+        font-weight: 600;
+        color: #333333;
+        display: inline-block;
+        width: 80px;
+      }
+      .credential-value {
+        color: #007bff;
+        font-weight: 500;
+      }
+      .password-value {
+        font-family: 'Courier New', monospace;
+        background-color: #e6f2ff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        letter-spacing: 1px;
+      }
+      .instructions {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin: 25px 0;
+      }
+      .instructions p {
+        margin-bottom: 8px;
+        color: #856404;
+      }
+      .small {
+        font-size: 13px;
+        color: #999999;
+        margin-top: 20px;
+      }
+      .footer {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #777777;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Welcome to Awning Company!</h2>
+      <p>Dear <%= name %>,</p>
+      <p>
+        Your account has been created successfully. Below are your login credentials:
+      </p>
+
+      <div class="credentials-box">
+        <h3>Your Login Credentials</h3>
+        <div class="credential-item">
+          <span class="credential-label">Email:</span>
+          <span class="credential-value"><%= email %></span>
+        </div>
+        <div class="credential-item">
+          <span class="credential-label">Password:</span>
+          <span class="credential-value password-value"><%= password %></span>
+        </div>
+
+      </div>
+      <div class="instructions">
+        <p><strong>Important:</strong> Please follow these steps to get started:</p>
+        <p>1. Log in to your account using the credentials above</p>
+        <p>2. Change your password to something more secure that you can remember</p>
+        <p>3. Complete your profile information</p>
+      </div>
+
+      <p class="small">
+        For security reasons, we recommend changing your password after your first login.
+        If you have any questions, please contact your administrator.
+      </p>
+
+      <p class="footer">Thank you,<br />Awning Company Team</p>
+    </div>
+  </body>
+</html>

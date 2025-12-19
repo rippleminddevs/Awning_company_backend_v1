@@ -60,6 +60,24 @@ export class EmailService {
     await this.sendEmail(to, subject, text, html)
   }
 
+  public sendWelcomeEmailWithPassword = async (
+    to: string,
+    name: string,
+    email: string,
+    password: string
+  ): Promise<void> => {
+    const subject = 'Welcome to Awning Company - Your Account Details'
+    const text = `Hi ${name},\n\nYour account has been created successfully.\n\nEmail: ${email}\nPassword: ${password}\n\nPlease log in and change your password.`
+
+    const html = await this.renderTemplate('welcomeNewUser', {
+      name,
+      email,
+      password,
+    })
+
+    await this.sendEmail(to, subject, text, html)
+  }
+
   public sendPasswordResetEmail = async (to: string, resetLink: string): Promise<void> => {
     const subject = 'Password Reset Request'
     const text = `You requested a password reset. Use the following link to reset your password:\n\n${resetLink}`
