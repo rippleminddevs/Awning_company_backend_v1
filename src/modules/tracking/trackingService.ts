@@ -52,6 +52,7 @@ export class TrackingService extends BaseService<any> {
             {
               $match: {
                 $expr: { $eq: ['$_id', '$$appointmentId'] },
+                status: 'SOLD', // Only count quotes from SOLD appointments
               },
             },
           ],
@@ -88,7 +89,7 @@ export class TrackingService extends BaseService<any> {
     const format = this.getDateFormat(groupBy)
     const match: any = {
       createdAt: { $gte: startDate, $lte: endDate },
-      status: { $in: ['Quoted', 'Confirmed', 'Sold'] },
+      status: { $in: ['Quoted', 'Confirmed', 'SOLD'] }, // Fixed: was 'Sold' (wrong case)
     }
 
     const result = await this.appointmentModel.getMongooseModel()?.aggregate([
@@ -195,7 +196,7 @@ export class TrackingService extends BaseService<any> {
           { $unwind: '$appointment' },
           {
             $match: {
-              'appointment.status': 'Sold',
+              'appointment.status': 'SOLD', // Fixed: was 'Sold' (wrong case)
               'appointment.createdAt': { $gte: countsStartDate, $lte: now },
             },
           },
