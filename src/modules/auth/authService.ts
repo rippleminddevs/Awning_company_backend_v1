@@ -375,7 +375,7 @@ export class AuthService extends BaseService<User> {
 
     const isPasswordValid = await bcrypt.compare(oldPassword, user.password)
     if (!isPasswordValid) {
-      throw AppError.badRequest('Invalid old password')
+      throw AppError.badRequest('Invalid current password')
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10)
