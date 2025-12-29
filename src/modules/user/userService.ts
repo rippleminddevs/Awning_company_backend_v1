@@ -420,16 +420,17 @@ export class UserService extends BaseService<User> {
     // Get date range based on duration
     const dateRange = this.getDateRange(duration)
 
-    // Customer count with date filter
-    const customerCounts = await this.appointmentModel.count(
-      dateRange ? { createdAt: dateRange } : {}
-    )
-
     // Handle pagination case
     if (users && 'result' in users && 'pagination' in users) {
       const populatedUsers = await Promise.all(
         users.result.map(async (user: User) => {
           const populated = await this.getPopulatedUser(user._id)
+
+          // Count appointments assigned to this specific salesperson
+          const customerCounts = await this.appointmentModel.count({
+            staff: user._id,
+            ...(dateRange && { createdAt: dateRange }),
+          })
 
           const quotedTotal = await this.calculateTotalByStatus(user._id, 'Quoted', dateRange)
           const soldTotal = await this.calculateTotalByStatus(user._id, 'Sold', dateRange)
@@ -453,6 +454,12 @@ export class UserService extends BaseService<User> {
     const result = await Promise.all(
       users.map(async (user: User) => {
         const populated = await this.getPopulatedUser(user._id)
+
+        // Count appointments assigned to this specific salesperson
+        const customerCounts = await this.appointmentModel.count({
+          staff: user._id,
+          ...(dateRange && { createdAt: dateRange }),
+        })
 
         const quotedTotal = await this.calculateTotalByStatus(user._id, 'Quoted', dateRange)
         const soldTotal = await this.calculateTotalByStatus(user._id, 'Sold', dateRange)
