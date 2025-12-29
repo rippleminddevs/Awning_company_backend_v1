@@ -490,12 +490,12 @@ export class QuoteService extends BaseService<Quote> {
 
     // paginated response
     if (quotes && 'result' in quotes && 'pagination' in quotes) {
+      // Calculate total amount from ALL quotes (before pagination)
+      const totalAmount = calculateTotalAmount(quotes.result)
+
       const populatedQuotes = await Promise.all(
         quotes.result.map((quote: Quote) => this.getPopulatedData(quote._id!))
       )
-
-      // Calculate total grand total
-      const totalAmount = calculateTotalAmount(populatedQuotes)
 
       return {
         result: populatedQuotes,
