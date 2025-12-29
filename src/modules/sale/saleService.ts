@@ -1042,27 +1042,17 @@ export class SaleService extends BaseService<Sale> {
           createdAt: { $gte: countsStartDate, $lte: now },
         }),
 
-        // New Leads
+        // New Leads - all appointments created in period
         this.appointmentModel.count({
-          status: 'Scheduled',
           createdAt: { $gte: countsStartDate, $lte: now },
         }),
 
-        // Total Sales
+        // Total Sales - filter by quote status = 'SOLD'
         this.quoteModel.getMongooseModel()?.aggregate([
           {
-            $lookup: {
-              from: 'appointments',
-              localField: 'appointmentId',
-              foreignField: '_id',
-              as: 'appointment',
-            },
-          },
-          { $unwind: '$appointment' },
-          {
             $match: {
-              'appointment.status': 'Sold',
-              'appointment.createdAt': { $gte: countsStartDate, $lte: now },
+              status: 'SOLD',
+              createdAt: { $gte: countsStartDate, $lte: now },
             },
           },
           {
