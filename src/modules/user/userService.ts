@@ -482,8 +482,8 @@ export class UserService extends BaseService<User> {
     status: string,
     dateRange?: { $gte: Date } | null
   ): Promise<number> {
-    // Build appointment query
-    const appointmentQuery: any = { staff: staffId, status }
+    // Build appointment query - get all appointments for this salesperson
+    const appointmentQuery: any = { staff: staffId }
     if (dateRange) {
       appointmentQuery.createdAt = dateRange
     }
@@ -496,8 +496,11 @@ export class UserService extends BaseService<User> {
     const appointmentIds = appointmentList.map((a: any) => a._id)
     if (appointmentIds.length === 0) return 0
 
-    // Build quote query
-    const quoteQuery: any = { appointmentId: { $in: appointmentIds } }
+    // Build quote query - filter by quote status (not appointment status)
+    const quoteQuery: any = {
+      appointmentId: { $in: appointmentIds },
+      status: status.toUpperCase(), // Convert 'Quoted' -> 'QUOTED', 'Sold' -> 'SOLD'
+    }
     if (dateRange) {
       quoteQuery.createdAt = dateRange
     }
