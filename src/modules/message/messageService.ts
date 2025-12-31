@@ -294,7 +294,9 @@ export class MessageService extends BaseService<Message> {
         'New Message',
         `${senderName}: ${content.length > 50 ? content.substring(0, 50) + '...' : content}`,
         {
-          chatId: chatId,
+          refType: 'Message',
+          refId: chatId,
+          type: 'New-Message',
         }
       )
     } catch (error) {
