@@ -86,7 +86,10 @@ export class QuoteService extends BaseService<Quote> {
     }
 
     quote.invoice = quote.invoice?.url || null
-    quote.appointmentId.service = quote.appointmentId.service?.name || null
+
+    if (quote.appointmentId) {
+      quote.appointmentId.service = quote.appointmentId.service?.name || null
+    }
 
     return quote
   }
