@@ -76,7 +76,9 @@ export class BaseModel<T extends Record<string, any>, M extends Document = Docum
         }
       }
 
-      return (await this.mongooseModel.find(mongooseQuery)).map(doc => doc.toObject() as T)
+      return (await this.mongooseModel.find(mongooseQuery).sort(sort)).map(
+        doc => doc.toObject() as T
+      )
     }
 
     if (this.sequelizeModel) {
@@ -85,7 +87,7 @@ export class BaseModel<T extends Record<string, any>, M extends Document = Docum
           where: query,
           offset: skip,
           limit: perPage,
-          order: Object.entries(sort).map(([key, value]) => [key, value === 1 ? 'ASC' : 'DESC'])
+          order: Object.entries(sort).map(([key, value]) => [key, value === 1 ? 'ASC' : 'DESC']),
         })
 
         return {
