@@ -116,6 +116,7 @@ export const QuoteValidator = {
       )
       .optional(),
     dateFilter: Joi.string().valid('MTD', 'YTD').optional(),
+    sort: Joi.string().optional(),
   }),
 
   getTransactions: Joi.object({

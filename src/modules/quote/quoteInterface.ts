@@ -82,26 +82,26 @@ export interface Quote {
   appointmentId: string
   documents: string[]
   status?:
-    | 'Hot'
-    | 'Warm'
-    | 'Dead'
-    | 'SOLD'
-    | 'CALL BACK'
-    | 'LEFT PHONE MESSAGE'
-    | 'QUOTED'
-    | 'CANCELLED'
-    | 'NO SHOW'
-    | 'FOLLOWED UP'
-    | 'UNAVAILABLE'
-    | 'CONFIRMED'
-    | 'NO CAN DO'
-    | 'AWAITING QUOTE'
-    | 'SALE PENDING'
-    | 'TENTATIVE APT'
-    | 'SCHEDULED'
-    | 'LEFT VOICEMAIL'
-    | 'COMPLETE'
-    | 'NEW LEADS'
+  | 'Hot'
+  | 'Warm'
+  | 'Dead'
+  | 'SOLD'
+  | 'CALL BACK'
+  | 'LEFT PHONE MESSAGE'
+  | 'QUOTED'
+  | 'CANCELLED'
+  | 'NO SHOW'
+  | 'FOLLOWED UP'
+  | 'UNAVAILABLE'
+  | 'CONFIRMED'
+  | 'NO CAN DO'
+  | 'AWAITING QUOTE'
+  | 'SALE PENDING'
+  | 'TENTATIVE APT'
+  | 'SCHEDULED'
+  | 'LEFT VOICEMAIL'
+  | 'COMPLETE'
+  | 'NEW LEADS'
   paymentStructure: PaymentStructure
   paymentDetails: PaymentDetails
   paymentSummary: PaymentSummary
@@ -117,24 +117,24 @@ export interface QuoteResponse {
   appointmentId: string
   documents: string[]
   status?:
-    | 'Hot'
-    | 'Warm'
-    | 'Dead'
-    | 'SOLD'
-    | 'CALL BACK'
-    | 'LEFT PHONE MESSAGE'
-    | 'QUOTED'
-    | 'CANCELLED'
-    | 'NO SHOW'
-    | 'FOLLOWED UP'
-    | 'UNAVAILABLE'
-    | 'CONFIRMED'
-    | 'NO CAN DO'
-    | 'AWAITING QUOTE'
-    | 'SALE PENDING'
-    | 'TENTATIVE APT'
-    | 'SCHEDULED'
-    | 'LEFT VOICEMAIL'
+  | 'Hot'
+  | 'Warm'
+  | 'Dead'
+  | 'SOLD'
+  | 'CALL BACK'
+  | 'LEFT PHONE MESSAGE'
+  | 'QUOTED'
+  | 'CANCELLED'
+  | 'NO SHOW'
+  | 'FOLLOWED UP'
+  | 'UNAVAILABLE'
+  | 'CONFIRMED'
+  | 'NO CAN DO'
+  | 'AWAITING QUOTE'
+  | 'SALE PENDING'
+  | 'TENTATIVE APT'
+  | 'SCHEDULED'
+  | 'LEFT VOICEMAIL'
   paymentStructure: PaymentStructure
   paymentDetails: PaymentDetails
   paymentSummary: PaymentSummary
@@ -190,6 +190,7 @@ export interface GetQuotesParams {
   source?: string
   status?: string
   dateFilter?: string
+  sort?: string
 }
 
 export interface InvoiceData {
