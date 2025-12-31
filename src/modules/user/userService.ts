@@ -17,6 +17,7 @@ import { PaginatedResponse } from '../../common/interfaces/globalInterfaces'
 import { AppointmentModel } from '../appointment/appointmentModel'
 import { QuoteModel } from '../quote/quoteModel'
 import moment from 'moment'
+import { config } from '../../services/configService'
 
 export class UserService extends BaseService<User> {
   private uploadService: UploadService
@@ -45,7 +46,12 @@ export class UserService extends BaseService<User> {
       .lean()
 
     if (user.profilePicture) {
-      user.profilePicture = user.profilePicture.url || null
+      const url = user.profilePicture.url;
+      if (url && !url.startsWith('http')) {
+        user.profilePicture = `${config.app.url}${url}`;
+      } else {
+        user.profilePicture = url || null;
+      }
     }
 
     delete user.password
@@ -129,6 +135,9 @@ export class UserService extends BaseService<User> {
         })
 
         data.profilePicture = upload._id
+      } else {
+        const defaultAvatar = await this.uploadService.createDefaultAvatar()
+        data.profilePicture = defaultAvatar._id
       }
 
       let plainPassword = ''

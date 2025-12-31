@@ -2,7 +2,7 @@
   "app": {
     "name": "Development",
     "port": 5009,
-    "url": "http://localhost:5002",
+    "url": "http://localhost:5009",
     "version": "0.0.1",
     "corsOrigin": "*",
     "timezone": "Asia/Karachi"
@@ -31,10 +31,10 @@
     "refreshTokenExpiry": "7d"
   },
   "email": {
-   "host": "sandbox.smtp.mailtrap.io",
-   "port": 2525,
-   "username": "9f8fb0f6ec36d8",
-   "password": "e0939a5fe22291",
+    "host": "sandbox.smtp.mailtrap.io",
+    "port": 2525,
+    "username": "9f8fb0f6ec36d8",
+    "password": "e0939a5fe22291",
     "fromAddress": "no-reply@awningcompany.com",
     "secure": false
   },
@@ -82,7 +82,7 @@
       "baseUrl": "https://maps.googleapis.com/maps/api/geocode/json"
     }
   },
-  "serviceAccountJSON":{
+  "serviceAccountJSON": {
     "type": "service_account",
     "project_id": "awning-ef5ec",
     "private_key_id": "d338c031c4ea9be502df3709fd0f427c99efee30",

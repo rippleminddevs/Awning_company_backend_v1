@@ -8,6 +8,7 @@ import {
 import mongoose, { isValidObjectId } from 'mongoose'
 import { AppError } from '../../common/utils/appError'
 import { buildPaginationMeta, getPaginationParams } from '../../common/utils/helpers'
+import { config } from '../../services/configService'
 
 export class ChatService extends BaseService<Chat> {
   constructor() {
@@ -93,7 +94,18 @@ export class ChatService extends BaseService<Chat> {
                 profilePicture: {
                   $cond: {
                     if: { $gt: [{ $size: '$profilePictureData' }, 0] },
-                    then: { $arrayElemAt: ['$profilePictureData.url', 0] },
+                    then: {
+                      $let: {
+                        vars: { url: { $arrayElemAt: ['$profilePictureData.url', 0] } },
+                        in: {
+                          $cond: {
+                            if: { $regexMatch: { input: '$$url', regex: '^http' } },
+                            then: '$$url',
+                            else: { $concat: [`${config.app.url}`, '$$url'] },
+                          },
+                        },
+                      },
+                    },
                     else: null,
                   },
                 },
@@ -138,7 +150,18 @@ export class ChatService extends BaseService<Chat> {
                       profilePicture: {
                         $cond: {
                           if: { $gt: [{ $size: '$profilePictureData' }, 0] },
-                          then: { $arrayElemAt: ['$profilePictureData.url', 0] },
+                          then: {
+                            $let: {
+                              vars: { url: { $arrayElemAt: ['$profilePictureData.url', 0] } },
+                              in: {
+                                $cond: {
+                                  if: { $regexMatch: { input: '$$url', regex: '^http' } },
+                                  then: '$$url',
+                                  else: { $concat: [`${config.app.url}`, '$$url'] },
+                                },
+                              },
+                            },
+                          },
                           else: null,
                         },
                       },
@@ -275,7 +298,24 @@ export class ChatService extends BaseService<Chat> {
             },
             {
               $addFields: {
-                profilePicture: { $arrayElemAt: ['$profilePictureData.url', 0] },
+                profilePicture: {
+                  $cond: {
+                    if: { $gt: [{ $size: '$profilePictureData' }, 0] },
+                    then: {
+                      $let: {
+                        vars: { url: { $arrayElemAt: ['$profilePictureData.url', 0] } },
+                        in: {
+                          $cond: {
+                            if: { $regexMatch: { input: '$$url', regex: '^http' } },
+                            then: '$$url',
+                            else: { $concat: [`${config.app.url}`, '$$url'] },
+                          },
+                        },
+                      },
+                    },
+                    else: null,
+                  },
+                },
               },
             },
             {
@@ -303,7 +343,46 @@ export class ChatService extends BaseService<Chat> {
                 localField: 'sender',
                 foreignField: '_id',
                 as: 'sender',
-                pipeline: [{ $project: { _id: 1, name: 1, email: 1, profilePicture: 1 } }],
+                pipeline: [
+                  {
+                    $lookup: {
+                      from: 'uploads',
+                      localField: 'profilePicture',
+                      foreignField: '_id',
+                      as: 'profilePictureData',
+                    },
+                  },
+                  {
+                    $addFields: {
+                      profilePicture: {
+                        $cond: {
+                          if: { $gt: [{ $size: '$profilePictureData' }, 0] },
+                          then: {
+                            $let: {
+                              vars: { url: { $arrayElemAt: ['$profilePictureData.url', 0] } },
+                              in: {
+                                $cond: {
+                                  if: { $regexMatch: { input: '$$url', regex: '^http' } },
+                                  then: '$$url',
+                                  else: { $concat: [`${config.app.url}`, '$$url'] },
+                                },
+                              },
+                            },
+                          },
+                          else: null,
+                        },
+                      },
+                    },
+                  },
+                  {
+                    $project: {
+                      _id: 1,
+                      name: 1,
+                      email: 1,
+                      profilePicture: 1,
+                    },
+                  },
+                ],
               },
             },
             {

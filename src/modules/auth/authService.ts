@@ -117,7 +117,13 @@ export class AuthService extends BaseService<User> {
 
     if (user.profilePicture) {
       const profilePicture = await this.uploadService.getById(user.profilePicture)
-      userObj.profilePicture = profilePicture?.url || null
+      if (profilePicture?.url) {
+        userObj.profilePicture = profilePicture.url.startsWith('http')
+          ? profilePicture.url
+          : `${config.app.url}${profilePicture.url}`
+      } else {
+        userObj.profilePicture = null
+      }
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password)

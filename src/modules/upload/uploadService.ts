@@ -61,7 +61,7 @@ export class UploadService extends BaseService<Upload> {
       size: 0, // Will be updated after file read
       mimeType: 'image/png',
       path: defaultAvatarPath,
-      url: `${config.app.url}/static/uploads/defaults/default_avatar.png`,
+      url: `/static/uploads/defaults/default_avatar.png`,
       uploadedHost: 'local',
       isPublic: true,
       metadata: {
