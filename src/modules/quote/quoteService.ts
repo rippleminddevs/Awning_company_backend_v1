@@ -28,6 +28,7 @@ import { AppointmentModel } from '../appointment/appointmentModel'
 import { UserService } from '../user/userService'
 import { InventoryModel } from '../inventory/inventoryModel'
 import { OrderModel } from '../order/orderModel'
+import { NotificationService } from '../notification/notificationService'
 export class QuoteService extends BaseService<Quote> {
   private orderService: OrderService
   private productModel: ProductModel
@@ -36,6 +37,7 @@ export class QuoteService extends BaseService<Quote> {
   private userService: UserService
   private inventoryModel: InventoryModel
   private orderModel: OrderModel
+  private notificationService: NotificationService
 
   constructor() {
     super(QuoteModel.getInstance())
@@ -45,7 +47,9 @@ export class QuoteService extends BaseService<Quote> {
     this.appointmentModel = AppointmentModel.getInstance()
     this.userService = new UserService()
     this.inventoryModel = InventoryModel.getInstance()
+    this.inventoryModel = InventoryModel.getInstance()
     this.orderModel = OrderModel.getInstance()
+    this.notificationService = new NotificationService()
   }
 
   // private function to return populated data
@@ -350,6 +354,33 @@ export class QuoteService extends BaseService<Quote> {
       })
     }
 
+    // Send notification to the appointment creator (Manager)
+    if (quote.appointmentId) {
+      setImmediate(async () => {
+        try {
+          const appointment = await this.appointmentModel
+            .getMongooseModel()
+            ?.findById(quote.appointmentId)
+            .select('createdBy')
+            .lean()
+
+          if (appointment && appointment.createdBy) {
+            await this.notificationService.createNotification({
+              type: 'Quote-Created',
+              refType: 'Quote',
+              refId: quote._id,
+              targets: [appointment.createdBy.toString()],
+              data: { quote: quote._id },
+              sendPush: true,
+              createdBy: quote.createdBy.toString(),
+            })
+          }
+        } catch (err) {
+          console.error('Failed to create quote notification:', err)
+        }
+      })
+    }
+
     return quote
   }
 
@@ -383,6 +414,40 @@ export class QuoteService extends BaseService<Quote> {
           grandTotal: parseInt(grandTotal.toString(), 10),
         },
       })
+    }
+
+    // Send notification if status changed to Sold or Quoted
+    const status = updatedQuote.status;
+    if (status && (status === 'Sold' || status === 'Quoted')) {
+      setImmediate(async () => {
+        try {
+          const quote = await this.model.findById(id);
+          if (quote && quote.appointmentId) {
+            const appointment = await this.appointmentModel
+              .getMongooseModel()
+              ?.findById(quote.appointmentId)
+              .select('createdBy')
+              .lean();
+
+            if (appointment && appointment.createdBy) {
+              await this.notificationService.createNotification({
+                type: 'Quote-Updated',
+                refType: 'Quote',
+                refId: updatedQuote._id,
+                targets: [appointment.createdBy.toString()],
+                data: {
+                  quote: updatedQuote._id,
+                  status: status
+                },
+                sendPush: true,
+                createdBy: updatedQuote.createdBy.toString(),
+              });
+            }
+          }
+        } catch (err) {
+          console.error('Failed to create quote status notification:', err);
+        }
+      });
     }
 
     return updatedQuote

@@ -126,9 +126,10 @@ export class AppointmentService extends BaseService<Appointment> {
           type: 'New-Appointment',
           refType: 'Appointment',
           refId: appointment._id,
-          targets: [appointment.staff],
+          targets: [appointment.staff.toString()],
           data: { appointment: appointment._id },
           sendPush: true,
+          createdBy: appointment.createdBy.toString(),
         })
       } catch (err) {
         console.error('Failed to create notification:', err)
@@ -204,20 +205,73 @@ export class AppointmentService extends BaseService<Appointment> {
     return populatedAppointment
   }
 
-  // Update appointment
   public updateAppointment = async (
     appointmentId: string,
-    payload: Appointment
+    payload: Appointment,
+    userId?: string
   ): Promise<Appointment> => {
-    const appointment = await this.model.update(appointmentId, payload)
-    if (!appointment) {
+    // Get existing appointment first to check status change
+    const existingAppointment = await this.model.findById(appointmentId)
+    if (!existingAppointment) {
       throw AppError.notFound('Appointment not found')
     }
-    const populatedAppointment = await this.getPopulatedAppointment(appointment._id)
-    if (!populatedAppointment) {
-      throw AppError.notFound('Failed to populate updated appointment')
+
+    const oldStatus = existingAppointment.status
+    // Update the appointment
+    const updatedAppointment = await this.model.update(appointmentId, payload);
+    if (!updatedAppointment) {
+      throw AppError.notFound('Appointment not found');
     }
-    return populatedAppointment
+
+    const populatedAppointment = await this.getPopulatedAppointment(updatedAppointment._id);
+    if (!populatedAppointment) {
+      throw AppError.notFound('Failed to populate updated appointment');
+    }
+
+    // Send notification if status changed (background task)
+    if (userId && payload.status && payload.status !== oldStatus) {
+      setImmediate(async () => {
+        try {
+          const isStaff = updatedAppointment.staff && updatedAppointment.staff.toString() === userId.toString();
+          const isCreator = updatedAppointment.createdBy && updatedAppointment.createdBy.toString() === userId.toString();
+
+          let targetId = '';
+
+          // If staff updated it, notify creator (manager)
+          if (isStaff && updatedAppointment.createdBy) {
+            targetId = updatedAppointment.createdBy.toString();
+          }
+          // If creator updated it, notify staff (sales rep)
+          else if (isCreator && updatedAppointment.staff) {
+            // Handle case where staff is populated object or ID string
+            if (typeof updatedAppointment.staff === 'object' && updatedAppointment.staff.id) {
+              targetId = updatedAppointment.staff.id;
+            } else {
+              targetId = updatedAppointment.staff.toString();
+            }
+          }
+
+          if (targetId) {
+            await this.notificationService.createNotification({
+              type: 'Appointment-Status-Change',
+              refType: 'Appointment',
+              refId: updatedAppointment._id,
+              targets: [targetId],
+              data: {
+                appointment: updatedAppointment._id,
+                status: payload.status
+              },
+              sendPush: true,
+              createdBy: userId
+            });
+          }
+        } catch (err) {
+          console.error('Failed to create status update notification:', err);
+        }
+      });
+    }
+
+    return populatedAppointment;
   }
 
   // Update appointment status only

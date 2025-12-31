@@ -1,7 +1,7 @@
 export interface Notification {
   _id?: string
-  type: 'Appointment' | 'New-Appointment'
-  refType: 'Appointment'
+  type: 'Appointment' | 'New-Appointment' | 'Appointment-Status-Change' | 'Quote-Created' | 'Quote-Updated'
+  refType: 'Appointment' | 'Quote'
   refId: string
   targets: string[]
   readBy: string[]
@@ -10,8 +10,8 @@ export interface Notification {
 }
 
 export interface CreateNotificationParam {
-  type: 'Appointment' | 'New-Appointment'
-  refType: 'Appointment'
+  type: 'Appointment' | 'New-Appointment' | 'Appointment-Status-Change' | 'Quote-Created' | 'Quote-Updated'
+  refType: 'Appointment' | 'Quote'
   refId: string
   targets: string[]
   data?: Record<string, any>

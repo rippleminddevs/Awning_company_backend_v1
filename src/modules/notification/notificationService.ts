@@ -21,6 +21,7 @@ export class NotificationService extends BaseService<Notification> {
   private getRefModel(refType: string) {
     const models = {
       Appointment: this.model.getMongooseModel().model('Appointment'),
+      Quote: this.model.getMongooseModel().model('Quote'),
     }
     return models[refType as keyof typeof models]
   }
@@ -58,7 +59,7 @@ export class NotificationService extends BaseService<Notification> {
           if (notification.refType === 'Appointment') {
             const appointment = await refModel
               .findById(notification.refId)
-              .select('firstName lastName date time')
+              .select('firstName lastName date time status')
               .lean()
 
             notification.refData = {
@@ -67,6 +68,20 @@ export class NotificationService extends BaseService<Notification> {
               lastName: appointment?.lastName,
               date: appointment?.date,
               time: appointment?.time,
+              status: appointment?.status,
+            }
+          } else if (notification.refType === 'Quote') {
+            const quote = await refModel
+              .findById(notification.refId)
+              .populate('appointmentId', 'firstName lastName')
+              .select('status appointmentId')
+              .lean()
+
+            notification.refData = {
+              _id: quote?._id,
+              status: quote?.status,
+              firstName: quote?.appointmentId?.firstName,
+              lastName: quote?.appointmentId?.lastName,
             }
           }
         } catch (error) {
@@ -178,6 +193,33 @@ export class NotificationService extends BaseService<Notification> {
           body = `You have been assigned a new appointment at ${dateStr} ${timeStr} for ${refData.firstName} ${refData.lastName}`
         } else {
           body = 'You have been assigned a new appointment'
+        }
+        break
+
+      case 'Appointment-Status-Change':
+        title = 'Appointment Updated'
+        if (refData?.status && refData?.firstName && refData?.lastName) {
+          body = `Appointment for ${refData.firstName} ${refData.lastName} has been updated to ${refData.status}`
+        } else {
+          body = 'An appointment status has been updated'
+        }
+        break
+
+      case 'Quote-Created':
+        title = 'New Quote Created'
+        if (refData?.firstName && refData?.lastName) {
+          body = `A new quote has been created for ${refData.firstName} ${refData.lastName}`
+        } else {
+          body = 'A new quote has been created'
+        }
+        break
+
+      case 'Quote-Updated':
+        title = 'Quote Updated'
+        if (refData?.status && refData?.firstName && refData?.lastName) {
+          body = `Quote for ${refData.firstName} ${refData.lastName} has been updated to ${refData.status}`
+        } else {
+          body = 'A quote has been updated'
         }
         break
 
