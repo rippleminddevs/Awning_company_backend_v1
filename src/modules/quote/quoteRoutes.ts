@@ -22,7 +22,7 @@ router.use(authenticate)
 router.get('/', validateQuery(QuoteValidator.getAll), quoteController.getAll)
 router.post(
   '/',
-  upload.single('checkImage'),
+  upload.single('paymentDetails[checkImage]'),
   parseQuoteBody,
   validate(QuoteValidator.create),
   quoteController.create
