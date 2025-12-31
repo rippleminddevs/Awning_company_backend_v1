@@ -244,9 +244,10 @@ export class QuoteService extends BaseService<Quote> {
 
   // Calculates the grand total for all orders
   private calculateGrandTotal = (orders: any[]): number => {
-    return orders.reduce((total, order) => {
-      return total + order.unitPrice * (order.quantity || 1)
+    const total = orders.reduce((sum, order) => {
+      return sum + order.unitPrice * (order.quantity || 1)
     }, 0)
+    return Math.max(0, total)
   }
 
   // helper function to create orders for quote
@@ -513,7 +514,7 @@ export class QuoteService extends BaseService<Quote> {
 
     // Helper to calculate totalGrandTotal
     const calculateTotalAmount = (quotesArr: Quote[]) => {
-      return quotesArr.reduce((sum, q) => sum + (q.paymentStructure?.grandTotal || 0), 0)
+      return quotesArr.reduce((sum, q) => sum + Math.max(0, q.paymentStructure?.grandTotal || 0), 0)
     }
 
     // paginated response
