@@ -22,6 +22,7 @@ import crypto from 'crypto'
 import { UploadService } from '../upload/uploadService'
 import { LocationService } from '../../services/locationService'
 import axios from 'axios'
+import TokenBlacklistService from '../../services/tokenBlacklistService'
 
 export class AuthService extends BaseService<User> {
   private otpCache: { [email: string]: OtpData } = {}
@@ -387,5 +388,15 @@ export class AuthService extends BaseService<User> {
     const rawPassword = crypto.randomBytes(12).toString('hex') // 24-char
     const hashedPassword = await bcrypt.hash(rawPassword, 10)
     return hashedPassword
+  }
+
+  public logout = async (token: string): Promise<{ message: string }> => {
+    // Blacklist the token
+    TokenBlacklistService.blacklistToken(token)
+
+    // Log the logout event
+    console.log(`User logged out at ${new Date().toISOString()}`)
+
+    return { message: 'Logged out successfully' }
   }
 }

@@ -16,12 +16,25 @@ router.post('/register', validate(AuthValidator.register), authController.regist
 router.post('/login', validate(AuthValidator.login), authController.login)
 router.post('/google', validate(AuthValidator.googleLogin), authController.googleLogin)
 router.post('/facebook', validate(AuthValidator.facebookLogin), authController.facebookLogin)
-router.post('/forgot-password', validate(AuthValidator.resetPasswordRequest), authController.requestPasswordReset)
-router.post('/reset-password', validate(AuthValidator.resetPasswordConfirm), authController.resetPassword)
+router.post(
+  '/forgot-password',
+  validate(AuthValidator.resetPasswordRequest),
+  authController.requestPasswordReset
+)
+router.post(
+  '/reset-password',
+  validate(AuthValidator.resetPasswordConfirm),
+  authController.resetPassword
+)
 router.post('/verify-otp', validate(AuthValidator.verifyOTP), authController.verifyOTP)
 router.post('/resend-otp', validate(AuthValidator.resendOtp), authController.resendOtp)
 
 router.use(authenticate)
-router.post('/change-password', validate(AuthValidator.changePassword), authController.changePassword)
+router.post(
+  '/change-password',
+  validate(AuthValidator.changePassword),
+  authController.changePassword
+)
+router.post('/logout', authController.logout)
 
 export default router
