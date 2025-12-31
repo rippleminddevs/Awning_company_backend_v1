@@ -152,12 +152,12 @@ export class QuoteService extends BaseService<Quote> {
     paymentStructure: PaymentStructure,
     paymentDetails: PaymentDetails
   ): PaymentSummary {
-    const subtotal = parseFloat(paymentStructure.discountedSalesPrice || '0') || 0
+    const subtotal = Math.max(0, parseFloat(paymentStructure.discountedSalesPrice || '0') || 0)
     const discount = parseFloat(paymentStructure.discount || '0') || 0
     const taxRate = paymentStructure.salesTax === 'Default' ? 0.08 : 0 // 8% default tax
     const taxes = subtotal * taxRate
     const freight = parseFloat(paymentStructure.freight || '0') || 0
-    const total = subtotal
+    const total = Math.max(0, subtotal)
 
     // Calculate payment schedule
     const upfrontPercentage = parseFloat(paymentStructure.upfrontDeposit) || 50 // Default 50%
