@@ -6,6 +6,7 @@ import { authenticate } from '../../middlewares/authMiddleware'
 import { validate, validateQuery } from '../../common/utils/helpers'
 import multer from 'multer'
 import { InvoiceController } from './invoiceController'
+import { parseQuoteBody } from './quoteMiddleware'
 
 const upload = multer()
 const router = Router()
@@ -22,6 +23,7 @@ router.get('/', validateQuery(QuoteValidator.getAll), quoteController.getAll)
 router.post(
   '/',
   upload.single('checkImage'),
+  parseQuoteBody,
   validate(QuoteValidator.create),
   quoteController.create
 )
