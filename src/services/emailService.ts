@@ -37,7 +37,9 @@ export class EmailService {
   ): Promise<void> => {
     try {
       const mailOptions: nodemailer.SendMailOptions = {
-        from: config.email.fromAddress,
+        from: config.email.fromAddress.includes('<')
+          ? config.email.fromAddress
+          : `"The Awning Company" <${config.email.fromAddress}>`,
         to,
         subject,
         text,
