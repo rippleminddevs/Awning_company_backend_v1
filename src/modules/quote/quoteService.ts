@@ -423,8 +423,36 @@ export class QuoteService extends BaseService<Quote> {
     params: GetQuotesParams,
     userId: string
   ): Promise<QuoteResponse[] | QuotePaginatedResponse<QuoteResponse>> => {
-    const { search, source, status, dateFilter, ...restParams } = params
+    const { search, source, status, dateFilter, sort, ...restParams } = params
     let query: any = { ...restParams }
+
+    // Build sort object for MongoDB
+    // If sort is a status value (e.g., "Hot"), we'll filter by that status instead
+    // and sort by createdAt. If it's a field name, we sort by that field.
+    let sortQuery: any = { createdAt: -1 } // Default sort
+    if (sort) {
+      // Check if sort is a valid status value - if so, use it as a status filter
+      const validStatuses = [
+        'Hot', 'Warm', 'Dead', 'SOLD', 'CALL BACK', 'LEFT PHONE MESSAGE',
+        'QUOTED', 'CANCELLED', 'NO SHOW', 'FOLLOWED UP', 'UNAVAILABLE',
+        'CONFIRMED', 'NO CAN DO', 'AWAITING QUOTE', 'SALE PENDING',
+        'TENTATIVE APT', 'SCHEDULED', 'LEFT VOICEMAIL', 'COMPLETE', 'NEW LEADS'
+      ]
+      if (validStatuses.some(s => s.toLowerCase() === sort.toLowerCase())) {
+        // Sort is a status value, use it as status filter if status is not already set
+        if (!status) {
+          query.status = { $regex: new RegExp(`^${sort}$`, 'i') }
+        }
+      } else {
+        // Sort by the specified field (e.g., "createdAt", "-createdAt" for desc)
+        if (sort.startsWith('-')) {
+          sortQuery = { [sort.substring(1)]: -1 }
+        } else {
+          sortQuery = { [sort]: 1 }
+        }
+      }
+    }
+    query.sort = sortQuery
 
     // Get user data
     const user = await this.userService.getById(userId)
