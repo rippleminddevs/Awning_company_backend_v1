@@ -412,7 +412,7 @@ export class SaleService extends BaseService<Sale> {
 
     // Build the match stage
     const matchStage: any = {
-      status: { $in: ['Quoted', 'Confirmed'] },
+      status: { $in: ['QUOTED', 'CONFIRMED'] },
     }
 
     // Add search condition if provided
