@@ -486,11 +486,17 @@ export class SaleService extends BaseService<Sale> {
             ],
           },
           invoiceNumber: {
-            $substr: [
-              { $toString: '$quote._id' },
-              { $subtract: [{ $strLenCP: { $toString: '$quote._id' } }, 6] },
-              6,
-            ],
+            $cond: {
+              if: { $ifNull: ['$quote._id', false] },
+              then: {
+                $substr: [
+                  { $toString: '$quote._id' },
+                  { $subtract: [{ $strLenCP: { $toString: '$quote._id' } }, 6] },
+                  6,
+                ],
+              },
+              else: null,
+            },
           },
           phoneNumber: 1,
           email: 1,
