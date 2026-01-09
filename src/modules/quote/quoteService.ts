@@ -29,6 +29,7 @@ import { UserService } from '../user/userService'
 import { InventoryModel } from '../inventory/inventoryModel'
 import { OrderModel } from '../order/orderModel'
 import { NotificationService } from '../notification/notificationService'
+import { AppError } from '../../common/utils/appError'
 export class QuoteService extends BaseService<Quote> {
   private orderService: OrderService
   private productModel: ProductModel
@@ -389,6 +390,10 @@ export class QuoteService extends BaseService<Quote> {
     const { items, ...quoteData } = payload
     let updatedQuote = await this.model.update(id, quoteData)
 
+    if (!updatedQuote) {
+      throw AppError.notFound('Quote not found')
+    }
+
     if (items) {
       await this.syncQuoteOrders({
         quoteId: id,
@@ -417,17 +422,17 @@ export class QuoteService extends BaseService<Quote> {
     }
 
     // Send notification if status changed to Sold or Quoted
-    const status = updatedQuote.status;
+    const status = updatedQuote.status
     if (status && (status === 'Sold' || status === 'Quoted')) {
       setImmediate(async () => {
         try {
-          const quote = await this.model.findById(id);
+          const quote = await this.model.findById(id)
           if (quote && quote.appointmentId) {
             const appointment = await this.appointmentModel
               .getMongooseModel()
               ?.findById(quote.appointmentId)
               .select('createdBy')
-              .lean();
+              .lean()
 
             if (appointment && appointment.createdBy) {
               await this.notificationService.createNotification({
@@ -437,17 +442,17 @@ export class QuoteService extends BaseService<Quote> {
                 targets: [appointment.createdBy.toString()],
                 data: {
                   quote: updatedQuote._id,
-                  status: status
+                  status: status,
                 },
                 sendPush: true,
                 createdBy: updatedQuote.createdBy.toString(),
-              });
+              })
             }
           }
         } catch (err) {
-          console.error('Failed to create quote status notification:', err);
+          console.error('Failed to create quote status notification:', err)
         }
-      });
+      })
     }
 
     return updatedQuote
@@ -502,10 +507,26 @@ export class QuoteService extends BaseService<Quote> {
     if (sort) {
       // Check if sort is a valid status value - if so, use it as a status filter
       const validStatuses = [
-        'Hot', 'Warm', 'Dead', 'SOLD', 'CALL BACK', 'LEFT PHONE MESSAGE',
-        'QUOTED', 'CANCELLED', 'NO SHOW', 'FOLLOWED UP', 'UNAVAILABLE',
-        'CONFIRMED', 'NO CAN DO', 'AWAITING QUOTE', 'SALE PENDING',
-        'TENTATIVE APT', 'SCHEDULED', 'LEFT VOICEMAIL', 'COMPLETE', 'NEW LEADS'
+        'Hot',
+        'Warm',
+        'Dead',
+        'SOLD',
+        'CALL BACK',
+        'LEFT PHONE MESSAGE',
+        'QUOTED',
+        'CANCELLED',
+        'NO SHOW',
+        'FOLLOWED UP',
+        'UNAVAILABLE',
+        'CONFIRMED',
+        'NO CAN DO',
+        'AWAITING QUOTE',
+        'SALE PENDING',
+        'TENTATIVE APT',
+        'SCHEDULED',
+        'LEFT VOICEMAIL',
+        'COMPLETE',
+        'NEW LEADS',
       ]
       if (validStatuses.some(s => s.toLowerCase() === sort.toLowerCase())) {
         // Sort is a status value, use it as status filter if status is not already set
