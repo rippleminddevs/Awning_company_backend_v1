@@ -12,6 +12,7 @@ export interface UserCredentials {
 export interface AuthTokenPayload {
   id: string
   email: string
+  role?: string
 }
 
 export interface AuthResponse {

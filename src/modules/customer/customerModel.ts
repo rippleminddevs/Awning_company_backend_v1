@@ -5,7 +5,20 @@ import { Customer } from './customerInterface'
 import { createMongooseSchema } from '../../common/utils/schemaUtils'
 
 const fields: FieldsConfig = {
+  customer_type: {
+    type: 'string',
+    nullable: false,
+    enum: ['residential', 'commercial','property_manager','hoa']
+  },
   name: {
+    type: 'string',
+    nullable: false,
+  },
+  firstName: {
+    type: 'string',
+    nullable: false,
+  },
+  lastName: {
     type: 'string',
     nullable: false,
   },
@@ -13,11 +26,27 @@ const fields: FieldsConfig = {
     type: 'string',
     nullable: false,
   },
+  businessName: {
+    type: 'string',
+    nullable: false,
+  },
+  company_contact: {
+    type: 'string',
+    nullable: false,
+  },
+  onsite_contact: {
+    type: 'string',
+    nullable: false,
+  },
   phone: {
     type: 'string',
     nullable: false,
   },
-  address: {
+  address_line1: {
+    type: 'string',
+    nullable: false,
+  },
+  address_line2: {
     type: 'string',
     nullable: false,
   },
@@ -43,6 +72,12 @@ const fields: FieldsConfig = {
   source: {
     type: 'string',
     nullable: false,
+  },
+  crm_status: {
+    type: 'string',
+    nullable: false,
+    enum: ['active_lead','quoted','sold','follow_up','dead','installed'],
+    default: 'active_lead'
   },
   createdBy: {
     type: 'string',

@@ -17,7 +17,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
       throw AppError.unauthorized('Token has been revoked')
     }
 
-    const decoded = jwt.verify(token, config.jwt.secret) as { id: string; email: string }
+    const decoded = jwt.verify(token, config.jwt.secret) as { id: string; email: string, role: string }
     req.user = decoded
     next()
   } catch (error) {

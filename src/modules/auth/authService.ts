@@ -71,7 +71,7 @@ export class AuthService extends BaseService<User> {
       location,
       profilePicture,
     })
-    const token = this.generateToken({ id: newUser._id, email: newUser.email })
+    const token = this.generateToken({ id: newUser._id, email: newUser.email, role: newUser.role })
 
     // Send OTP to email
     let otp = await this.sendOTP({ email })
@@ -130,7 +130,7 @@ export class AuthService extends BaseService<User> {
     if (!isPasswordValid) {
       throw AppError.unauthorized('Invalid credentials')
     }
-    const token = this.generateToken({ id: user._id, email: user.email })
+    const token = this.generateToken({ id: user._id, email: user.email, role: user.role })
     return { token, user: userObj }
   }
 
@@ -186,7 +186,7 @@ export class AuthService extends BaseService<User> {
       })
     }
 
-    const token = this.generateToken({ id: user._id, email: user.email })
+    const token = this.generateToken({ id: user._id, email: user.email, role: user.role })
     delete user.password
     return { token, user }
   }
@@ -244,7 +244,7 @@ export class AuthService extends BaseService<User> {
       })
     }
 
-    const token = this.generateToken({ id: user._id, email: user.email })
+    const token = this.generateToken({ id: user._id, email: user.email, role: user.role })
     delete user.password
     return { token, user }
   }

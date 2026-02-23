@@ -55,16 +55,24 @@ export class CustomerService extends BaseService<Customer> {
 
   // Get all customers with optional date filtering (MTD/YTD)
   public getAllCustomers = async (
-    params: any = {}
+    params: any = {},
+    authUser: any
   ): Promise<CustomerResponse[] | PaginatedResponse<CustomerResponse>> => {
-    const { search, dateFilter, paginate, page, perPage } = params
+    const { search, dateFilter, paginate, page, perPage, createdBy } = params
     let query: any = {}
-
+    
+    if(authUser.role == 'salesperson'){
+      query = {
+        createdBy
+      }
+    }
     // Apply search filter
     if (search) {
       const searchRegex = new RegExp(search, 'i')
       query.$or = [
         { name: { $regex: searchRegex } },
+        { firstName: { $regex: searchRegex } },
+        { lastName: { $regex: searchRegex } },
         { emailAddress: { $regex: searchRegex } },
         { phone: { $regex: searchRegex } },
         { address: { $regex: searchRegex } },
@@ -84,20 +92,20 @@ export class CustomerService extends BaseService<Customer> {
     }
 
     // Get customers from base service
-    const customers = await this.model.getAll(query, paginate, page, perPage)
+    const customers = await this.model.getAll({...query, paginate, page, perPage, populate: ['serviceRequested']})
 
     // Handle paginated response
-    if (customers && 'result' in customers && 'pagination' in customers) {
-      const populatedCustomers = await this.populateAllCustomers(customers.result)
+    // if (customers && 'result' in customers && 'pagination' in customers) {
+    //   const populatedCustomers = await this.populateAllCustomers(customers.result)
 
-      return {
-        result: populatedCustomers,
-        pagination: customers.pagination,
-      }
-    }
+    //   return {
+    //     result: populatedCustomers,
+    //     pagination: customers.pagination,
+    //   }
+    // }
 
-    // Handle non-paginated response
-    const result = await this.populateAllCustomers(customers as Customer[])
-    return result
+    // // Handle non-paginated response
+    // const result = await this.populateAllCustomers(customers as Customer[])
+    return customers
   }
 }

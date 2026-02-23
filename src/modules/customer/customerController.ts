@@ -12,7 +12,8 @@ export class CustomerController extends BaseController<Customer, CustomerService
   public getAll = async (req: Request, res: Response): Promise<void> => {
     try {
       const { query } = req
-      const data = await this.service.getAllCustomers(query)
+      query.createdBy = req.user?.id; 
+      const data = await this.service.getAllCustomers(query, req.user)
       apiResponse(res, data, 200, 'Customers fetched successfully')
     } catch (error: any) {
       console.log('error', error)

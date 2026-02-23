@@ -12,17 +12,18 @@ const customerService = new CustomerService()
 const customerController = new CustomerController(customerService)
 
 router.use(authenticate)
+
 router.get(
   '/',
   validateQuery(CustomerValidator.getAll),
-  requiredRole(['superadmin', 'manager']),
+  // requiredRole(['superadmin', 'manager']),
   customerController.getAll
 )
 router.get('/:id', requiredRole(['superadmin', 'manager']), customerController.getById)
 router.post(
   '/',
   validate(CustomerValidator.create),
-  requiredRole(['superadmin', 'manager']),
+  // requiredRole(['superadmin', 'manager']),
   customerController.create
 )
 router.put(

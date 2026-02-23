@@ -32,4 +32,12 @@ export const CustomerValidator = {
     search: Joi.string().optional(),
     dateFilter: Joi.string().valid('MTD', 'YTD').optional(),
   }),
+
+  getSalesRepCustomers: Joi.object({
+    paginate: Joi.boolean().optional(),
+    page: Joi.number().optional(),
+    perPage: Joi.number().optional(),
+    search: Joi.string().optional(),
+    dateFilter: Joi.string().valid('MTD', 'YTD').optional(),
+  }),
 }

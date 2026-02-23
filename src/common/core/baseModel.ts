@@ -51,58 +51,142 @@ export class BaseModel<T extends Record<string, any>, M extends Document = Docum
     return this.sequelizeModel
   }
 
-  public getAll = async (params: Record<string, any> = {}): Promise<T[] | PaginatedResponse<T>> => {
+  public getAll = async (
+    params: Record<string, any> = {}
+  ): Promise<T[] | PaginatedResponse<T>> => {
     const {
       page = DEFAULT_PAGINATION_OPTIONS.page,
       perPage = DEFAULT_PAGINATION_OPTIONS.perPage,
       paginate = false,
+      populate = undefined,            // ✅ allow undefined/true/false or explicit specs
       sort = { createdAt: -1 },
+      select = '-__v',
       ...query
-    } = params
+    } = params;
 
-    const skip = (parseInt(page) - 1) * parseInt(perPage)
+    const skip = (parseInt(page) - 1) * parseInt(perPage);
 
     if (this.mongooseModel) {
-      const mongooseQuery: Record<string, any> = query
-      if (paginate) {
-        const [result, totalCount] = await Promise.all([
-          this.mongooseModel.find(mongooseQuery).sort(sort).skip(skip).limit(perPage).lean(),
-          this.mongooseModel.countDocuments(mongooseQuery),
-        ])
+      const mongooseQuery: Record<string, any> = query;
 
+      // ---------- helpers ----------
+      const normalizePopulate = (p: any): PopulateOptions[] => {
+        if (!p) return [];
+        // string -> [{ path: string }]
+        if (typeof p === "string") return [{ path: p }];
+        // array of strings or options
+        if (Array.isArray(p)) {
+          return p.map((it) =>
+            typeof it === "string" ? ({ path: it } as PopulateOptions) : (it as PopulateOptions)
+          );
+        }
+        // object
+        return [p as PopulateOptions];
+      };
+
+      const detectPopulate = (): PopulateOptions[] => {
+        const schema = this.mongooseModel!.schema as any;
+        const paths = schema.paths || {};
+        const virtuals = schema.virtuals || {};
+
+        const specs: PopulateOptions[] = [];
+
+        // 1) Real paths: single refs and array refs
+        Object.keys(paths).forEach((path) => {
+          const st = paths[path]; // SchemaType
+          const directRef = st?.options?.ref;
+          const arrayRef = st?.caster?.options?.ref; // <-- arrays put ref on caster
+
+          const ref = directRef || arrayRef;
+          if (ref) {
+            specs.push({ path, model: ref });
+          }
+        });
+
+        // 2) Virtual populates (localField/foreignField)
+        Object.keys(virtuals).forEach((vName) => {
+          const v = virtuals[vName];
+          if (v?.options?.ref) {
+            specs.push({
+              path: vName,
+              model: v.options.ref,
+              localField: v.options.localField,
+              foreignField: v.options.foreignField,
+              justOne: v.options.justOne,
+              options: v.options.options,
+            } as PopulateOptions);
+          }
+        });
+
+        return specs;
+      };
+      // -----------------------------
+
+      // Decide populate strategy
+      let populateSpecs: PopulateOptions[] = [];
+      if (populate === true || populate === undefined || populate === null) {
+        // auto-detect when populate not provided or explicitly true
+        populateSpecs = detectPopulate();
+      } else if (populate === false) {
+        populateSpecs = [];
+      } else {
+        populateSpecs = normalizePopulate(populate);
+      }
+
+      const queryBuilder = this.mongooseModel.find(mongooseQuery).sort(sort);
+
+      if (populateSpecs.length) {
+        queryBuilder.populate(populateSpecs);
+      }
+
+      const isPaginate =
+        typeof paginate === "string" ? paginate === "true" : !!paginate;
+
+      if (isPaginate) {
+        const [result, totalCount] = await Promise.all([
+          queryBuilder.skip(skip).limit(perPage).lean({ virtuals: true }),
+          this.mongooseModel.countDocuments(mongooseQuery),
+        ]);
         return {
           result: result as T[],
           pagination: buildPaginationMeta(totalCount, page, perPage),
-        }
+        };
       }
 
-      return (await this.mongooseModel.find(mongooseQuery).sort(sort)).map(
-        doc => doc.toObject() as T
-      )
+      return (await queryBuilder.select(select).lean({ virtuals: true })) as T[];
     }
 
+    // ---------- Sequelize ----------
     if (this.sequelizeModel) {
-      if (paginate) {
-        const { count: totalCount, rows } = await this.sequelizeModel.findAndCountAll({
-          where: query,
-          offset: skip,
-          limit: perPage,
-          order: Object.entries(sort).map(([key, value]) => [key, value === 1 ? 'ASC' : 'DESC']),
-        })
+      const include =
+        Array.isArray(populate) || (populate && typeof populate === "object")
+          ? (populate as any)
+          : []; // ignore boolean true/false for Sequelize
 
+      if (paginate) {
+        const { count: totalCount, rows } =
+          await this.sequelizeModel.findAndCountAll({
+            where: query,
+            offset: skip,
+            limit: perPage,
+            include,
+          });
         return {
-          result: rows.map(result => result.get({ plain: true }) as T),
+          result: rows.map((r) => r.get({ plain: true }) as T),
           pagination: buildPaginationMeta(totalCount, page, perPage),
-        }
+        };
       }
 
-      return (await this.sequelizeModel.findAll({ where: query })).map(
-        result => result.get({ plain: true }) as T
-      )
+      return (
+        await this.sequelizeModel.findAll({
+          where: query,
+          include,
+        })
+      ).map((r) => r.get({ plain: true }) as T);
     }
 
-    throw new Error(`Database model "${this.modelName}" not initialized.`)
-  }
+    throw new Error(`Database model "${this.modelName}" not initialized.`);
+  };
 
   public aggregate = async (pipeline: PipelineStage[]): Promise<any[]> => {
     if (this.mongooseModel) {
