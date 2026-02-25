@@ -5,6 +5,7 @@ import mongoose, {
   PipelineStage,
   Schema,
   isValidObjectId,
+  PopulateOptions
 } from 'mongoose'
 import { Model as SequelizeModel, ModelStatic, Transaction, QueryTypes } from 'sequelize'
 import { DatabaseService } from '../../services/databaseService'
