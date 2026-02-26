@@ -68,7 +68,10 @@ export class BaseModel<T extends Record<string, any>, M extends Document = Docum
     const skip = (parseInt(page) - 1) * parseInt(perPage);
 
     if (this.mongooseModel) {
-      const mongooseQuery: Record<string, any> = query;
+      const mongooseQuery: Record<string, any> = {...query, "$or": [
+        { "deletedAt": null },
+        { "deletedAt": { "$exists": false } }
+      ]};
 
       // ---------- helpers ----------
       const normalizePopulate = (p: any): PopulateOptions[] => {

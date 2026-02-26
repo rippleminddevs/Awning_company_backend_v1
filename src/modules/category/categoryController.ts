@@ -33,7 +33,7 @@ export class CategoryController extends BaseController<Category, CategoryService
   }
 
   public getAll = async (req: Request, res: Response): Promise<void> => {
-    const category = await this.service.getAll({ sort: { createdAt: 1 } })
+    const category = await this.service.getAll({ sort: { order: 1 } })
     apiResponse(res, category, 200, 'Category fetched successfully')
   }
 

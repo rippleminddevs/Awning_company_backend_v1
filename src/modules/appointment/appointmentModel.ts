@@ -121,6 +121,18 @@ const fields: FieldsConfig = {
     type: 'string',
     nullable: false,
   },
+  pre_status:{
+    type: 'string',
+    nullable: false,
+    enum: ['scheduled','confirmed','call_back','canceled','tentative','left_voicemail'],
+    default: 'scheduled'
+  },
+  post_status:{
+    type: 'string',
+    nullable: false,
+    enum: ['sold','quoted','no_show','no_can_do','awaiting_quote','sale_pending','followed_up'],
+    default: 'scheduled'
+  },
   status: {
     type: 'string',
     nullable: false,
