@@ -30,11 +30,11 @@ const fields: FieldsConfig = {
     type: 'string',
     nullable: false,
   },
-  company_contact: {
+  companyContact: {
     type: 'string',
     nullable: false,
   },
-  onsite_contact: {
+  onsiteContact: {
     type: 'string',
     nullable: false,
   },
@@ -42,11 +42,11 @@ const fields: FieldsConfig = {
     type: 'string',
     nullable: false,
   },
-  address_line1: {
+  addressLine1: {
     type: 'string',
     nullable: false,
   },
-  address_line2: {
+  addressLine2: {
     type: 'string',
     nullable: false,
   },
@@ -73,7 +73,7 @@ const fields: FieldsConfig = {
     type: 'string',
     nullable: false,
   },
-  crm_status: {
+  crmStatus: {
     type: 'string',
     nullable: false,
     enum: ['active_lead','quoted','sold','follow_up','dead','installed'],
