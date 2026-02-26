@@ -22,6 +22,10 @@ import contentRoutes from './modules/content/contentRoutes';
 import { ContentService } from './modules/content/contentService';
 import { apiResponse } from './common/utils/apiResponse';
 
+import productTypeRoutes from './modules/productType/productTypeRoutes'
+import productCategoryRoutes from './modules/productCategory/productCategoryRoutes'
+import optionGroupRoutes from './modules/optionGroup/optionGroupRoutes'
+import productSubCategoryRoutes from './modules/productSubCategory/productSubCategoryRoutes'
 // {{modulePath}}
 
 class Routes {
@@ -66,6 +70,10 @@ class Routes {
       }
     });
 
+    this.router.use('/product-types', productTypeRoutes)
+    this.router.use('/product-categories', productCategoryRoutes)
+    this.router.use('/option-groups', optionGroupRoutes)
+    this.router.use('/product-sub-categories', productSubCategoryRoutes)
     // {{moduleRoute}}
   }
 }
