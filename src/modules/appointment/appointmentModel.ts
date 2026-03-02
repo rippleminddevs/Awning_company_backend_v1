@@ -130,7 +130,7 @@ const fields: FieldsConfig = {
   post_status:{
     type: 'string',
     nullable: false,
-    enum: ['sold','quoted','no_show','no_can_do','awaiting_quote','sale_pending','followed_up'],
+    enum: ['scheduled', 'sold','quoted','no_show','no_can_do','awaiting_quote','sale_pending','followed_up'],
     default: 'scheduled'
   },
   status: {
