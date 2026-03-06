@@ -100,6 +100,7 @@ const fields: FieldsConfig = {
       'LEFT VOICEMAIL',
       'COMPLETE',
       'NEW LEADS',
+      'COMING TO SHOWROOM',
     ],
     default: 'Hot',
   },

@@ -34,7 +34,8 @@ export const QuoteValidator = {
         'SCHEDULED',
         'LEFT VOICEMAIL',
         'COMPLETE',
-        'NEW LEADS'
+        'NEW LEADS',
+        'COMING TO SHOWROOM'
       )
       .optional()
       .default('Hot'),
@@ -75,7 +76,8 @@ export const QuoteValidator = {
         'SCHEDULED',
         'LEFT VOICEMAIL',
         'COMPLETE',
-        'NEW LEADS'
+        'NEW LEADS',
+        'COMING TO SHOWROOM'
       )
       .optional()
       .default('Hot'),
@@ -116,7 +118,8 @@ export const QuoteValidator = {
         'SCHEDULED',
         'LEFT VOICEMAIL',
         'COMPLETE',
-        'NEW LEADS'
+        'NEW LEADS',
+        'COMING TO SHOWROOM'
       )
       .optional(),
     dateFilter: Joi.string().valid('MTD', 'YTD').optional(),

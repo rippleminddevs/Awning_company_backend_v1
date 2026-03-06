@@ -527,6 +527,7 @@ export class QuoteService extends BaseService<Quote> {
         'LEFT VOICEMAIL',
         'COMPLETE',
         'NEW LEADS',
+        'COMING TO SHOWROOM',
       ]
       if (validStatuses.some(s => s.toLowerCase() === sort.toLowerCase())) {
         // Sort is a status value, use it as status filter if status is not already set

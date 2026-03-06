@@ -102,6 +102,7 @@ export interface Quote {
   | 'LEFT VOICEMAIL'
   | 'COMPLETE'
   | 'NEW LEADS'
+  | 'COMING TO SHOWROOM'
   paymentStructure: PaymentStructure
   paymentDetails: PaymentDetails
   paymentSummary: PaymentSummary
