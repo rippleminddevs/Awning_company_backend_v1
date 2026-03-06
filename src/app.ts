@@ -15,6 +15,7 @@ import { apiResponse } from './common/utils/apiResponse'
 import socketService from './services/socketService'
 import authViewRoutes from './modules/auth/authViewRoutes';
 import { ContentSeeder } from './services/contentSeeder';
+import { CatalogSeeder } from './services/catalogSeeder';
 import path from 'path'
 import fs from 'fs'
 
@@ -109,6 +110,8 @@ class App {
     DatabaseService.getInstance()
     const contentSeeder = new ContentSeeder();
     await contentSeeder.seed();
+    const catalogSeeder = new CatalogSeeder();
+    await catalogSeeder.seed();
   }
 
   private configureSocketIO = async (): Promise<void> => {

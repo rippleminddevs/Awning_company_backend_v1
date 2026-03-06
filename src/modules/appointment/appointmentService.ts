@@ -1,5 +1,6 @@
 import { BaseService } from '../../common/core/baseService'
 import { AppointmentModel } from './appointmentModel'
+import { CustomerModel } from '../customer/customerModel'
 import { Appointment, GetAppointmentParams, StaffAppointments } from './appointmentInterface'
 import { PaginatedResponse } from '../../common/interfaces/globalInterfaces'
 import { UserService } from '../user/userService'
@@ -110,8 +111,47 @@ export class AppointmentService extends BaseService<Appointment> {
     return appointment
   }
 
+  // Resolve or create a Customer document and attach customerId to payload
+  private resolveCustomer = async (payload: Appointment): Promise<void> => {
+    if (payload.customerId) return
+
+    const customerModel = CustomerModel.getInstance().getMongooseModel()
+
+    // Try to find existing customer by email
+    let customer = await customerModel.findOne({ emailAddress: payload.emailAddress })
+
+    if (!customer) {
+      const isResidential = payload.customerType === 'residential'
+      const name = isResidential
+        ? `${payload.firstName || ''} ${payload.lastName || ''}`.trim() || payload.emailAddress
+        : payload.businessName || payload.emailAddress
+
+      customer = await customerModel.create({
+        customer_type: payload.customerType,
+        name,
+        firstName: payload.firstName || null,
+        lastName: payload.lastName || null,
+        emailAddress: payload.emailAddress,
+        businessName: payload.businessName || null,
+        companyContact: payload.companyContact || null,
+        onsiteContact: null,
+        phone: (payload as any).phoneNumber || '',
+        addressLine1: payload.address1 || '',
+        addressLine2: payload.address2 || null,
+        city: payload.city || '',
+        zipCode: payload.zipCode || '',
+        source: payload.source || '',
+        serviceRequested: (payload as any).service || null,
+        createdBy: payload.createdBy,
+      })
+    }
+
+    payload.customerId = customer._id.toString()
+  }
+
   // Create appointment
   public createAppointment = async (payload: Appointment): Promise<Appointment> => {
+    await this.resolveCustomer(payload)
     const appointment = await this.model.create(payload)
     const populatedAppointment = await this.getPopulatedAppointment(appointment._id)
 

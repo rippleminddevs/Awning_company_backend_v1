@@ -110,6 +110,8 @@ export interface Quote {
   createdBy: string
   createdAt?: Date
   updatedAt?: Date
+  line_items_v2?: any[]
+  quote_notes?: string
 }
 
 export interface QuoteResponse {

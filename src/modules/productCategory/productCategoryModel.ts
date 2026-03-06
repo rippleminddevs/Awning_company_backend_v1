@@ -22,6 +22,10 @@ const fields: FieldsConfig = {
     type: 'boolean',
     nullable: false,
   },
+  has_sub_categories: {
+    type: 'boolean',
+    nullable: true,
+  },
 }
 
 export class ProductCategoryModel extends BaseModel<ProductCategory> {

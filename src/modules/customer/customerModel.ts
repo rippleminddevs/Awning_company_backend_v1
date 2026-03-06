@@ -8,7 +8,7 @@ const fields: FieldsConfig = {
   customer_type: {
     type: 'string',
     nullable: false,
-    enum: ['residential', 'commercial','property_manager','hoa']
+    enum: ['residential', 'commercial', 'contractor', 'designer', 'property_manager', 'hoa']
   },
   name: {
     type: 'string',
@@ -16,11 +16,13 @@ const fields: FieldsConfig = {
   },
   firstName: {
     type: 'string',
-    nullable: false,
+    nullable: true,
+    default: null,
   },
   lastName: {
     type: 'string',
-    nullable: false,
+    nullable: true,
+    default: null,
   },
   emailAddress: {
     type: 'string',
@@ -28,19 +30,23 @@ const fields: FieldsConfig = {
   },
   businessName: {
     type: 'string',
-    nullable: false,
+    nullable: true,
+    default: null,
   },
   companyContact: {
     type: 'string',
-    nullable: false,
+    nullable: true,
+    default: null,
   },
   onsiteContact: {
     type: 'string',
-    nullable: false,
+    nullable: true,
+    default: null,
   },
   phone: {
     type: 'string',
-    nullable: false,
+    nullable: true,
+    default: null,
   },
   addressLine1: {
     type: 'string',
@@ -48,7 +54,8 @@ const fields: FieldsConfig = {
   },
   addressLine2: {
     type: 'string',
-    nullable: false,
+    nullable: true,
+    default: null,
   },
   city: {
     type: 'string',
@@ -67,11 +74,13 @@ const fields: FieldsConfig = {
     type: 'string',
     mongooseType: 'ObjectId',
     ref: 'Service',
-    nullable: false,
+    nullable: true,
+    default: null,
   },
   source: {
     type: 'string',
-    nullable: false,
+    nullable: true,
+    default: null,
   },
   crmStatus: {
     type: 'string',

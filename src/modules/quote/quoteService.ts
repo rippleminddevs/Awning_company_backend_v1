@@ -162,7 +162,7 @@ export class QuoteService extends BaseService<Quote> {
   ): PaymentSummary {
     const subtotal = Math.max(0, parseFloat(paymentStructure.discountedSalesPrice || '0') || 0)
     const discount = parseFloat(paymentStructure.discount || '0') || 0
-    const taxRate = paymentStructure.salesTax === 'Default' ? 0.08 : 0 // 8% default tax
+    const taxRate = paymentStructure.salesTax === 'Default' ? 0.0975 : 0 // 9.75% CA sales tax
     const taxes = subtotal * taxRate
     const freight = parseFloat(paymentStructure.freight || '0') || 0
     const total = Math.max(0, subtotal)
