@@ -131,78 +131,179 @@ export class InvoiceService {
       quoteExpiry: this.calculateExpiryDate(quote.createdAt),
     }
 
-    // Transform order items
-    const items = await Promise.all(
-      quote.orders.map(async (order: any) => {
-        const product = order.productData
+    // Detect V2 quote (line_items_v2 populated, no old orders)
+    const isV2 = Array.isArray(quote.line_items_v2) && quote.line_items_v2.length > 0
+    const appointmentAddress = [quote.appointment?.address1, quote.appointment?.address2]
+      .filter(Boolean).join(' ')
 
-        const features: string[] = []
-        if (order.additionalFeatures) {
-          Object.entries(order.additionalFeatures).forEach(([key, value]) => {
-            if (value && value !== '0' && value !== 'false' && value !== 'No') {
-              const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
-              features.push(`${label}: ${value}`)
+    let items: InvoiceData['items']
+
+    if (isV2) {
+      // ── V2 line items ────────────────────────────────────────────────────
+      items = quote.line_items_v2.map((item: any) => {
+        // Build options summary from options_map
+        const options: string[] = []
+        if (item.options_map) {
+          Object.entries(item.options_map).forEach(([slug, sel]: [string, any]) => {
+            if ((sel.yn === 'Yes' || (sel.yn && sel.yn !== 'No')) && (sel.price ?? 0) > 0) {
+              const label = slug.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+              const detail = sel.sub_slug ? ` — ${sel.sub_slug.replace(/_/g, ' ')}` : ''
+              const qty   = sel.qty && sel.qty > 1 ? ` ×${sel.qty}` : ''
+              options.push(`${label}${detail}${qty}  (+${this.formatCurrency(sel.price)})`)
             }
           })
         }
 
+        // Build size string from dimensions
+        const dims = item.dimensions || {}
+        const sizeParts: string[] = []
+        if (dims.width_ft !== undefined)
+          sizeParts.push(`Width: ${dims.width_ft}'${dims.width_in ? ' ' + dims.width_in + '"' : ''}`)
+        if (dims.projection_ft !== undefined)
+          sizeParts.push(`Projection: ${dims.projection_ft}'${dims.projection_in ? ' ' + dims.projection_in + '"' : ''}`)
+        if (dims.height_ft !== undefined)
+          sizeParts.push(`Height: ${dims.height_ft}'${dims.height_in ? ' ' + dims.height_in + '"' : ''}`)
+        if (dims.panel_qty)  sizeParts.push(`Panels: ${dims.panel_qty}`)
+        if (dims.number_of_bays) sizeParts.push(`Bays: ${dims.number_of_bays}`)
+
+        // Build description from fabric + drive info
+        const descParts: string[] = []
+        if (dims.fabric_name)   descParts.push(`Fabric: ${dims.fabric_name}`)
+        if (dims.fabric_number) descParts.push(`#${dims.fabric_number}`)
+        if (item.drive_type && item.drive_type !== 'none')
+          descParts.push(`Drive: ${item.drive_type === 'motorized' ? 'Motorized' : 'Hand Crank'}`)
+
+        const price = item.discounted_total ?? item.line_total ?? 0
+
         return {
-          qty: order.quantity || 1,
-          unitPrice: this.formatCurrency(order.unitPrice),
-          extendedPrice: this.formatCurrency((order.quantity || 1) * order.unitPrice),
-          image: this.optimizeImageUrl(product?.image?.url || '', 400, 300, 70),
-          title: product?.name || '',
-          description: order.description || product?.description || '',
-          location: quote.appointment.address1 + ' ' + quote.appointment.address2,
-          options: features,
-          size: `Width: ${order.width_ft}' ${order.width_in || 0}" ${order.widthFraction || '0'}/8"
-    Height: ${order.height_ft}' ${order.height_in || 0}" ${order.heightFraction || '0'}/8"
-    Projection: ${order.projection_ft}' ${order.projection_in || 0}" ${order.projectionFraction || '0'}/8"`,
-          color: order.hardwareColor,
-          notes: order.notes,
+          qty: 1,
+          unitPrice:     this.formatCurrency(price),
+          extendedPrice: this.formatCurrency(price),
+          image: '',
+          title: item.product_name || '',
+          description: descParts.join('  ·  '),
+          location: appointmentAddress,
+          options,
+          size: sizeParts.join('  ·  '),
+          color: dims.hardware_color || dims.frame_color || '',
+          notes: [],
         }
       })
-    )
-
-    // Calculate summary
-    const subtotal = quote.orders.reduce(
-      (sum: number, order: any) => sum + order.quantity * order.unitPrice,
-      0
-    )
-
-    const summary = {
-      subtotal: this.formatCurrency(quote.paymentSummary?.subtotal || 0),
-      discount: this.formatCurrency(quote.paymentSummary?.discount || 0),
-      taxes: 'Included',
-      freight: 'Included',
-      total: this.formatCurrency(quote.paymentSummary?.total || 0),
+    } else {
+      // ── Legacy V1 orders ─────────────────────────────────────────────────
+      items = await Promise.all(
+        quote.orders.map(async (order: any) => {
+          const product = order.productData
+          const features: string[] = []
+          if (order.additionalFeatures) {
+            Object.entries(order.additionalFeatures).forEach(([key, value]) => {
+              if (value && value !== '0' && value !== 'false' && value !== 'No') {
+                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+                features.push(`${label}: ${value}`)
+              }
+            })
+          }
+          return {
+            qty: order.quantity || 1,
+            unitPrice:     this.formatCurrency(order.unitPrice),
+            extendedPrice: this.formatCurrency((order.quantity || 1) * order.unitPrice),
+            image: this.optimizeImageUrl(product?.image?.url || '', 400, 300, 70),
+            title: product?.name || '',
+            description: order.description || product?.description || '',
+            location: appointmentAddress,
+            options: features,
+            size: `Width: ${order.width_ft}' ${order.width_in || 0}" ${order.widthFraction || '0'}/8"
+    Height: ${order.height_ft}' ${order.height_in || 0}" ${order.heightFraction || '0'}/8"
+    Projection: ${order.projection_ft}' ${order.projection_in || 0}" ${order.projectionFraction || '0'}/8"`,
+            color: order.hardwareColor,
+            notes: order.notes,
+          }
+        })
+      )
     }
 
-    // Payment schedule
-    const payment = {
-      dueAcceptance: this.formatCurrency(quote.paymentSummary?.dueAcceptance || 0),
-      installments: quote.paymentStructure?.numberOfInstallments || '1',
-      duePriorDelivery: this.formatCurrency(quote.paymentSummary?.duePriorDelivery || 0),
-      balanceCompletion: this.formatCurrency(quote.paymentSummary?.balanceCompletion || 0),
+    // ── Summary ──────────────────────────────────────────────────────────────
+    let summary: InvoiceData['summary']
+    if (isV2) {
+      const msrp       = parseFloat(quote.paymentStructure?.MSRP || '0')
+      const discount   = parseFloat(quote.paymentStructure?.discount || '0')
+      const grandTotal = quote.paymentStructure?.grandTotal || 0
+      const hasTax     = quote.paymentStructure?.salesTax === 'Default'
+      const taxAmt     = hasTax ? grandTotal - (msrp - discount) : 0
+
+      summary = {
+        subtotal: this.formatCurrency(msrp),
+        discount: discount > 0 ? `−${this.formatCurrency(discount)}` : this.formatCurrency(0),
+        taxes:    hasTax ? this.formatCurrency(taxAmt) : 'Included',
+        freight:  'Included',
+        total:    this.formatCurrency(grandTotal),
+      }
+    } else {
+      summary = {
+        subtotal: this.formatCurrency(quote.paymentSummary?.subtotal || 0),
+        discount: this.formatCurrency(quote.paymentSummary?.discount || 0),
+        taxes:    'Included',
+        freight:  'Included',
+        total:    this.formatCurrency(quote.paymentSummary?.total || 0),
+      }
     }
 
-    // Customer info
+    // ── Payment schedule ─────────────────────────────────────────────────────
+    let payment: InvoiceData['payment']
+    if (isV2) {
+      const grandTotal  = quote.paymentStructure?.grandTotal || 0
+      const firstPct    = parseFloat(quote.paymentStructure?.upfrontDeposit || '50')
+      const deposit     = (firstPct / 100) * grandTotal
+      const balance     = grandTotal - deposit
+      payment = {
+        dueAcceptance:    this.formatCurrency(deposit),
+        installments:     quote.paymentStructure?.numberOfInstallments || '2',
+        duePriorDelivery: this.formatCurrency(0),
+        balanceCompletion: this.formatCurrency(balance),
+      }
+    } else {
+      payment = {
+        dueAcceptance:    this.formatCurrency(quote.paymentSummary?.dueAcceptance || 0),
+        installments:     quote.paymentStructure?.numberOfInstallments || '1',
+        duePriorDelivery: this.formatCurrency(quote.paymentSummary?.duePriorDelivery || 0),
+        balanceCompletion: this.formatCurrency(quote.paymentSummary?.balanceCompletion || 0),
+      }
+    }
+
+    // ── Customer info ────────────────────────────────────────────────────────
+    const appt = quote.appointment || {}
     const customer = {
-      quoteId: quote._id.toString().slice(-6),
-      name: `${quote.appointment.firstName} ${quote.appointment.lastName}`,
-      phone: quote.appointment.bestContact || '',
-      email: quote.appointment.emailAddress || '',
-      street: quote.appointment.address1 || '',
-      city: quote.appointment.city || '',
-      state: quote.appointment.state || '',
-      zipCode: quote.appointment.zipCode || '',
-      jobLocation: quote.appointment.address1 + quote.appointment.address2 || '',
-      leadTime: quote.appointment.time.toLocaleString() || '2-3 weeks',
-      installTime: quote.appointment.duration || '1-2 days',
-      source: 'TAC Web',
+      quoteId:     quote._id.toString().slice(-6),
+      name:        `${appt.firstName || ''} ${appt.lastName || ''}`.trim(),
+      phone:       appt.bestContact || '',
+      email:       appt.emailAddress || '',
+      street:      appt.address1 || '',
+      city:        appt.city || '',
+      state:       appt.state || '',
+      zipCode:     appt.zipCode || '',
+      jobLocation: appointmentAddress,
+      leadTime:    appt.time ? new Date(appt.time).toLocaleString() : '2–3 weeks',
+      installTime: appt.duration || '1–2 days',
+      source:      'TAC Web',
     }
 
-    // Terms and conditions
+    // ── Notes ────────────────────────────────────────────────────────────────
+    if (isV2 && quote.quote_notes) {
+      items.push({
+        qty: 0,
+        unitPrice: '',
+        extendedPrice: '',
+        image: '',
+        title: 'Special Instructions',
+        description: quote.quote_notes,
+        location: '',
+        options: [],
+        size: '',
+        color: '',
+        notes: [],
+      })
+    }
+
     const terms = [
       'THE UNPAID BALANCE IS DUE TO THE INSTALLERS UPON COMPLETION OF THE INSTALLATION. Unpaid balances will bear interest at the rate of .2% per month. The goods sold herein remain the property of the Seller until full payment is received. Product specifications are subject to change without notice.',
       'If any legal action is commenced to enforce the terms of this contract the prevailing party shall be entitled to reasonable attorney fees, collection costs and court costs.',
@@ -212,15 +313,7 @@ export class InvoiceService {
       'Company installers do not carry paint but will do "touch up" stucco or wood (first coat only), provided BUYER supplies necessary materials during the installation.',
     ]
 
-    return {
-      company: companyInfo,
-      salesperson,
-      customer,
-      items,
-      summary,
-      payment,
-      terms,
-    }
+    return { company: companyInfo, salesperson, customer, items, summary, payment, terms }
   }
 
   // Optimize image URL using Cloudinary transformations

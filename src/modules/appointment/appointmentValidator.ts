@@ -72,7 +72,8 @@ const baseAppointmentSchema = {
       'SCHEDULED',
       'LEFT VOICEMAIL',
       'COMPLETE',
-      'NEW LEADS'
+      'NEW LEADS',
+      'COMING TO SHOWROOM'
     ),
   internalNotes: Joi.string().optional().allow('', null),
   phoneNumber: Joi.string().optional().allow('', null),
@@ -125,7 +126,8 @@ export const AppointmentValidator = {
       'SCHEDULED',
       'LEFT VOICEMAIL',
       'COMPLETE',
-      'NEW LEADS'
+      'NEW LEADS',
+      'COMING TO SHOWROOM'
     ),
   }).min(1),
 
@@ -160,7 +162,8 @@ export const AppointmentValidator = {
         'SCHEDULED',
         'LEFT VOICEMAIL',
         'COMPLETE',
-        'NEW LEADS'
+        'NEW LEADS',
+        'COMING TO SHOWROOM'
       ),
   }),
 }

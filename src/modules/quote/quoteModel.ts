@@ -140,6 +140,16 @@ const fields: FieldsConfig = {
     ref: 'User',
     nullable: false,
   },
+  line_items_v2: {
+    type: 'array',
+    itemType: 'json',
+    nullable: true,
+    default: [],
+  },
+  quote_notes: {
+    type: 'string',
+    nullable: true,
+  },
 }
 
 export class QuoteModel extends BaseModel<Quote> {

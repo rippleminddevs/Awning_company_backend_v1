@@ -23,6 +23,7 @@ export interface LocationCoordinates {
 
 export interface Appointment {
   _id?: string
+  customerId?: string
   customerType: string
   firstName?: string
   lastName?: string

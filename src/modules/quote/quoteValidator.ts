@@ -42,6 +42,8 @@ export const QuoteValidator = {
       .valid('pending', 'paid', 'partially paid')
       .optional()
       .default('pending'),
+    line_items_v2: Joi.array().items(Joi.object().unknown(true)).optional(),
+    quote_notes: Joi.string().optional().allow(''),
   }),
 
   update: Joi.object({
@@ -78,6 +80,8 @@ export const QuoteValidator = {
       .optional()
       .default('Hot'),
     paymentStatus: Joi.string().valid('pending', 'paid', 'partially paid').optional(),
+    line_items_v2: Joi.array().items(Joi.object().unknown(true)).optional(),
+    quote_notes: Joi.string().optional().allow(''),
   }),
 
   updateDocuments: Joi.object({

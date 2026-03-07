@@ -26,6 +26,9 @@ import productTypeRoutes from './modules/productType/productTypeRoutes'
 import productCategoryRoutes from './modules/productCategory/productCategoryRoutes'
 import optionGroupRoutes from './modules/optionGroup/optionGroupRoutes'
 import productSubCategoryRoutes from './modules/productSubCategory/productSubCategoryRoutes'
+import productPriceRoutes from './modules/productPrice/productPriceRoutes'
+import fabricRoutes from './modules/fabric/fabricRoutes'
+import optionCatalogRoutes from './modules/optionCatalog/optionCatalogRoutes'
 // {{modulePath}}
 
 class Routes {
@@ -74,6 +77,9 @@ class Routes {
     this.router.use('/product-categories', productCategoryRoutes)
     this.router.use('/option-groups', optionGroupRoutes)
     this.router.use('/product-sub-categories', productSubCategoryRoutes)
+    this.router.use('/product-prices', productPriceRoutes)
+    this.router.use('/fabrics', fabricRoutes)
+    this.router.use('/options', optionCatalogRoutes)
     // {{moduleRoute}}
   }
 }

@@ -1,4 +1,8 @@
 export interface ProductSubCategory {
-  name: string
-  email: string
+  category_slug: string
+  slug: string
+  display_name: string
+  description?: string
+  sort_order?: number
+  is_active?: boolean
 }
