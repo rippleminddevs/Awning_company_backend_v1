@@ -2,15 +2,28 @@ import Joi from 'joi'
 
 export const CustomerValidator = {
   create: Joi.object({
+    customer_type: Joi.string()
+      .valid('residential', 'commercial', 'contractor', 'designer', 'property_manager', 'hoa')
+      .required(),
     name: Joi.string().required(),
+    firstName: Joi.string().optional().allow(null).default(null),
+    lastName: Joi.string().optional().allow(null).default(null),
     emailAddress: Joi.string().email().required(),
-    phone: Joi.string().required(),
-    address: Joi.string().required(),
+    businessName: Joi.string().optional().allow(null).default(null),
+    companyContact: Joi.string().optional().allow(null).default(null),
+    onsiteContact: Joi.string().optional().allow(null).default(null),
+    phone: Joi.string().optional().allow(null).default(null),
+    addressLine1: Joi.string().required(),
+    addressLine2: Joi.string().optional().allow(null).default(null),
     city: Joi.string().required(),
     zipCode: Joi.string().required(),
-    notes: Joi.string().optional().default(null),
-    serviceRequested: Joi.string().required(),
-    source: Joi.string().required(),
+    notes: Joi.string().optional().allow(null).default(null),
+    serviceRequested: Joi.string().optional().allow(null).default(null),
+    source: Joi.string().optional().allow(null).default(null),
+    crmStatus: Joi.string()
+      .valid('active_lead', 'quoted', 'sold', 'follow_up', 'dead', 'installed')
+      .default('active_lead'),
+    createdBy: Joi.string().required(),
   }),
 
   update: Joi.object({
