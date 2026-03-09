@@ -23,11 +23,6 @@ const notificationsSchema: FieldsConfig = {
 }
 
 const fields: FieldsConfig = {
-  customerId: {
-    type: 'ObjectId',
-    nullable: false,
-    ref: 'Customer'
-  },
   customerType: {
     type: 'string',
     nullable: false,
