@@ -22,6 +22,7 @@ import contentRoutes from './modules/content/contentRoutes';
 import { ContentService } from './modules/content/contentService';
 import { apiResponse } from './common/utils/apiResponse';
 
+import fabricRoutes from './modules/fabric/fabricRoutes'
 // {{modulePath}}
 
 class Routes {
@@ -66,6 +67,7 @@ class Routes {
       }
     });
 
+    this.router.use('/fabrics', fabricRoutes)
     // {{moduleRoute}}
   }
 }
