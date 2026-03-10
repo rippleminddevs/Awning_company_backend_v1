@@ -78,6 +78,10 @@ const fields: FieldsConfig = {
     ref: 'Category',
     nullable: false,
   },
+  slug: {
+    type: 'string',
+    nullable: false,
+  },
   name: {
     type: 'string',
     nullable: false,

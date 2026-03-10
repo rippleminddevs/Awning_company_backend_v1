@@ -90,6 +90,7 @@ const baseAppointmentSchema = {
   billingZip: Joi.string().optional().allow('', null),
   onSiteProjectContactName: Joi.string().optional().allow('', null),
   onSiteProjectContactNumber: Joi.string().optional().allow('', null),
+  specialInstructions: Joi.string().optional().allow('', null),
 }
 
 export const AppointmentValidator = {

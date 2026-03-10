@@ -177,6 +177,10 @@ const fields: FieldsConfig = {
     nullable: true,
     default: null,
   },
+  specialInstructions: {
+    type: 'string',
+    nullable: true,
+  }
 }
 
 export class AppointmentModel extends BaseModel<Appointment> {

@@ -23,6 +23,7 @@ import { ContentService } from './modules/content/contentService';
 import { apiResponse } from './common/utils/apiResponse';
 
 import fabricRoutes from './modules/fabric/fabricRoutes'
+import productPriceRoutes from './modules/productPrice/productPriceRoutes'
 // {{modulePath}}
 
 class Routes {
@@ -68,6 +69,7 @@ class Routes {
     });
 
     this.router.use('/fabrics', fabricRoutes)
+    this.router.use('/product-prices', productPriceRoutes)
     // {{moduleRoute}}
   }
 }
