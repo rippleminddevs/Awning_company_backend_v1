@@ -6,12 +6,12 @@ const baseAppointmentSchema = {
     .required()
     .valid('residential', 'commercial', 'contractor', 'designer'),
   firstName: Joi.string().when('customerType', {
-    is: Joi.valid('residential', 'designer'),
+    is: Joi.valid('residential'),
     then: Joi.required(),
     otherwise: Joi.optional().allow('', null),
   }),
   lastName: Joi.string().when('customerType', {
-    is: Joi.valid('residential', 'designer'),
+    is: Joi.valid('residential'),
     then: Joi.required(),
     otherwise: Joi.optional().allow('', null),
   }),
