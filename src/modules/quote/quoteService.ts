@@ -648,22 +648,21 @@ export class QuoteService extends BaseService<Quote> {
 
     const quotedAppointmentIds = new Set(allQuotes.map(quote => quote.appointmentId?.toString()))
 
-    let leads = 0
+    // Count quotes by their actual status (not appointment status)
     let quoted = 0
     let sold = 0
 
-    userAppointments?.forEach(appointment => {
-      const status = appointment.status?.toLowerCase()
-      const hasQuote = quotedAppointmentIds.has(appointment._id.toString())
-
-      if (status === 'sold' || status === 'Sold') {
+    allQuotes.forEach(quote => {
+      const status = quote.status?.toLowerCase()
+      if (status === 'sold') {
         sold++
-      } else if (status === 'quoted' || status === 'Quoted') {
+      } else if (status === 'quoted') {
         quoted++
-      } else if (!hasQuote && (status === 'scheduled' || status === 'Scheduled')) {
-        leads++
       }
     })
+
+    // Leads = Appointments without any quote
+    const leads = userAppointments?.filter(appointment => !quotedAppointmentIds.has(appointment._id.toString())).length || 0
 
     return {
       customers: allQuotes.length,
