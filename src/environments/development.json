@@ -33,8 +33,8 @@
   "email": {
     "host": "sandbox.smtp.mailtrap.io",
     "port": 2525,
-    "username": "9f8fb0f6ec36d8",
-    "password": "e0939a5fe22291",
+    "username": "4066f10a87de75",
+    "password": "6ea76d8f6c8945",
     "fromAddress": "no-reply@awningcompany.com",
     "secure": false
   },
