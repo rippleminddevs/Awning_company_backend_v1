@@ -268,7 +268,7 @@
     <div class="header">
         <div class="company-info">
             <div class="company-header">
-                <img src="<%= config.app.url %>/static/uploads/avatar.png" class="company-logo" alt="Company Logo">
+                <img src="<%= company.logo %>" class="company-logo" alt="Company Logo">
                 <div class="company-title">
                     the<span style="color:#000;">AWNING</span> <small>company</small>
                 </div>
@@ -329,6 +329,7 @@
             <% } %>
             <div class="item-description">
                 <h4><%= item.title %></h4>
+                <% if (item.awningType) { %><p><strong>Awning Type:</strong> <%= item.awningType %></p><% } %>
                 <p><%= item.description %></p>
                 <% if (item.location) { %><p><strong>Location:</strong> <%= item.location %></p><% } %>
                 <% if (item.size) { %><p><strong>Size:</strong> <%= item.size %></p><% } %>

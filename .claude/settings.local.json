@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(curl -s -X POST http://localhost:5009/api/auth/login -H \"Content-Type: application/json\" -d '{\"\"email\"\":\"\"salesperson1@yopmail.com\"\",\"\"password\"\":\"\"Admin123@\"\"}')"
+      "Bash(curl -s -X POST http://localhost:5009/api/auth/login -H \"Content-Type: application/json\" -d '{\"\"email\"\":\"\"salesperson1@yopmail.com\"\",\"\"password\"\":\"\"Admin123@\"\"}')",
+      "Bash(curl -s -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4Y2MxNmRjY2NjMmRmMWY4YmM4MzQ0YiIsImVtYWlsIjoic2FsZXNwZXJzb24xQHlvcG1haWwuY29tIiwiaWF0IjoxNzczODk4MTE4LCJleHAiOjE3NzM5ODQ1MTh9.J_pdXbcKJyo1Ycsp917Q8HLL5Pc8N_MU8VXYLBOuz60\" \"http://localhost:5009/api/appointment?page=1&perPage=5\")",
+      "Bash(curl -s -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4Y2MxNmRjY2NjMmRmMWY4YmM4MzQ0YiIsImVtYWlsIjoic2FsZXNwZXJzb24xQHlvcG1haWwuY29tIiwiaWF0IjoxNzczODk4MTE4LCJleHAiOjE3NzM5ODQ1MTh9.J_pdXbcKJyo1Ycsp917Q8HLL5Pc8N_MU8VXYLBOuz60\" \"http://localhost:5009/api/quote?page=1&perPage=5\")",
+      "Bash(curl -s -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4Y2MxNmRjY2NjMmRmMWY4YmM4MzQ0YiIsImVtYWlsIjoic2FsZXNwZXJzb25AMHlvcG1haWwuY29tIiwiaWF0IjoxNzczODk4MTE4LCJleHAiOjE3NzM5ODQ1MTh9.J_pdXbcKJyo1Ycsp917Q8HLL5Pc8N_MU8VXYLBOuz60\" \"http://localhost:5009/api/quotes?page=1&perPage=5\")",
+      "Bash(curl -s -X POST \"http://localhost:5009/api/auth/login\" -H \"Content-Type: application/json\" -d '{\"\"email\"\":\"\"salesperson1@yopmail.com\"\",\"\"password\"\":\"\"Admin123@\"\"}')"
     ]
   }
 }

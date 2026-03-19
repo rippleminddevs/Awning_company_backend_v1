@@ -67,7 +67,10 @@ export class InvoiceService {
             as: 'creator',
           },
         },
-        { $unwind: '$creator' },
+        { $unwind: {
+            path: '$creator',
+            preserveNullAndEmptyArrays: true
+          } },
       ])
       .exec()
 
@@ -125,7 +128,7 @@ export class InvoiceService {
     // Get salesperson info
     const salesperson = {
       name: `${quote.creator.name}`,
-      phone: quote.creator.phoneNumber || '',
+      phone: quote.creator.phone || quote.creator.phoneNumber || '',
       email: quote.creator.email,
       quoteCreated: quote.createdAt.toLocaleDateString(),
       quoteExpiry: this.calculateExpiryDate(quote.createdAt),
@@ -135,6 +138,7 @@ export class InvoiceService {
     const items = await Promise.all(
       quote.orders.map(async (order: any) => {
         const product = order.productData
+        const awningType = order.awningTypeData
 
         const features: string[] = []
         if (order.additionalFeatures) {
@@ -153,6 +157,7 @@ export class InvoiceService {
           image: this.optimizeImageUrl(product?.image?.url || '', 400, 300, 70),
           title: product?.name || '',
           description: order.description || product?.description || '',
+          awningType: awningType?.name || '',
           location: quote.appointment.address1 + ' ' + quote.appointment.address2,
           options: features,
           size: `Width: ${order.width_ft}' ${order.width_in || 0}" ${order.widthFraction || '0'}/8"
@@ -190,16 +195,16 @@ export class InvoiceService {
     const customer = {
       quoteId: quote._id.toString().slice(-6),
       name: `${quote.appointment.firstName} ${quote.appointment.lastName}`,
-      phone: quote.appointment.bestContact || '',
+      phone: quote.appointment.phoneNumber || quote.appointment.bestContact || '',
       email: quote.appointment.emailAddress || '',
       street: quote.appointment.address1 || '',
       city: quote.appointment.city || '',
       state: quote.appointment.state || '',
       zipCode: quote.appointment.zipCode || '',
-      jobLocation: quote.appointment.address1 + quote.appointment.address2 || '',
-      leadTime: quote.appointment.time.toLocaleString() || '2-3 weeks',
-      installTime: quote.appointment.duration || '1-2 days',
-      source: 'TAC Web',
+      jobLocation: quote.appointment.address1 + (quote.appointment.address2 ? ' ' + quote.appointment.address2 : ''),
+      leadTime: '2-3 weeks',
+      installTime: '1-2 days',
+      source: quote.appointment.source || 'TAC Web',
     }
 
     // Terms and conditions

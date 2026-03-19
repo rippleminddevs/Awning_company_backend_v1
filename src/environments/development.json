@@ -27,7 +27,7 @@
   },
   "jwt": {
     "secret": "accessKey-awning_company",
-    "accessTokenExpiry": "1d",
+    "accessTokenExpiry": "7d",
     "refreshTokenExpiry": "7d"
   },
   "email": {

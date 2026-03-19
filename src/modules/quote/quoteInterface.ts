@@ -232,6 +232,7 @@ export interface InvoiceData {
     image: string
     title: string
     description: string
+    awningType?: string
     location?: string
     options?: string[]
     size?: string
