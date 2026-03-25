@@ -65,6 +65,7 @@ export const ProductValidator = {
 
   getProducts: Joi.object({
     type: Joi.string().optional(),
+    sortOrder: Joi.string().optional(),
   }),
 
   searchProducts: Joi.object({

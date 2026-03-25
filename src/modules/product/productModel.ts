@@ -147,6 +147,11 @@ const fields: FieldsConfig = {
     ref: 'User',
     nullable: false,
   },
+  sortOrder: {
+    type: 'number',
+    nullable: false,
+    default: 1
+  }
 }
 
 export class ProductModel extends BaseModel<Product> {

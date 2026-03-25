@@ -47,10 +47,12 @@ export interface Product {
     name: string
   }
   createdBy: string
+  sortOrder?: number
 }
 
 export interface GetProductsParams {
   type?: string
+  sortOrder?: number
 }
 
 export interface SearchProductsParams {

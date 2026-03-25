@@ -196,6 +196,9 @@ export class ProductService extends BaseService<Product> {
     if (params.type) {
       query.type = params.type
     }
+    if(params?.sortOrder){
+      query.sort = { sortOrder: Number(params?.sortOrder)  }
+    }
 
     // Get main products (no parent or null parent) - exclude actual sub-products
     query.$or = [
