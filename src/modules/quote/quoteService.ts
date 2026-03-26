@@ -160,30 +160,58 @@ export class QuoteService extends BaseService<Quote> {
     paymentStructure: PaymentStructure,
     paymentDetails: PaymentDetails
   ): PaymentSummary {
-    const subtotal = Math.max(0, parseFloat(paymentStructure.discountedSalesPrice || '0') || 0)
-    const discount = parseFloat(paymentStructure.discount || '0') || 0
-    const taxRate = paymentStructure.salesTax === 'Default' ? 0.08 : 0 // 8% default tax
-    const taxes = subtotal * taxRate
-    const freight = parseFloat(paymentStructure.freight || '0') || 0
-    const total = Math.max(0, subtotal)
+    const msrp = Math.max(0, parseFloat(paymentStructure.MSRP || '0') || 0)
+    const discountPct = Math.max(0, parseFloat(paymentStructure.discount || '0') || 0)
+    const discountAmount = Math.round(msrp * discountPct) / 100
+    const discountedSalesPrice = Math.max(
+      0,
+      parseFloat(paymentStructure.discountedSalesPrice || '0') ||
+        Math.round((msrp - discountAmount) * 100) / 100
+    )
+    const hiddenMarkup = Math.max(0, parseFloat(paymentStructure.hiddenMarkup || '0') || 0)
+    const installationCharges = Math.max(0, parseFloat((paymentStructure as any).InstallationCharges || '0') || 0)
 
-    // Calculate payment schedule
-    const upfrontPercentage = parseFloat(paymentStructure.upfrontDeposit) || 50 // Default 50%
-    const upfrontAmount = (upfrontPercentage / 100) * total
-    const remainingAmount = total - upfrontAmount
-    const numberOfInstallments = parseInt(paymentStructure.numberOfInstallments || '1', 10) || 1
-    const installmentAmount = remainingAmount / Math.max(1, numberOfInstallments - 1)
+    // Sales tax
+    let taxes = 0
+    const salesTaxField = paymentStructure.salesTax
+    if (salesTaxField === 'Default') {
+      taxes = Math.round(discountedSalesPrice * 0.08 * 100) / 100
+    } else if (salesTaxField && !['N/A', 'We Pay The Sales Tax'].includes(salesTaxField)) {
+      taxes = Math.max(0, parseFloat(salesTaxField) || 0) // custom numeric value
+    }
+
+    const freight = Math.max(0, parseFloat(paymentStructure.freight || '0') || 0)
+    const total = Math.max(0, discountedSalesPrice + hiddenMarkup + installationCharges + taxes + freight)
+
+    // Upfront deposit
+    let upfrontPercentage = 50
+    const upfrontStr = paymentStructure.upfrontDeposit || ''
+    if (upfrontStr === 'Full Payment') {
+      upfrontPercentage = 100
+    } else if (upfrontStr.endsWith('%')) {
+      upfrontPercentage = parseFloat(upfrontStr) || 50
+    } else {
+      upfrontPercentage = parseFloat(upfrontStr) || 50
+    }
+
+    const upfrontAmount = Math.round((upfrontPercentage / 100) * total * 100) / 100
+    const remainingAmount = Math.round((total - upfrontAmount) * 100) / 100
+    const numberOfInstallments = Math.max(1, parseInt(paymentStructure.numberOfInstallments || '1', 10) || 1)
+    const installmentAmount =
+      numberOfInstallments > 1
+        ? Math.round((remainingAmount / (numberOfInstallments - 1)) * 100) / 100
+        : remainingAmount
 
     return {
-      subtotal: subtotal.toFixed(2),
-      discount: discount.toFixed(2),
+      subtotal: discountedSalesPrice.toFixed(2),
+      discount: discountAmount.toFixed(2),
       taxes: taxes.toFixed(2),
       freight: freight.toFixed(2),
       total: total.toFixed(2),
       dueAcceptance: upfrontAmount.toFixed(2),
       installments: numberOfInstallments.toString(),
       duePriorDelivery: installmentAmount.toFixed(2),
-      balanceCompletion: (remainingAmount - installmentAmount).toFixed(2),
+      balanceCompletion: Math.max(0, remainingAmount - installmentAmount).toFixed(2),
     }
   }
 

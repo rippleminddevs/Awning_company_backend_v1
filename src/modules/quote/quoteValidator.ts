@@ -4,7 +4,7 @@ export const QuoteValidator = {
   create: Joi.object({
     appointmentId: Joi.string().required(),
     paymentStructure: Joi.object().required(),
-    paymentDetails: Joi.object().required(),
+    paymentDetails: Joi.object().optional(),
     paymentSummary: Joi.object().optional(),
     items: Joi.array()
       .items(

@@ -112,7 +112,7 @@ const fields: FieldsConfig = {
   paymentDetails: {
     type: 'object',
     document: PaymentDetails,
-    nullable: false,
+    nullable: true,
     default: null,
   },
   paymentSummary: {
