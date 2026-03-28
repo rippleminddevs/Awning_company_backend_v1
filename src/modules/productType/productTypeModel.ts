@@ -5,10 +5,13 @@ import { ProductType } from './productTypeInterface'
 import { createMongooseSchema } from '../../common/utils/schemaUtils'
 
 const fields: FieldsConfig = {
-  category_id: {
-    type: 'ObjectId',
-    ref: 'ProductCategory',
+  category_slug: {
+    type: 'string',
     nullable: false,
+  },
+  sub_category_slug: {
+    type: 'string',
+    nullable: true,
   },
   slug: {
     type: 'string',
@@ -35,19 +38,34 @@ const fields: FieldsConfig = {
     type: 'string',
     nullable: false,
   },
-  dimension_config: {
+  price_lookup_mode: {
+    type: 'string',
+    nullable: true,
+  },
+
+  // ✅ Match DB naming
+  dimension_fields: {
     type: 'json',
     nullable: true,
   },
+
   fabric_config: {
     type: 'json',
     nullable: true,
   },
-  available_options: {
+
+  option_groups: {
+    type: 'array',
+    nullable: true,
+  },
+
+  installation: {
     type: 'json',
     nullable: true,
   },
-  installation: {
+
+  // Optional configs (keep only if actually used)
+  pricing: {
     type: 'json',
     nullable: true,
   },
@@ -64,26 +82,6 @@ const fields: FieldsConfig = {
     nullable: true,
   },
   infinity_config: {
-    type: 'json',
-    nullable: true,
-  },
-  sub_category_slug: {
-    type: 'string',
-    nullable: true,
-  },
-  price_lookup_mode: {
-    type: 'string',
-    nullable: true,
-  },
-  dimension_fields: {
-    type: 'json',
-    nullable: true,
-  },
-  option_groups: {
-    type: 'array',
-    nullable: true,
-  },
-  extras: {
     type: 'json',
     nullable: true,
   }
