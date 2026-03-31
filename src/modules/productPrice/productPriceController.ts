@@ -10,18 +10,18 @@ export class ProductPriceController extends BaseController<ProductPrice, Product
   }
 
   public getAll = async (req: Request, res: Response): Promise<void> => {
-    const { slug, width, projection, height, height_plus_proj } = req.query;
-    if (!slug) {
-      return apiResponse(res, {}, 400, 'slug is required');
-    }
+    const params = req.query;
+    // if (!slug) {
+    //   return apiResponse(res, {}, 400, 'slug is required');
+    // }
 
-    const filter: Record<string, unknown> = { product_type_slug: slug };
-    if (width)            filter.width_ft = parseFloat(width as string);
-    if (height)           filter.height_ft = parseFloat(width as string);
-    if (projection)       filter.projection_ft = parseFloat(projection as string);
-    if (height_plus_proj) filter.height_plus_proj_ft = parseFloat(height_plus_proj as string);
+    // const filter: Record<string, unknown> = { product_type_slug: slug };
+    // if (width_ft)            filter.width_ft = parseFloat(width_ft as string);
+    // if (height_ft)           filter.height_ft = parseFloat(height_ft as string);
+    // if (projection_ft)       filter.projection_ft = parseFloat(projection_ft as string);
+    // if (height_plus_proj_ft) filter.height_plus_proj_ft = parseFloat(height_plus_proj as string);
 
-    const data = await this.service.getAll(filter);
+    const data = await this.service.getAll(params);
     apiResponse(res, data, 200);
   }
 }
