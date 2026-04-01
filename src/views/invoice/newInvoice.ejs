@@ -343,6 +343,9 @@
             <div class="pricing-row"><span>Discount:</span><span><%= summary.discount %></span></div>
             <div class="pricing-row"><span>Taxes:</span><span><%= summary.taxes %></span></div>
             <div class="pricing-row"><span>Freight:</span><span><%= summary.freight %></span></div>
+            <% if (summary.installationCharges && summary.installationCharges !== '$0.00') { %>
+            <div class="pricing-row"><span>Installation Charges:</span><span><%= summary.installationCharges %></span></div>
+            <% } %>
             <div class="pricing-row total"><span>Grand Total:</span><span><%= summary.total %></span></div>
         </div>
         <div class="pricing-right">

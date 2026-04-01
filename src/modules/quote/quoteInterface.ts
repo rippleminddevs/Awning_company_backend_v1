@@ -23,6 +23,7 @@ export interface PaymentSummary {
   discount: string
   taxes: string
   freight: string
+  installationCharges: string
   total: string
 }
 
@@ -244,6 +245,7 @@ export interface InvoiceData {
     discount: string
     taxes: string
     freight: string
+    installationCharges: string
     total: string
   }
   payment: {

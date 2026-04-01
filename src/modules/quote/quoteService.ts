@@ -207,6 +207,7 @@ export class QuoteService extends BaseService<Quote> {
       discount: discountAmount.toFixed(2),
       taxes: taxes.toFixed(2),
       freight: freight.toFixed(2),
+      installationCharges: installationCharges.toFixed(2),
       total: total.toFixed(2),
       dueAcceptance: upfrontAmount.toFixed(2),
       installments: numberOfInstallments.toString(),
