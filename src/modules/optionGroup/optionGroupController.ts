@@ -6,15 +6,21 @@ import { apiResponse } from '../../common/utils/apiResponse'
 import { ProductTypeService } from '../productType/productTypeService'
 
 export class OptionGroupController extends BaseController<OptionGroup, OptionGroupService> {
-  private productTypeService: ProductTypeService
-  private optionGroupService: OptionGroupService
+  private productTypeService: ProductTypeService;
+
   constructor(optionGroupService: OptionGroupService) {
     super(optionGroupService)
     this.productTypeService = new ProductTypeService();
-    this.optionGroupService = new OptionGroupService();
   }
 
   public getAll = async (req: Request, res: Response): Promise<void> => {
+    const filter: Record<string, unknown> = {}
+    if (req.query.is_active === 'true') filter.is_active = true
+    const data = await this.service.getAll({ ...filter, sort: { sort_order: 1, createdAt: -1 } })
+    apiResponse(res, data, 200)
+  }
+
+  public getByProductSlug = async (req: Request, res: Response): Promise<void> => {
     const { product_slug, active_only } = req.query;
 
     if (!product_slug) {
@@ -37,7 +43,7 @@ export class OptionGroupController extends BaseController<OptionGroup, OptionGro
     const filter: Record<string, unknown> = { slug: { $in: groupSlugs } };
     if (active_only === 'true') filter.is_active = true;
 
-    const allGroups = await this.optionGroupService.getAll(filter);
+    const allGroups = await this.service.getAll(filter);
 
     const sorted = groupSlugs
       .map((slug) => allGroups.find((g: any) => g.slug === slug))
