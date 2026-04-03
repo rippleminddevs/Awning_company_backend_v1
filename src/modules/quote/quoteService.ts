@@ -148,7 +148,7 @@ export class QuoteService extends BaseService<Quote> {
       image: order?.product?.image?.url || 'N/A',
       orderId: order?._id?.toString() || 'N/A',
       amount: transaction.paymentSummary?.total?.toString() || '0',
-      paymentMethod: transaction.paymentStructure?.paymentMethod || 'N/A',
+      paymentMethod: transaction.paymentDetails?.paymentMethod || transaction.paymentStructure?.paymentMethod || 'N/A',
       date: transaction.createdAt?.toString() || '',
       status: transaction.paymentStatus || 'pending',
       invoiceUrl: transaction.invoice?.url || undefined,
@@ -334,23 +334,21 @@ export class QuoteService extends BaseService<Quote> {
       paymentSummary,
     })
 
-    // Create orders with calculated prices
+    // Store items as V2 line items and compute grandTotal from provided prices
     if (items.length > 0) {
-      await this.createOrdersForQuote({
-        quoteId: quote._id,
-        items,
-        createdBy: quote.createdBy,
-      })
+      const grandTotal =
+        parseFloat(quote.paymentStructure?.discountedSalesPrice || '0') ||
+        items.reduce(
+          (sum: number, item: any) =>
+            sum + (item.line_total ?? (item.unitPrice ?? 0) + (item.optionsTotal ?? 0) + (item.installPrice ?? 0)),
+          0
+        )
 
-      // Calculate grand total from created orders
-      const orders = await this.orderService.getOrdersByQuoteId(quote._id)
-      const grandTotal = this.calculateGrandTotal(orders)
-
-      // Update quote with grand total
       quote = await this.model.update(quote._id, {
+        line_items_v2: items,
         paymentStructure: {
           ...quote.paymentStructure,
-          grandTotal: parseInt(grandTotal.toString(), 10),
+          grandTotal: Math.round(grandTotal * 100) / 100,
         },
       })
     }

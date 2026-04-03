@@ -4,15 +4,14 @@ import { Quote } from './quoteInterface'
 import { createMongooseSchema } from '../../common/utils/schemaUtils'
 
 const PaymentStructure: FieldsConfig = {
-  upfrontDeposit: { type: 'string', nullable: false },
-  numberOfInstallments: { type: 'string', nullable: false },
-  paymentMethod: { type: 'string', nullable: false },
-  hiddenMarkup: { type: 'string', nullable: false },
-  MSRP: { type: 'string', nullable: false },
+  msrp: { type: 'string', nullable: false },
   discount: { type: 'string', nullable: false },
   discountedSalesPrice: { type: 'string', nullable: false },
   salesTax: { type: 'string', nullable: false },
-  InstallationCharges: { type: 'string', nullable: false },
+  installationCharges: { type: 'string', nullable: false },
+  hiddenMarkup: { type: 'string', nullable: false },
+  upfrontDeposit: { type: 'string', nullable: false },
+  numberOfInstallments: { type: 'string', nullable: false },
   grandTotal: { type: 'number', nullable: false },
   freight: { type: 'string', nullable: true },
 }
@@ -30,7 +29,9 @@ const PaymentSummary: FieldsConfig = {
 }
 
 const PaymentDetails: FieldsConfig = {
-  // Credit/Debit Card
+  paymentMethod: { type: 'string', nullable: true },
+
+  // Credit / Debit Card
   cardHolderName: { type: 'string', nullable: true },
   cardNumber: { type: 'string', nullable: true },
   cardExpiry: { type: 'string', nullable: true },

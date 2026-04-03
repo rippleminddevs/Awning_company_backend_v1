@@ -225,7 +225,7 @@ export class InvoiceService {
     // ── Summary ──────────────────────────────────────────────────────────────
     let summary: InvoiceData['summary']
     if (isV2) {
-      const msrp       = parseFloat(quote.paymentStructure?.MSRP || '0')
+      const msrp       = parseFloat(quote.paymentStructure?.msrp || quote.paymentStructure?.MSRP || '0')
       const discount   = parseFloat(quote.paymentStructure?.discount || '0')
       const grandTotal = quote.paymentStructure?.grandTotal || 0
       const hasTax     = quote.paymentStructure?.salesTax === 'Default'

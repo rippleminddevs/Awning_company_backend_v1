@@ -1,15 +1,14 @@
 import { Order } from '../order/orderInterface'
 
 export interface PaymentStructure {
-  upfrontDeposit: string
-  numberOfInstallments: string
-  paymentMethod: string
-  hiddenMarkup: string
-  MSRP: string
+  msrp: string
   discount: string
   discountedSalesPrice: string
   salesTax: string
-  InstallationCharges: string
+  installationCharges: string
+  hiddenMarkup: string
+  upfrontDeposit: string
+  numberOfInstallments: string
   grandTotal: number
   freight?: string
 }
@@ -27,7 +26,9 @@ export interface PaymentSummary {
 }
 
 export interface PaymentDetails {
-  // Credit/Debit Card
+  paymentMethod?: string
+
+  // Credit / Debit Card
   cardHolderName?: string
   cardNumber?: string
   cardExpiry?: string
@@ -53,28 +54,33 @@ export interface PaymentDetails {
   signature?: string
 }
 
-export interface QuoteItem {
-  _id: any
-  productName: string
-  width_ft: string | number
-  width_in: string | number
-  widthFraction: string
-  height_ft: string | number
-  height_in: string | number
-  heightFraction: string
-  projection_ft: string | number
-  projection_in: string | number
-  projectionFraction: string
-  hardwareColor: string
-  fabric: string
-  valancaHeight: string
-  valancaStyle: string
-  bindingColor: string
-  installation: string
-  story: string
-  frameUpgrade: string
-  frameUpgradePercentage: string
-  description: string
+export interface FabricRef {
+  id: string
+  number: string
+  name: string
+}
+
+export interface OptionGroupSelection {
+  yn?: string
+  sub_slug?: string
+  qty?: number
+  brand?: string
+  price?: number
+  sub_fields?: Record<string, any>
+}
+
+export interface LineItemV2 {
+  product_type_id: string
+  product_type_slug: string
+  product_name: string
+  dimensions: Record<string, any>
+  fabric: FabricRef | null
+  unitPrice: number
+  optionsTotal: number
+  installPrice: number
+  options_map: Record<string, OptionGroupSelection>
+  line_total: number
+  drive_type?: string
 }
 
 export interface Quote {
@@ -82,27 +88,27 @@ export interface Quote {
   appointmentId: string
   documents: string[]
   status?:
-  | 'Hot'
-  | 'Warm'
-  | 'Dead'
-  | 'SOLD'
-  | 'CALL BACK'
-  | 'LEFT PHONE MESSAGE'
-  | 'QUOTED'
-  | 'CANCELLED'
-  | 'NO SHOW'
-  | 'FOLLOWED UP'
-  | 'UNAVAILABLE'
-  | 'CONFIRMED'
-  | 'NO CAN DO'
-  | 'AWAITING QUOTE'
-  | 'SALE PENDING'
-  | 'TENTATIVE APT'
-  | 'SCHEDULED'
-  | 'LEFT VOICEMAIL'
-  | 'COMPLETE'
-  | 'NEW LEADS'
-  | 'COMING TO SHOWROOM'
+    | 'Hot'
+    | 'Warm'
+    | 'Dead'
+    | 'SOLD'
+    | 'CALL BACK'
+    | 'LEFT PHONE MESSAGE'
+    | 'QUOTED'
+    | 'CANCELLED'
+    | 'NO SHOW'
+    | 'FOLLOWED UP'
+    | 'UNAVAILABLE'
+    | 'CONFIRMED'
+    | 'NO CAN DO'
+    | 'AWAITING QUOTE'
+    | 'SALE PENDING'
+    | 'TENTATIVE APT'
+    | 'SCHEDULED'
+    | 'LEFT VOICEMAIL'
+    | 'COMPLETE'
+    | 'NEW LEADS'
+    | 'COMING TO SHOWROOM'
   paymentStructure: PaymentStructure
   paymentDetails: PaymentDetails
   paymentSummary: PaymentSummary
@@ -111,7 +117,7 @@ export interface Quote {
   createdBy: string
   createdAt?: Date
   updatedAt?: Date
-  line_items_v2?: any[]
+  line_items_v2?: LineItemV2[]
   quote_notes?: string
 }
 
@@ -119,25 +125,7 @@ export interface QuoteResponse {
   _id?: string
   appointmentId: string
   documents: string[]
-  status?:
-  | 'Hot'
-  | 'Warm'
-  | 'Dead'
-  | 'SOLD'
-  | 'CALL BACK'
-  | 'LEFT PHONE MESSAGE'
-  | 'QUOTED'
-  | 'CANCELLED'
-  | 'NO SHOW'
-  | 'FOLLOWED UP'
-  | 'UNAVAILABLE'
-  | 'CONFIRMED'
-  | 'NO CAN DO'
-  | 'AWAITING QUOTE'
-  | 'SALE PENDING'
-  | 'TENTATIVE APT'
-  | 'SCHEDULED'
-  | 'LEFT VOICEMAIL'
+  status?: Quote['status']
   paymentStructure: PaymentStructure
   paymentDetails: PaymentDetails
   paymentSummary: PaymentSummary
@@ -149,7 +137,7 @@ export interface QuoteResponse {
 }
 
 export interface CreateQuote extends Omit<Quote, '_id' | 'createdAt' | 'updatedAt'> {
-  items: QuoteItem[]
+  items: LineItemV2[]
 }
 
 export interface QuoteWithItems extends Quote {
@@ -163,20 +151,15 @@ export interface CalculatePriceResponse {
   items: Array<{ id: string; unitPrice: number; quantity: number; total: number }>
 }
 
-export interface CalculateUnitPriceResponse {
-  unitPrice: number
-  additionalCosts: number
-}
-
 export interface SyncOrderForQuote {
   quoteId: string
-  newItems: any[]
+  newItems: LineItemV2[]
   createdBy: string
 }
 
 export interface CreateOrderForQuote {
   quoteId: string
-  items: any[]
+  items: LineItemV2[]
   createdBy: string
 }
 
