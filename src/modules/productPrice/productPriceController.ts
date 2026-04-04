@@ -15,13 +15,14 @@ export class ProductPriceController extends BaseController<ProductPrice, Product
     //   return apiResponse(res, {}, 400, 'slug is required');
     // }
 
-    // const filter: Record<string, unknown> = { product_type_slug: slug };
-    // if (width_ft)            filter.width_ft = parseFloat(width_ft as string);
-    // if (height_ft)           filter.height_ft = parseFloat(height_ft as string);
-    // if (projection_ft)       filter.projection_ft = parseFloat(projection_ft as string);
-    // if (height_plus_proj_ft) filter.height_plus_proj_ft = parseFloat(height_plus_proj as string);
+    const filter: Record<string, unknown> = {};
+    if (params.width_ft)            filter.width_ft = parseFloat(params.width_ft as string);
+    if (params.height_ft)           filter.height_ft = parseFloat(params.height_ft as string);
+    if (params.projection_ft)       filter.projection_ft = parseFloat(params.projection_ft as string);
+    if (params.projection_in)       filter.projection_in = parseFloat(params.projection_in as string);
+    if (params.height_plus_proj_ft) filter.height_plus_proj_ft = parseFloat(params.height_plus_proj_ft as string);
 
-    const data = await this.service.getAll(params);
+    const data = await this.service.getAll({ ...params, ...filter });
     apiResponse(res, data, 200);
   }
 }
