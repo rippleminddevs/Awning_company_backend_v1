@@ -45,6 +45,11 @@ const fields: FieldsConfig = {
     type: 'boolean',
     nullable: true,
   },
+  // "flat" = dollar amount, "percent" = % of base product price
+  price_type: {
+    type: 'string',
+    nullable: true,
+  },
   // width_price_table is a dynamic map { "10": 515, "12": 609, ... }
   // stored as Mixed so any key set is accepted
   width_price_table: {

@@ -15,7 +15,15 @@ const fields: FieldsConfig = {
   },
   projection_ft: {
     type: 'number',
-    nullable: false,
+    nullable: true,
+  },
+  projection_in: {
+    type: 'number',
+    nullable: true,
+  },
+  height_ft: {
+    type: 'number',
+    nullable: true,
   },
   msrp: {
     type: 'number',
