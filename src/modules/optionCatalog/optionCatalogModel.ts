@@ -1,4 +1,3 @@
-import mongoose from 'mongoose'
 import { FieldsConfig } from '../../common/interfaces/fieldTypes'
 import { BaseModel } from '../../common/core/baseModel'
 import { OptionCatalog } from './optionCatalogInterface'
@@ -23,15 +22,34 @@ const fields: FieldsConfig = {
   },
   price_unit: {
     type: 'string',
-    nullable: false,
+    nullable: true,
   },
   is_active: {
     type: 'boolean',
-    nullable: false,
+    nullable: true,
   },
   qty_based: {
     type: 'boolean',
-    nullable: false,
+    nullable: true,
+  },
+  // ── Optional extended fields ──────────────────────────────────────────────
+  brand: {
+    type: 'string',
+    nullable: true,
+  },
+  price_tbd: {
+    type: 'boolean',
+    nullable: true,
+  },
+  price_by_width: {
+    type: 'boolean',
+    nullable: true,
+  },
+  // width_price_table is a dynamic map { "10": 515, "12": 609, ... }
+  // stored as Mixed so any key set is accepted
+  width_price_table: {
+    type: 'json',
+    nullable: true,
   },
 }
 
@@ -40,8 +58,10 @@ export class OptionCatalogModel extends BaseModel<OptionCatalog> {
   constructor() {
     const schema = createMongooseSchema(fields, {
       includeTimestamps: true,
-      includeSoftDelete: true
+      includeSoftDelete: true,
     });
+    schema.index({ option_type: 1 });
+    schema.index({ slug: 1 });
     super('OptionCatalog', fields, schema)
   }
 
