@@ -65,6 +65,11 @@ const fields: FieldsConfig = {
     type: 'number',
     nullable: true,
   },
+  // Direct unit price (used by yn_with_qty when no catalog items are needed)
+  unit_price: {
+    type: 'number',
+    nullable: true,
+  },
   // Catalog linkage
   option_type_filter: {
     type: 'string',

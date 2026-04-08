@@ -10,6 +10,11 @@ export interface OptionGroup {
   na_allowed?: boolean
   // ── Drive applicability ───────────────────────────────────────────────────
   applies_to_drives?: string[]
+  // ── Direct unit price (yn_with_qty without catalog items) ────────────────
+  unit_price?: number
+  // ── Qty range ─────────────────────────────────────────────────────────────
+  qty_min?: number
+  qty_max?: number
   // ── Catalog linkage ───────────────────────────────────────────────────────
   option_type_filter?: string | null
   option_slug_filter?: string | null

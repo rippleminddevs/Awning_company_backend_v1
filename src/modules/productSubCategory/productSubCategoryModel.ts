@@ -14,6 +14,10 @@ const fields: FieldsConfig = {
     nullable: false,
     unique: true,
   },
+  image: {
+    type: 'string',
+    nullable: true,
+  },
   display_name: {
     type: 'string',
     nullable: false,

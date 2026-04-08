@@ -62,12 +62,12 @@
     }
   },
   "upload": {
-    "uploadType": "local",
+    "uploadType": "cloudinary",
     "uploadDir": "uploads",
     "cloudinary": {
-      "cloudName": "ddhobrvdq",
-      "apiKey": "197379925413146",
-      "apiSecret": "ZQ_yyRRwiSiAJPivugnYWr1Z7zw"
+      "cloudName": "diufvejd4",
+      "apiKey": "972719839791282",
+      "apiSecret": "najOcwf8sgbKFBg5sYulywXeLVY"
     },
     "aws": {
       "accessKeyId": "",

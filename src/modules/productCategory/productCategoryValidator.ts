@@ -2,14 +2,18 @@ import Joi from 'joi'
 
 export const ProductCategoryValidator = {
   create: Joi.object({
-    name: Joi.string().required(),
-    email: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
+    display_name: Joi.string().required(),
+    slug: Joi.string().required(),
+    sort_order: Joi.number().required(),
+    is_active: Joi.boolean().required(),
+    has_sub_categories: Joi.boolean().optional().allow(null),
   }),
 
   update: Joi.object({
-    name: Joi.string().optional(),
-    email: Joi.string().email().optional(),
-    password: Joi.string().min(6).optional(),
+    display_name: Joi.string().optional(),
+    slug: Joi.string().optional(),
+    sort_order: Joi.number().optional(),
+    is_active: Joi.boolean().optional(),
+    has_sub_categories: Joi.boolean().optional().allow(null),
   }),
 }
