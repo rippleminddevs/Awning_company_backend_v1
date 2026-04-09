@@ -3,6 +3,7 @@ import { QuoteModel } from './quoteModel'
 import { OrderModel } from '../order/orderModel'
 import { ProductModel } from '../product/productModel'
 import { ProductTypeModel } from '../productType/productTypeModel'
+import { ProductSubCategoryModel } from '../productSubCategory/productSubCategoryModel'
 import { OptionGroupModel } from '../optionGroup/optionGroupModel'
 import { AppointmentModel } from '../appointment/appointmentModel'
 import { UserModel } from '../user/userModel'
@@ -24,6 +25,7 @@ export class InvoiceService {
   private uploadService: UploadService
 
   private productTypeModel: ProductTypeModel
+  private productSubCategoryModel: ProductSubCategoryModel
   private optionGroupModel: OptionGroupModel
 
   constructor() {
@@ -31,6 +33,7 @@ export class InvoiceService {
     this.orderModel = OrderModel.getInstance()
     this.productModel = ProductModel.getInstance()
     this.productTypeModel = ProductTypeModel.getInstance()
+    this.productSubCategoryModel = ProductSubCategoryModel.getInstance()
     this.optionGroupModel = OptionGroupModel.getInstance()
     this.appointmentModel = AppointmentModel.getInstance()
     this.userModel = UserModel.getInstance()
@@ -180,15 +183,34 @@ export class InvoiceService {
 
     // ── Prefetch product types + option groups for V2 items ──────────────────
     const productTypeMap = new Map<string, any>()
+    const subCategoryImageMap = new Map<string, string>() // sub_category_slug → image URL
     const optionGroupMap = new Map<string, string>() // slug → display_label
 
     if (isV2) {
-      const ptIds = [...new Set(quote.line_items_v2.map((i: any) => i.product_type_id?.toString()).filter(Boolean))]
+      const ptIds = [...new Set(
+        quote.line_items_v2
+          .map((i: any) => i.product_type_id?.toString())
+          .filter(Boolean)
+      )]
       if (ptIds.length > 0) {
+        const ptObjectIds = ptIds.map((id: string) => {
+          try { return new Types.ObjectId(id) } catch { return null }
+        }).filter(Boolean)
         const pts = await this.productTypeModel.getMongooseModel()
-          ?.find({ _id: { $in: ptIds } }, 'slug display_name dimension_fields product_fields option_groups')
+          ?.find({ _id: { $in: ptObjectIds } }, 'slug display_name sub_category_slug dimension_fields product_fields option_groups')
           .lean().exec() || []
         pts.forEach((pt: any) => productTypeMap.set(pt._id.toString(), pt))
+
+        // Fetch sub-category images from unique sub_category_slug values
+        const subCatSlugs = [...new Set(pts.map((pt: any) => pt.sub_category_slug).filter(Boolean))]
+        if (subCatSlugs.length > 0) {
+          const subCats = await this.productSubCategoryModel.getMongooseModel()
+            ?.find({ slug: { $in: subCatSlugs } }, 'slug image')
+            .lean().exec() || []
+          subCats.forEach((sc: any) => {
+            if (sc.image) subCategoryImageMap.set(sc.slug, sc.image)
+          })
+        }
       }
 
       // Collect all option group slugs referenced across all items
@@ -281,8 +303,33 @@ export class InvoiceService {
           Object.entries(item.options_map).forEach(([slug, sel]: [string, any]) => {
             const yn = sel.yn ?? ''
             if (!yn || yn === 'No' || yn === '') return
-            const label  = optionGroupMap.get(slug) || slug.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
-            const detail = sel.sub_slug ? sel.sub_slug.replace(/_/g, ' ') : (yn !== 'Yes' ? yn : '')
+            const label = optionGroupMap.get(slug) || slug.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+
+            // Build detail: sub_slug, brand, yn (if not "Yes"), then sub_fields
+            const detailParts: string[] = []
+
+            if (sel.sub_slug) {
+              detailParts.push(sel.sub_slug.replace(/_/g, ' '))
+            } else if (yn !== 'Yes') {
+              detailParts.push(yn)
+            }
+
+            if (sel.brand) {
+              detailParts.push(String(sel.brand).charAt(0).toUpperCase() + String(sel.brand).slice(1))
+            }
+
+            // Include sub_fields (skip zero/empty values for qty_per_item style)
+            if (sel.sub_fields && typeof sel.sub_fields === 'object') {
+              Object.entries(sel.sub_fields).forEach(([sfKey, sfVal]: [string, any]) => {
+                if (sfVal === undefined || sfVal === null || sfVal === '' || sfVal === 0) return
+                // Skip notes-only fields when already captured in sub_slug
+                const sfStr = String(sfVal).replace(/_/g, ' ')
+                const sfLabel = sfKey.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+                detailParts.push(`${sfLabel}: ${sfStr}`)
+              })
+            }
+
+            const detail = detailParts.join(' · ')
             const qty    = sel.qty && sel.qty > 1 ? `×${sel.qty}` : ''
             const price  = (sel.price ?? 0) > 0 ? this.formatCurrency(sel.price) : ''
             options.push({ label, detail, qty, price })
@@ -294,9 +341,14 @@ export class InvoiceService {
         const installCost = item.installPrice ?? 0
         const subTotal    = item.line_total   ?? (unitPrice + optTotal + installCost)
 
+        // Resolve sub-category image: pt.sub_category_slug → subCategoryImageMap
+        const subCatSlug = pt.sub_category_slug || ''
+        const rawImage   = subCatSlug ? (subCategoryImageMap.get(subCatSlug) || '') : ''
+        const image      = rawImage ? this.optimizeImageUrl(rawImage, 400, 300, 70) : ''
+
         return {
           qty:          1,
-          image:        '',
+          image,
           title:        item.product_name || '',
           fields,
           options,

@@ -20,12 +20,12 @@
   /* ── Company header ── */
   .header {
     display: grid;
-    grid-template-columns: 110px 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 20px;
     align-items: start;
     margin-bottom: 16px;
   }
-  .company-logo { width: 100px; height: auto; object-fit: contain; }
+  .company-logo { width: 200px; height: auto; object-fit: contain; }
   .info-grid {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -203,7 +203,7 @@
 <!-- ═══ COMPANY HEADER ═══════════════════════════════════ -->
 <div class="header">
   <div>
-    <img src="<%= config.app.url %>/static/uploads/avatar.png" class="company-logo" alt="Logo">
+    <img src="<%= config.app.url %>/static/uploads/companylogo.png" class="company-logo" alt="Logo">
   </div>
 
   <div class="info-grid">
@@ -262,7 +262,7 @@
 
 <div class="addr-footer">
   <div><span>Source: </span><strong><%= customer.source   || '—' %></strong></div>
-  <div><span>Approx. Lead Time: </span><strong><%= customer.leadTime || '—' %></strong></div>
+  <div style="text-align: end;"><span>Approx. Lead Time: </span><strong><%= customer.leadTime || '—' %></strong></div>
 </div>
 
 <!-- ═══ PRODUCT LINE ITEMS ═══════════════════════════════ -->

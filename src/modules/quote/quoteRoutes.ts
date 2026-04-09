@@ -19,7 +19,7 @@ router.get('/:quoteId/invoice-view', invoiceController.viewInvoice)
 router.get('/:quoteId/invoice', invoiceController.generateInvoice)
 router.get('/:quoteId/invoice/download', invoiceController.downloadInvoice)
 
-// router.use(authenticate)
+router.use(authenticate)
 router.get('/', validateQuery(QuoteValidator.getAll), quoteController.getAll)
 router.post(
   '/',

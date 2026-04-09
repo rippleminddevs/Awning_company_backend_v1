@@ -314,6 +314,7 @@ export class QuoteService extends BaseService<Quote> {
 
   // Create quote and order
   public createQuote = async (payload: CreateQuote): Promise<Quote> => {
+    console.log('quote service');
     const { items = [], paymentDetails, ...quoteData } = payload
 
     // Upload payment details image
@@ -327,31 +328,32 @@ export class QuoteService extends BaseService<Quote> {
     // Calculate payment summary
     const paymentSummary = this.calculatePaymentSummary(quoteData.paymentStructure, paymentDetails)
 
-    // Create the quote first
-    let quote = await this.model.create({
+    // Calculate grandTotal from line items (use discountedSalesPrice if available)
+    const grandTotal = items.length > 0
+      ? (parseFloat(quoteData.paymentStructure?.discountedSalesPrice || '0') ||
+         items.reduce(
+           (sum: number, item: any) =>
+             sum + (item.line_total ?? (item.unitPrice ?? 0) + (item.optionsTotal ?? 0) + (item.installPrice ?? 0)),
+           0
+         ))
+      : 0
+
+    // Create the quote with line_items_v2 in a single operation
+    const quoteModel = this.model.getMongooseModel()
+    if (!quoteModel) throw new Error('Quote model not initialized')
+
+    const created = await quoteModel.create({
       ...quoteData,
       paymentDetails,
       paymentSummary,
+      line_items_v2: items,
+      paymentStructure: {
+        ...quoteData.paymentStructure,
+        grandTotal: items.length > 0 ? Math.round(grandTotal * 100) / 100 : (quoteData.paymentStructure?.grandTotal ?? 0),
+      },
     })
 
-    // Store items as V2 line items and compute grandTotal from provided prices
-    if (items.length > 0) {
-      const grandTotal =
-        parseFloat(quote.paymentStructure?.discountedSalesPrice || '0') ||
-        items.reduce(
-          (sum: number, item: any) =>
-            sum + (item.line_total ?? (item.unitPrice ?? 0) + (item.optionsTotal ?? 0) + (item.installPrice ?? 0)),
-          0
-        )
-
-      quote = await this.model.update(quote._id, {
-        line_items_v2: items,
-        paymentStructure: {
-          ...quote.paymentStructure,
-          grandTotal: Math.round(grandTotal * 100) / 100,
-        },
-      })
-    }
+    const quote = created.toObject() as Quote
 
     // Send notification to the appointment creator (Manager)
     if (quote.appointmentId) {
