@@ -23,6 +23,9 @@ export const ProductTypeValidator = {
     // ✅ JSON fields
     dimension_fields: Joi.object().optional(),
 
+    // ✅ JSON fields
+    product_fields: Joi.object().optional(),
+
     fabric_config: Joi.object().optional(),
 
     option_groups: Joi.array().items(Joi.string()).optional(),
@@ -60,6 +63,9 @@ export const ProductTypeValidator = {
     price_lookup_mode: Joi.string().allow(null, "").optional(),
 
     dimension_fields: Joi.object().optional(),
+    
+    // ✅ JSON fields
+    product_fields: Joi.object().optional(),
 
     fabric_config: Joi.object().optional(),
 

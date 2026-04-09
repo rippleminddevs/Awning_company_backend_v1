@@ -185,57 +185,68 @@ export interface InvoiceData {
     address: string
     email: string
     office: string
+    website: string
     license: string
-    representative: string
-    direct: string
-    sponsorImage?: string
+    sponsers: string[]
   }
   salesperson: {
     name: string
-    phone: string
+    cell: string
     email: string
     quoteCreated: string
     quoteExpiry: string
+    quoteNumber: string
   }
   customer: {
-    quoteId: string
     name: string
-    phone: string
-    email: string
     street: string
-    city: string
-    state: string
-    zipCode: string
-    jobLocation: string
-    leadTime: string
-    installTime: string
+    cityZip: string
     source: string
+    leadTime: string
+  }
+  project: {
+    name: string
+    street: string
+    cityZip: string
+  }
+  billTo: {
+    name: string
+    street: string
+    cityZip: string
   }
   items: Array<{
     qty: number
-    unitPrice: string
-    extendedPrice: string
     image: string
     title: string
-    description: string
-    location?: string
-    options?: string[]
-    size?: string
-    color?: string
-    notes?: string[]
+    fields: Array<{ label: string; value: string }>
+    options: Array<{ label: string; detail: string; qty: string; price: string }>
+    unitPrice: string
+    optionsTotal: string
+    installPrice: string
+    subTotal: string
+    isNote: boolean
+    noteText: string
   }>
   summary: {
     subtotal: string
     discount: string
     taxes: string
-    freight: string
-    total: string
+    grandTotal: string
   }
   payment: {
-    dueAcceptance: string
-    installments: string
-    duePriorDelivery: string
-    balanceCompletion: string
+    numberOfInstallments: string
+    downPayment: string
+    balanceDue: string
+    paymentMethod: string
+  }
+  officeOnly: {
+    customerName: string
+    salesPerson: string
+    saleDate: string
+    depositReceived: string
+    depositSource: string
+    leadTime: string
+    hiddenMarkup: string
   }
   terms: string[]
 }

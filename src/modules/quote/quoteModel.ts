@@ -81,9 +81,9 @@ const fields: FieldsConfig = {
     type: 'string',
     nullable: true,
     enum: [
-      'Hot',
-      'Warm',
-      'Dead',
+      // 'Hot',
+      // 'Warm',
+      // 'Dead',
       'SOLD',
       'CALL BACK',
       'LEFT PHONE MESSAGE',
@@ -103,7 +103,7 @@ const fields: FieldsConfig = {
       'NEW LEADS',
       'COMING TO SHOWROOM',
     ],
-    default: 'Hot',
+    default: 'QUOTED',
   },
   paymentStructure: {
     type: 'object',

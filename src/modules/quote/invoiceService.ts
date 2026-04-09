@@ -2,6 +2,8 @@ import { Types } from 'mongoose'
 import { QuoteModel } from './quoteModel'
 import { OrderModel } from '../order/orderModel'
 import { ProductModel } from '../product/productModel'
+import { ProductTypeModel } from '../productType/productTypeModel'
+import { OptionGroupModel } from '../optionGroup/optionGroupModel'
 import { AppointmentModel } from '../appointment/appointmentModel'
 import { UserModel } from '../user/userModel'
 import { InvoiceData, InvoiceResponse } from './quoteInterface'
@@ -21,10 +23,15 @@ export class InvoiceService {
   private userModel: UserModel
   private uploadService: UploadService
 
+  private productTypeModel: ProductTypeModel
+  private optionGroupModel: OptionGroupModel
+
   constructor() {
     this.quoteModel = QuoteModel.getInstance()
     this.orderModel = OrderModel.getInstance()
     this.productModel = ProductModel.getInstance()
+    this.productTypeModel = ProductTypeModel.getInstance()
+    this.optionGroupModel = OptionGroupModel.getInstance()
     this.appointmentModel = AppointmentModel.getInstance()
     this.userModel = UserModel.getInstance()
     this.uploadService = new UploadService()
@@ -119,74 +126,186 @@ export class InvoiceService {
 
   // Transform quote to invoice data
   private async transformToInvoiceData(quote: any): Promise<InvoiceData> {
-    // Get company info
-    const companyInfo = await this.getCompanyInfo(quote.creator.name)
+    const creator     = quote.creator || {}
+    const appt        = quote.appointment || {}
+    const ps          = quote.paymentStructure || {}
+    const isV2        = Array.isArray(quote.line_items_v2) && quote.line_items_v2.length > 0
 
-    // Get salesperson info
+    // ── Company info ─────────────────────────────────────────────────────────
+    const companyInfo = await this.getCompanyInfo()
+
+    // ── Salesperson ──────────────────────────────────────────────────────────
     const salesperson = {
-      name: `${quote.creator.name}`,
-      phone: quote.creator.phoneNumber || '',
-      email: quote.creator.email,
-      quoteCreated: quote.createdAt.toLocaleDateString(),
-      quoteExpiry: this.calculateExpiryDate(quote.createdAt),
+      name:         creator.name || '',
+      cell:         creator.phoneNumber || '',
+      email:        creator.email || '',
+      quoteCreated: new Date(quote.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      quoteExpiry:  this.calculateExpiryDate(quote.createdAt),
+      quoteNumber:  quote._id.toString().slice(-6).toUpperCase(),
     }
 
-    // Detect V2 quote (line_items_v2 populated, no old orders)
-    const isV2 = Array.isArray(quote.line_items_v2) && quote.line_items_v2.length > 0
-    const appointmentAddress = [quote.appointment?.address1, quote.appointment?.address2]
-      .filter(Boolean).join(' ')
+    // ── Customer / project / bill-to addresses ───────────────────────────────
+    const custName    = appt.businessName || `${appt.firstName || ''} ${appt.lastName || ''}`.trim() || ''
+    const custStreet  = appt.address1 || ''
+    const custCityZip = [appt.city, appt.state, appt.zipCode].filter(Boolean).join(', ')
 
-    let items: InvoiceData['items']
+    const customer = {
+      name:     custName,
+      street:   custStreet,
+      cityZip:  custCityZip,
+      source:   appt.source || '',
+      leadTime: appt.duration || '2–3 weeks',
+    }
+
+    // Project address (job site — same as customer if not separately set)
+    const projStreet  = [appt.address1, appt.address2].filter(Boolean).join(' ') || custStreet
+    const projCityZip = custCityZip
+    const project = {
+      name:    custName,
+      street:  projStreet,
+      cityZip: projCityZip,
+    }
+
+    // Bill To (billing address fields from appointment)
+    const billName    = appt.billingContactName || custName
+    const billStreet  = appt.billAddress?.street || appt.billAddress || custStreet
+    const billCityZip = appt.billingCity
+      ? [appt.billingCity, appt.state, appt.billingZip].filter(Boolean).join(', ')
+      : custCityZip
+    const billTo = {
+      name:    billName,
+      street:  billStreet,
+      cityZip: billCityZip,
+    }
+
+    // ── Prefetch product types + option groups for V2 items ──────────────────
+    const productTypeMap = new Map<string, any>()
+    const optionGroupMap = new Map<string, string>() // slug → display_label
 
     if (isV2) {
-      // ── V2 line items ────────────────────────────────────────────────────
+      const ptIds = [...new Set(quote.line_items_v2.map((i: any) => i.product_type_id?.toString()).filter(Boolean))]
+      if (ptIds.length > 0) {
+        const pts = await this.productTypeModel.getMongooseModel()
+          ?.find({ _id: { $in: ptIds } }, 'slug display_name dimension_fields product_fields option_groups')
+          .lean().exec() || []
+        pts.forEach((pt: any) => productTypeMap.set(pt._id.toString(), pt))
+      }
+
+      // Collect all option group slugs referenced across all items
+      const allOptionSlugs = new Set<string>()
+      quote.line_items_v2.forEach((item: any) => {
+        if (item.options_map) Object.keys(item.options_map).forEach((s: string) => allOptionSlugs.add(s))
+      })
+      if (allOptionSlugs.size > 0) {
+        const ogs = await this.optionGroupModel.getMongooseModel()
+          ?.find({ slug: { $in: [...allOptionSlugs] } }, 'slug display_label')
+          .lean().exec() || []
+        ogs.forEach((og: any) => optionGroupMap.set(og.slug, og.display_label || og.slug))
+      }
+    }
+
+    // ── Line items ───────────────────────────────────────────────────────────
+    let items: InvoiceData['items'] = []
+
+    if (isV2) {
       items = quote.line_items_v2.map((item: any) => {
-        // Build options summary from options_map
-        const options: string[] = []
+        const dims      = item.dimensions || {}
+        const pt        = productTypeMap.get(item.product_type_id?.toString()) || {}
+
+        // ── Build labeled fields from product type definitions ────────────
+        // Merge dimension_fields + product_fields, sort by sort_order
+        const fieldDefs: Record<string, { label: string; sort_order: number }> = {}
+        const mergeDefs = (source: Record<string, any> | undefined) => {
+          if (!source) return
+          Object.entries(source).forEach(([key, def]: [string, any]) => {
+            fieldDefs[key] = { label: def.label || key, sort_order: def.sort_order ?? 99 }
+          })
+        }
+        mergeDefs(pt.dimension_fields)
+        mergeDefs(pt.product_fields)
+
+        // Build display value for each filled dimension key
+        const buildValue = (key: string, raw: any): string => {
+          if (raw === undefined || raw === null || raw === '') return ''
+
+          // Combine ft/in pairs into readable string
+          if (key === 'width_ft') {
+            const parts = [raw !== '' ? `${raw}'` : '']
+            if (dims.width_in && dims.width_in !== '0') parts.push(`${dims.width_in}"`)
+            if (dims.width_fraction && dims.width_fraction !== '0') parts.push(dims.width_fraction)
+            return parts.filter(Boolean).join(' ')
+          }
+          if (key === 'projection_ft') {
+            const parts = [raw !== '' ? `${raw}'` : '']
+            if (dims.projection_in && dims.projection_in !== '0') parts.push(`${dims.projection_in}"`)
+            if (dims.projection_fraction && dims.projection_fraction !== '0') parts.push(dims.projection_fraction)
+            return parts.filter(Boolean).join(' ')
+          }
+          if (key === 'height_ft') {
+            const parts = [raw !== '' ? `${raw}'` : '']
+            if (dims.height_in && dims.height_in !== '0') parts.push(`${dims.height_in}"`)
+            return parts.filter(Boolean).join(' ')
+          }
+          // Skip sub-fields (in/fraction) — already merged above
+          if (['width_in','width_fraction','projection_in','projection_fraction','height_in'].includes(key)) return ''
+
+          return String(raw)
+        }
+
+        // Fabric always shown first if present
+        const fabricValue = item.fabric
+          ? `#${item.fabric.number}${item.fabric.name ? ' — ' + item.fabric.name : ''}`
+          : ''
+
+        const fields: Array<{ label: string; value: string }> = []
+
+        if (fabricValue) fields.push({ label: 'Fabric', value: fabricValue })
+
+        // Add all filled dimension/product fields in sort order
+        const sortedKeys = Object.keys(dims).sort((a, b) => {
+          const ao = fieldDefs[a]?.sort_order ?? 99
+          const bo = fieldDefs[b]?.sort_order ?? 99
+          return ao - bo
+        })
+
+        sortedKeys.forEach(key => {
+          const val = buildValue(key, dims[key])
+          if (!val) return
+          const label = fieldDefs[key]?.label || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+          fields.push({ label, value: val })
+        })
+
+        // ── Build options from options_map ────────────────────────────────
+        const options: Array<{ label: string; detail: string; qty: string; price: string }> = []
         if (item.options_map) {
           Object.entries(item.options_map).forEach(([slug, sel]: [string, any]) => {
-            if ((sel.yn === 'Yes' || (sel.yn && sel.yn !== 'No')) && (sel.price ?? 0) > 0) {
-              const label = slug.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
-              const detail = sel.sub_slug ? ` — ${sel.sub_slug.replace(/_/g, ' ')}` : ''
-              const qty   = sel.qty && sel.qty > 1 ? ` ×${sel.qty}` : ''
-              options.push(`${label}${detail}${qty}  (+${this.formatCurrency(sel.price)})`)
-            }
+            const yn = sel.yn ?? ''
+            if (!yn || yn === 'No' || yn === '') return
+            const label  = optionGroupMap.get(slug) || slug.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+            const detail = sel.sub_slug ? sel.sub_slug.replace(/_/g, ' ') : (yn !== 'Yes' ? yn : '')
+            const qty    = sel.qty && sel.qty > 1 ? `×${sel.qty}` : ''
+            const price  = (sel.price ?? 0) > 0 ? this.formatCurrency(sel.price) : ''
+            options.push({ label, detail, qty, price })
           })
         }
 
-        // Build size string from dimensions
-        const dims = item.dimensions || {}
-        const sizeParts: string[] = []
-        if (dims.width_ft !== undefined)
-          sizeParts.push(`Width: ${dims.width_ft}'${dims.width_in ? ' ' + dims.width_in + '"' : ''}`)
-        if (dims.projection_ft !== undefined)
-          sizeParts.push(`Projection: ${dims.projection_ft}'${dims.projection_in ? ' ' + dims.projection_in + '"' : ''}`)
-        if (dims.height_ft !== undefined)
-          sizeParts.push(`Height: ${dims.height_ft}'${dims.height_in ? ' ' + dims.height_in + '"' : ''}`)
-        if (dims.panel_qty)  sizeParts.push(`Panels: ${dims.panel_qty}`)
-        if (dims.number_of_bays) sizeParts.push(`Bays: ${dims.number_of_bays}`)
-
-        // Build description from fabric + drive info
-        const descParts: string[] = []
-        if (dims.fabric_name)   descParts.push(`Fabric: ${dims.fabric_name}`)
-        if (dims.fabric_number) descParts.push(`#${dims.fabric_number}`)
-        if (item.drive_type && item.drive_type !== 'none')
-          descParts.push(`Drive: ${item.drive_type === 'motorized' ? 'Motorized' : 'Hand Crank'}`)
-
-        const price = item.discounted_total ?? item.line_total ?? 0
+        const unitPrice   = item.unitPrice   ?? 0
+        const optTotal    = item.optionsTotal ?? 0
+        const installCost = item.installPrice ?? 0
+        const subTotal    = item.line_total   ?? (unitPrice + optTotal + installCost)
 
         return {
-          qty: 1,
-          unitPrice:     this.formatCurrency(price),
-          extendedPrice: this.formatCurrency(price),
-          image: '',
-          title: item.product_name || '',
-          description: descParts.join('  ·  '),
-          location: appointmentAddress,
+          qty:          1,
+          image:        '',
+          title:        item.product_name || '',
+          fields,
           options,
-          size: sizeParts.join('  ·  '),
-          color: dims.hardware_color || dims.frame_color || '',
-          notes: [],
+          unitPrice:    this.formatCurrency(unitPrice),
+          optionsTotal: optTotal    > 0 ? this.formatCurrency(optTotal)    : '',
+          installPrice: installCost > 0 ? this.formatCurrency(installCost) : '',
+          subTotal:     this.formatCurrency(subTotal),
+          isNote:       false,
+          noteText:     '',
         }
       })
     } else {
@@ -194,126 +313,101 @@ export class InvoiceService {
       items = await Promise.all(
         quote.orders.map(async (order: any) => {
           const product = order.productData
-          const features: string[] = []
+          const fields: Array<{ label: string; value: string }> = []
+
+          if (order.hardwareColor) fields.push({ label: 'Hardware Color', value: order.hardwareColor })
+          if (order.width_ft)      fields.push({ label: 'Width',      value: `${order.width_ft}' ${order.width_in || 0}"` })
+          if (order.projection_ft) fields.push({ label: 'Projection', value: `${order.projection_ft}' ${order.projection_in || 0}"` })
+          if (order.height_ft)     fields.push({ label: 'Height',     value: `${order.height_ft}' ${order.height_in || 0}"` })
+          if (order.fabricNumber)  fields.push({ label: 'Fabric',     value: `#${order.fabricNumber}` })
+          if (order.installation)  fields.push({ label: 'Install',    value: order.installation })
+          if (order.location?.address) fields.push({ label: 'Location', value: order.location.address })
+          if (order.description)   fields.push({ label: 'Notes',     value: order.description })
+
+          const options: Array<{ label: string; detail: string; qty: string; price: string }> = []
           if (order.additionalFeatures) {
             Object.entries(order.additionalFeatures).forEach(([key, value]) => {
-              if (value && value !== '0' && value !== 'false' && value !== 'No') {
-                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
-                features.push(`${label}: ${value}`)
-              }
+              if (!value || value === '0' || value === 'false' || value === 'No') return
+              const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (s: string) => s.toUpperCase())
+              options.push({ label, detail: String(value), qty: '', price: '' })
             })
           }
+
+          const unitPrice = order.unitPrice || 0
+          const qty       = order.quantity  || 1
           return {
-            qty: order.quantity || 1,
-            unitPrice:     this.formatCurrency(order.unitPrice),
-            extendedPrice: this.formatCurrency((order.quantity || 1) * order.unitPrice),
-            image: this.optimizeImageUrl(product?.image?.url || '', 400, 300, 70),
-            title: product?.name || '',
-            description: order.description || product?.description || '',
-            location: appointmentAddress,
-            options: features,
-            size: `Width: ${order.width_ft}' ${order.width_in || 0}" ${order.widthFraction || '0'}/8"
-    Height: ${order.height_ft}' ${order.height_in || 0}" ${order.heightFraction || '0'}/8"
-    Projection: ${order.projection_ft}' ${order.projection_in || 0}" ${order.projectionFraction || '0'}/8"`,
-            color: order.hardwareColor,
-            notes: order.notes,
+            qty,
+            image:        this.optimizeImageUrl(product?.image?.url || '', 400, 300, 70),
+            title:        product?.name || '',
+            fields,
+            options,
+            unitPrice:    this.formatCurrency(unitPrice),
+            optionsTotal: '',
+            installPrice: '',
+            subTotal:     this.formatCurrency(qty * unitPrice),
+            isNote:       false,
+            noteText:     '',
           }
         })
       )
     }
 
-    // ── Summary ──────────────────────────────────────────────────────────────
-    let summary: InvoiceData['summary']
-    if (isV2) {
-      const msrp       = parseFloat(quote.paymentStructure?.msrp || quote.paymentStructure?.MSRP || '0')
-      const discount   = parseFloat(quote.paymentStructure?.discount || '0')
-      const grandTotal = quote.paymentStructure?.grandTotal || 0
-      const hasTax     = quote.paymentStructure?.salesTax === 'Default'
-      const taxAmt     = hasTax ? grandTotal - (msrp - discount) : 0
+    // Special instructions note row
+    if (isV2 && quote.quote_notes) {
+      items.push({
+        qty: 0, image: '', title: '', fields: [], options: [],
+        unitPrice: '', optionsTotal: '', installPrice: '', subTotal: '',
+        isNote: true, noteText: quote.quote_notes,
+      })
+    }
 
-      summary = {
-        subtotal: this.formatCurrency(msrp),
-        discount: discount > 0 ? `−${this.formatCurrency(discount)}` : this.formatCurrency(0),
-        taxes:    hasTax ? this.formatCurrency(taxAmt) : 'Included',
-        freight:  'Included',
-        total:    this.formatCurrency(grandTotal),
-      }
-    } else {
-      summary = {
-        subtotal: this.formatCurrency(quote.paymentSummary?.subtotal || 0),
-        discount: this.formatCurrency(quote.paymentSummary?.discount || 0),
-        taxes:    'Included',
-        freight:  'Included',
-        total:    this.formatCurrency(quote.paymentSummary?.total || 0),
-      }
+    // ── Summary ──────────────────────────────────────────────────────────────
+    const msrp       = parseFloat(ps.msrp || '0')
+    const discount   = parseFloat(ps.discount || '0')
+    const grandTotal = ps.grandTotal || 0
+    const hasTax     = ps.salesTax === 'Default'
+    const taxAmt     = hasTax ? Math.max(0, grandTotal - (msrp - discount)) : 0
+
+    const summary = {
+      subtotal:  this.formatCurrency(msrp || (quote.paymentSummary?.subtotal || 0)),
+      discount:  discount > 0 ? `−${this.formatCurrency(discount)}` : '—',
+      taxes:     hasTax ? this.formatCurrency(taxAmt) : 'Included',
+      grandTotal: this.formatCurrency(grandTotal || quote.paymentSummary?.total || 0),
     }
 
     // ── Payment schedule ─────────────────────────────────────────────────────
-    let payment: InvoiceData['payment']
-    if (isV2) {
-      const grandTotal  = quote.paymentStructure?.grandTotal || 0
-      const firstPct    = parseFloat(quote.paymentStructure?.upfrontDeposit || '50')
-      const deposit     = (firstPct / 100) * grandTotal
-      const balance     = grandTotal - deposit
-      payment = {
-        dueAcceptance:    this.formatCurrency(deposit),
-        installments:     quote.paymentStructure?.numberOfInstallments || '2',
-        duePriorDelivery: this.formatCurrency(0),
-        balanceCompletion: this.formatCurrency(balance),
-      }
-    } else {
-      payment = {
-        dueAcceptance:    this.formatCurrency(quote.paymentSummary?.dueAcceptance || 0),
-        installments:     quote.paymentStructure?.numberOfInstallments || '1',
-        duePriorDelivery: this.formatCurrency(quote.paymentSummary?.duePriorDelivery || 0),
-        balanceCompletion: this.formatCurrency(quote.paymentSummary?.balanceCompletion || 0),
-      }
+    const depositPct = parseFloat(ps.upfrontDeposit || '50')
+    const deposit    = (depositPct / 100) * (grandTotal || 0)
+    const balance    = (grandTotal || 0) - deposit
+
+    const payment = {
+      numberOfInstallments: ps.numberOfInstallments || '—',
+      downPayment:          `${depositPct}% — ${this.formatCurrency(deposit)}`,
+      balanceDue:           this.formatCurrency(balance),
+      paymentMethod:        quote.paymentDetails?.paymentMethod || '—',
     }
 
-    // ── Customer info ────────────────────────────────────────────────────────
-    const appt = quote.appointment || {}
-    const customer = {
-      quoteId:     quote._id.toString().slice(-6),
-      name:        `${appt.firstName || ''} ${appt.lastName || ''}`.trim(),
-      phone:       appt.bestContact || '',
-      email:       appt.emailAddress || '',
-      street:      appt.address1 || '',
-      city:        appt.city || '',
-      state:       appt.state || '',
-      zipCode:     appt.zipCode || '',
-      jobLocation: appointmentAddress,
-      leadTime:    appt.time ? new Date(appt.time).toLocaleString() : '2–3 weeks',
-      installTime: appt.duration || '1–2 days',
-      source:      'TAC Web',
-    }
-
-    // ── Notes ────────────────────────────────────────────────────────────────
-    if (isV2 && quote.quote_notes) {
-      items.push({
-        qty: 0,
-        unitPrice: '',
-        extendedPrice: '',
-        image: '',
-        title: 'Special Instructions',
-        description: quote.quote_notes,
-        location: '',
-        options: [],
-        size: '',
-        color: '',
-        notes: [],
-      })
+    // ── Office-only section ───────────────────────────────────────────────────
+    const officeOnly = {
+      customerName:  custName,
+      salesPerson:   creator.name || '',
+      saleDate:      new Date(quote.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      depositReceived: this.formatCurrency(deposit),
+      depositSource:   quote.paymentDetails?.paymentMethod || '—',
+      leadTime:        appt.duration || '—',
+      hiddenMarkup:    parseFloat(ps.hiddenMarkup || '0') > 0 ? this.formatCurrency(parseFloat(ps.hiddenMarkup)) : '—',
     }
 
     const terms = [
       'THE UNPAID BALANCE IS DUE TO THE INSTALLERS UPON COMPLETION OF THE INSTALLATION. Unpaid balances will bear interest at the rate of .2% per month. The goods sold herein remain the property of the Seller until full payment is received. Product specifications are subject to change without notice.',
       'If any legal action is commenced to enforce the terms of this contract the prevailing party shall be entitled to reasonable attorney fees, collection costs and court costs.',
-      '3. Statutory Right of Rescission. Buyer may cancel this transaction at any time prior to midnight on the third business day. Cancellation must be in writing, mail, email or fax. After this period the order will be processed and the TOTAL contract is payable to the seller.',
+      'Statutory Right of Rescission. Buyer may cancel this transaction at any time prior to midnight on the third business day. Cancellation must be in writing, mail, email or fax. After this period the order will be processed and the TOTAL contract is payable to the seller.',
       'BUYER is responsible for general care and maintenance of all products. SELLER is not responsible for storm, wind or rain damage or from other conditions over which it has no control. All Valances and Bindings carry a 1 year warranty.',
       'SELLER IS NOT responsible for any permits required. This is the sole responsibility of the BUYER.',
       'Company installers do not carry paint but will do "touch up" stucco or wood (first coat only), provided BUYER supplies necessary materials during the installation.',
     ]
 
-    return { company: companyInfo, salesperson, customer, items, summary, payment, terms }
+    return { company: companyInfo, salesperson, customer, project, billTo, items, summary, payment, officeOnly, terms }
   }
 
   // Optimize image URL using Cloudinary transformations
@@ -328,15 +422,14 @@ export class InvoiceService {
   }
 
   // Get company info
-  private async getCompanyInfo(salespersonName: string) {
+  private async getCompanyInfo() {
     return {
-      logo: this.optimizeImageUrl(`${config.app.url}/static/uploads/companylogo.png`, 120, 120, 70),
+      logo:    this.optimizeImageUrl(`${config.app.url}/static/uploads/companylogo.png`, 120, 120, 70),
       address: '16811 HALE AVE. STE-E IRVINE CA 92606',
-      email: 'larry@theawningcompanyca.com',
-      office: '949.325.5627',
+      email:   'larry@theawningcompanyca.com',
+      office:  '949.325.5627',
+      website: 'www.theawningcompanyca.com',
       license: '968011',
-      representative: 'Larry Martinez',
-      direct: '949.280.7805',
       sponsers: await this.getSponsorLogos(),
     }
   }

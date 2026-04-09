@@ -43,6 +43,11 @@ const fields: FieldsConfig = {
     nullable: true,
   },
 
+  product_fields: {
+    type: 'json',
+    nullable: true,
+  },
+
   // ✅ Match DB naming
   dimension_fields: {
     type: 'json',
