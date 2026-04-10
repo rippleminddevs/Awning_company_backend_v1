@@ -281,21 +281,33 @@ export class InvoiceService {
 
         const fields: Array<{ label: string; value: string }> = []
 
-        if (fabricValue) fields.push({ label: 'Fabric', value: fabricValue })
 
         // Add all filled dimension/product fields in sort order
-        const sortedKeys = Object.keys(dims).sort((a, b) => {
-          const ao = fieldDefs[a]?.sort_order ?? 99
-          const bo = fieldDefs[b]?.sort_order ?? 99
-          return ao - bo
-        })
+        // const sortedKeys = Object.keys(dims).sort((a, b) => {
+        //   const ao = fieldDefs[a]?.sort_order ?? 99
+        //   const bo = fieldDefs[b]?.sort_order ?? 99
+        //   return ao - bo
+        // })
 
-        sortedKeys.forEach(key => {
+        // sortedKeys.forEach(key => {
+        //   const val = buildValue(key, dims[key])
+        //   if (!val) return
+        //   const label = fieldDefs[key]?.label || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+        //   fields.push({ label, value: val })
+        // })
+
+        // if (fabricValue) fields.push({ label: 'Fabric', value: fabricValue })
+
+        // Preserve the natural key order from dimensions as stored on the item
+        Object.keys(dims).forEach(key => {
           const val = buildValue(key, dims[key])
           if (!val) return
           const label = fieldDefs[key]?.label || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
           fields.push({ label, value: val })
         })
+
+        // Fabric appended last (secondary info)
+        if (fabricValue) fields.push({ label: 'Fabric', value: fabricValue })
 
         // ── Build options from options_map ────────────────────────────────
         const options: Array<{ label: string; detail: string; qty: string; price: string }> = []
@@ -434,7 +446,7 @@ export class InvoiceService {
 
     const payment = {
       numberOfInstallments: ps.numberOfInstallments || '—',
-      downPayment:          `${depositPct}% — ${this.formatCurrency(deposit)}`,
+      downPayment:          `${depositPct}% ( ${this.formatCurrency(deposit)} )`,
       balanceDue:           this.formatCurrency(balance),
       paymentMethod:        quote.paymentDetails?.paymentMethod || '—',
     }

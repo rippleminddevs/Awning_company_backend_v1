@@ -12,7 +12,7 @@
     font-size: 12px;
     color: #222;
     background: #fff;
-    padding: 24px 32px;
+    padding: 10px;
   }
 
   .divider { border:none; border-top:1px solid #ddd; margin:14px 0; }
@@ -102,13 +102,16 @@
 
   /* photo col */
   .photo-col {
-    width: 90px; flex-shrink: 0;
+    width: 100px; flex-shrink: 0;
     display: flex; align-items: flex-start; justify-content: center;
-    padding: 12px 8px;
-    border-right: 1px solid #eee;
+    /* padding: 12px 8px; */
+    /* border-right: 1px solid #eee; */
     background: #fafafa;
   }
-  .photo-col img { width: 72px; height: 60px; object-fit: contain; border: 1px solid #ddd; border-radius: 3px; }
+  .fields-photo-col{
+    display: flex; align-items: center; margin-bottom: 12px;
+  }
+  .photo-col img { width: 100px; height: auto; object-fit: contain; border-radius: 5px; }
   .photo-col .no-photo {
     width: 72px; height: 60px; background: #efefef;
     display: flex; align-items: center; justify-content: center;
@@ -123,7 +126,8 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 6px 14px;
-    margin-bottom: 10px;
+    margin-left: 10px;
+    width: 100%;
   }
   .field-item {}
   .field-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: #999; margin-bottom: 1px; }
@@ -289,29 +293,31 @@
       <!-- Card body: photo + details -->
       <div class="product-card-body">
 
-        <!-- Photo -->
-        <div class="photo-col">
-          <% if (item.image) { %>
-            <img src="<%= item.image %>" alt="<%= item.title %>">
-          <% } else { %>
-            <div class="no-photo">No Photo</div>
-          <% } %>
-        </div>
 
         <!-- Dynamic fields + options -->
         <div class="details-col">
-
-          <!-- Dynamic field grid -->
-          <% if (item.fields && item.fields.length > 0) { %>
-            <div class="fields-grid">
-              <% item.fields.forEach(function(f) { %>
-                <div class="field-item">
-                  <div class="field-lbl"><%= f.label %></div>
-                  <div class="field-val"><%= f.value %></div>
-                </div>
-              <% }) %>
+          <div class="fields-photo-col">
+            <!-- Photo -->
+            <div class="photo-col">
+              <% if (item.image) { %>
+                <img src="<%= item.image %>" alt="<%= item.title %>">
+              <% } else { %>
+                <div class="no-photo">No Photo</div>
+              <% } %>
             </div>
-          <% } %>
+
+            <!-- Dynamic field grid -->
+            <% if (item.fields && item.fields.length > 0) { %>
+              <div class="fields-grid">
+                <% item.fields.forEach(function(f) { %>
+                  <div class="field-item">
+                    <div class="field-lbl"><%= f.label %></div>
+                    <div class="field-val"><%= f.value %></div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+          </div>
 
           <!-- Options -->
           <% if (item.options && item.options.length > 0) { %>
