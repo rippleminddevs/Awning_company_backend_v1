@@ -7,12 +7,12 @@ import { createMongooseSchema } from '../../common/utils/schemaUtils'
 const fields: FieldsConfig = {
   type: {
     type: 'string',
-    enum: ['Appointment', 'New-Appointment'],
+    enum: ['Appointment', 'New-Appointment', 'Appointment-Status-Change', 'Quote-Created', 'Quote-Updated'],
     nullable: false,
   },
   refType: {
     type: 'string',
-    enum: ['Appointment'],
+    enum: ['Appointment', 'Quote'],
     nullable: false,
   },
   refId: {

@@ -369,7 +369,7 @@ export class QuoteService extends BaseService<Quote> {
             await this.notificationService.createNotification({
               type: 'Quote-Created',
               refType: 'Quote',
-              refId: quote._id,
+              refId: quote._id!.toString(),
               targets: [appointment.createdBy.toString()],
               data: { quote: quote._id },
               sendPush: true,
