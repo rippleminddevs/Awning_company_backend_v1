@@ -193,7 +193,7 @@ export class InvoiceService {
           .filter(Boolean)
       )]
       if (ptIds.length > 0) {
-        const ptObjectIds = ptIds.map((id: string) => {
+        const ptObjectIds = ptIds.map((id: any) => {
           try { return new Types.ObjectId(id) } catch { return null }
         }).filter(Boolean)
         const pts = await this.productTypeModel.getMongooseModel()
@@ -308,7 +308,7 @@ export class InvoiceService {
         })
 
         // ── Build options from options_map ────────────────────────────────
-        const options: Array<{ label: string; detail: string; qty: string; price: string }> = []
+        const options: Array<{ label: string; detail: string; yn: string; qty: string; price: string }> = []
         if (item.options_map) {
           Object.entries(item.options_map).forEach(([slug, sel]: [string, any]) => {
             const yn = sel.yn ?? ''
@@ -390,7 +390,7 @@ export class InvoiceService {
           if (order.location?.address) fields.push({ label: 'Location', value: order.location.address })
           if (order.description)   fields.push({ label: 'Notes',     value: order.description })
 
-          const options: Array<{ label: string; detail: string; qty: string; price: string }> = []
+          const options: Array<{ label: string; detail: string; yn: string; qty: string; price: string }> = []
           if (order.additionalFeatures) {
             Object.entries(order.additionalFeatures).forEach(([key, value]) => {
               if (!value || value === '0' || value === 'false' || value === 'No') return

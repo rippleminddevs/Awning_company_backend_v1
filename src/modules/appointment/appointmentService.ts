@@ -118,7 +118,7 @@ export class AppointmentService extends BaseService<Appointment> {
     const customerModel = CustomerModel.getInstance().getMongooseModel()
 
     // Try to find existing customer by email
-    let customer = await customerModel.findOne({ emailAddress: payload.emailAddress })
+    let customer = await customerModel?.findOne({ emailAddress: payload.emailAddress })
 
     if (!customer) {
       const isResidential = payload.customerType === 'residential'
@@ -126,7 +126,7 @@ export class AppointmentService extends BaseService<Appointment> {
         ? `${payload.firstName || ''} ${payload.lastName || ''}`.trim() || payload.emailAddress
         : payload.businessName || payload.emailAddress
 
-      customer = await customerModel.create({
+      customer = await customerModel?.create({
         customer_type: payload.customerType,
         name,
         firstName: payload.firstName || null,
@@ -146,7 +146,7 @@ export class AppointmentService extends BaseService<Appointment> {
       })
     }
 
-    payload.customerId = customer._id.toString()
+    payload.customerId = customer?._id.toString()
   }
 
   // Create appointment

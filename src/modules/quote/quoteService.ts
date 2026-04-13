@@ -283,11 +283,13 @@ export class QuoteService extends BaseService<Quote> {
 
     // Handle updates and creates
     for (const item of newItems) {
+      if(!item) continue;
+
       const unitPrice = await this.calculateUnitPrice(item)
 
-      if (item._id) {
+      if (item?.product_type_id) {
         // Update existing order
-        await this.orderService.updateOrder(item._id, {
+        await this.orderService.updateOrder(item?.product_type_id, {
           ...item,
           unitPrice,
           quoteId,
@@ -305,7 +307,7 @@ export class QuoteService extends BaseService<Quote> {
     }
 
     // Handle deletes
-    const newItemIds = new Set(newItems.map(item => item._id?.toString()).filter(Boolean))
+    const newItemIds = new Set(newItems.map(item => item.product_type_id?.toString()).filter(Boolean))
     const ordersToDelete = existingOrders.filter(order => !newItemIds.has(order._id.toString()))
     await Promise.all(
       ordersToDelete.map(order => this.orderService.deleteOrdersByQuoteId(order._id))
