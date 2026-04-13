@@ -219,7 +219,8 @@ export interface InvoiceData {
     image: string
     title: string
     fields: Array<{ label: string; value: string }>
-    options: Array<{ label: string; detail: string; qty: string; price: string }>
+    options: Array<{ label: string; detail: string; yn: string; qty: string; price: string }>
+    fabric?: { number: string; name: string } | null
     unitPrice: string
     optionsTotal: string
     installPrice: string

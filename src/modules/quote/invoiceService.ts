@@ -279,6 +279,7 @@ export class InvoiceService {
           ? `#${item.fabric.number}${item.fabric.name ? ' — ' + item.fabric.name : ''}`
           : ''
 
+
         const fields: Array<{ label: string; value: string }> = []
 
 
@@ -305,9 +306,6 @@ export class InvoiceService {
           const label = fieldDefs[key]?.label || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
           fields.push({ label, value: val })
         })
-
-        // Fabric appended last (secondary info)
-        if (fabricValue) fields.push({ label: 'Fabric', value: fabricValue })
 
         // ── Build options from options_map ────────────────────────────────
         const options: Array<{ label: string; detail: string; qty: string; price: string }> = []
@@ -342,9 +340,10 @@ export class InvoiceService {
             }
 
             const detail = detailParts.join(' · ')
-            const qty    = sel.qty && sel.qty > 1 ? `×${sel.qty}` : ''
+            const ynDisplay = yn === 'Yes' ? 'Yes' : yn || 'Yes'
+            const qty    = sel.qty && sel.qty >= 1 ? `×${sel.qty}` : ''
             const price  = (sel.price ?? 0) > 0 ? this.formatCurrency(sel.price) : ''
-            options.push({ label, detail, qty, price })
+            options.push({ label, detail, yn: ynDisplay, qty, price })
           })
         }
 
@@ -357,6 +356,7 @@ export class InvoiceService {
         const subCatSlug = pt.sub_category_slug || ''
         const rawImage   = subCatSlug ? (subCategoryImageMap.get(subCatSlug) || '') : ''
         const image      = rawImage ? this.optimizeImageUrl(rawImage, 400, 300, 70) : ''
+        const sunbrellaLogo = this.optimizeImageUrl(`${config.app.url}/static/uploads/defaults/sunbrella.png`, 80, 40, 70)
 
         return {
           qty:          1,
@@ -364,12 +364,14 @@ export class InvoiceService {
           title:        item.product_name || '',
           fields,
           options,
+          fabric:       item?.fabric || null,
           unitPrice:    this.formatCurrency(unitPrice),
           optionsTotal: optTotal    > 0 ? this.formatCurrency(optTotal)    : '',
           installPrice: installCost > 0 ? this.formatCurrency(installCost) : '',
           subTotal:     this.formatCurrency(subTotal),
           isNote:       false,
           noteText:     '',
+          sunbrellaLogo
         }
       })
     } else {
@@ -393,7 +395,7 @@ export class InvoiceService {
             Object.entries(order.additionalFeatures).forEach(([key, value]) => {
               if (!value || value === '0' || value === 'false' || value === 'No') return
               const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, (s: string) => s.toUpperCase())
-              options.push({ label, detail: String(value), qty: '', price: '' })
+              options.push({ label, detail: String(value), yn: 'Yes', qty: '', price: '' })
             })
           }
 
@@ -405,6 +407,7 @@ export class InvoiceService {
             title:        product?.name || '',
             fields,
             options,
+            fabric:       null,
             unitPrice:    this.formatCurrency(unitPrice),
             optionsTotal: '',
             installPrice: '',
@@ -419,7 +422,7 @@ export class InvoiceService {
     // Special instructions note row
     if (isV2 && quote.quote_notes) {
       items.push({
-        qty: 0, image: '', title: '', fields: [], options: [],
+        qty: 0, image: '', title: '', fields: [], options: [], fabric: null,
         unitPrice: '', optionsTotal: '', installPrice: '', subTotal: '',
         isNote: true, noteText: quote.quote_notes,
       })

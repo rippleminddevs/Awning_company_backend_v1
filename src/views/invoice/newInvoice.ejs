@@ -133,6 +133,20 @@
   .field-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: #999; margin-bottom: 1px; }
   .field-val { font-size: 11px; font-weight: 600; color: #222; }
 
+  /* fabric section */
+  .fabric-section { gap: 10px; margin-top: 8px; margin-bottom: 4px; padding: 6px 10px; background: #f7f9f7; border: 1px solid #d4e8da; border-radius: 5px; }
+  .fabric-detail {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 5px;
+  }
+  .fabric-detail .fabric-icon img { width: 100px; height: auto; object-fit: contain; }
+  .fabric-info { display: flex; flex-direction: column; gap: 1px; }
+  .fabric-lbl { font-size: 12px; text-transform: uppercase; letter-spacing: .07em; color: #2d8659; font-weight: 700; }
+  .fabric-num { font-size: 12px; font-weight: 700; color: #222; }
+  .fabric-color { font-size: 10px; color: #555; }
+
   /* options table */
   .options-section { margin-top: 8px; }
   .options-title { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: #2d8659; font-weight: 700; margin-bottom: 4px; }
@@ -319,6 +333,29 @@
             <% } %>
           </div>
 
+          <!-- Fabric -->
+          <% if (item.fabric && item.fabric.number) { %>
+            <div class="fabric-section">
+              <div class="fabric-lbl-col">
+                <span class="fabric-lbl">Fabric</span>
+              </div>
+              <div class="fabric-detail">
+                <% if (item.fabric.type == 'sunbrella') { %>
+                <div class="fabric-icon">
+                  <img src="<%= item.sunbrellaLogo %>" alt="Sunbrella Logo">
+                </div>
+                <% } %>
+                <div class="fabric-info">
+                  <!-- <span class="fabric-lbl">Fabric</span> -->
+                  <span class="fabric-num">#<%= item.fabric.number %></span>
+                  <% if (item.fabric.name) { %>
+                    <span class="fabric-color"><%= item.fabric.name %></span>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% } %>
+
           <!-- Options -->
           <% if (item.options && item.options.length > 0) { %>
             <div class="options-section">
@@ -328,6 +365,7 @@
                   <tr>
                     <th>Option</th>
                     <th>Detail</th>
+                    <th style="text-align:center;">Yes/No</th>
                     <th>Qty</th>
                     <th style="text-align:right;">Price</th>
                   </tr>
@@ -337,8 +375,9 @@
                     <tr>
                       <td><strong><%= opt.label %></strong></td>
                       <td><%= opt.detail || '—' %></td>
+                      <td style="text-align:center; font-weight:600; color:<%= opt.yn === 'No' ? '#c0392b' : '#2d8659' %>;"><%= opt.yn || 'Yes' %></td>
                       <td><%= opt.qty    || '—' %></td>
-                      <td class="opt-price"><%= opt.price || 'TBD' %></td>
+                      <td class="opt-price"><%= opt.price || '$0.00' %></td>
                     </tr>
                   <% }) %>
                 </tbody>
