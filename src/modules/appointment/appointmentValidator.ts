@@ -6,37 +6,37 @@ const baseAppointmentSchema = {
     .required()
     .valid('residential', 'commercial', 'contractor', 'designer'),
   firstName: Joi.string().when('customerType', {
-    is: Joi.valid('residential', 'designer'),
+    is: Joi.valid('residential'),
     then: Joi.required(),
     otherwise: Joi.optional().allow('', null),
   }),
   lastName: Joi.string().when('customerType', {
-    is: Joi.valid('residential', 'designer'),
+    is: Joi.valid('residential'),
     then: Joi.required(),
     otherwise: Joi.optional().allow('', null),
   }),
   businessName: Joi.string().when('customerType', {
-    is: Joi.valid('commercial', 'contractor'),
+    is: Joi.valid('commercial', 'contractor', 'designer'),
     then: Joi.required(),
     otherwise: Joi.optional().allow('', null),
   }),
   billAddress: Joi.string().when('customerType', {
-    is: Joi.valid('commercial', 'contractor'),
+    is: Joi.valid('commercial', 'contractor', 'designer'),
     then: Joi.required(),
     otherwise: Joi.optional().allow('', null),
   }),
   projectManagerContact: Joi.string().when('customerType', {
-    is: Joi.valid('commercial', 'contractor'),
+    is: Joi.valid('commercial', 'contractor', 'designer'),
     then: Joi.required(),
     otherwise: Joi.optional().allow('', null),
   }),
   companyContact: Joi.string().when('customerType', {
-    is: Joi.valid('commercial', 'contractor'),
+    is: Joi.valid('commercial', 'contractor', 'designer'),
     then: Joi.required(),
     otherwise: Joi.optional().allow('', null),
   }),
   source: Joi.string().when('customerType', {
-    is: Joi.valid('commercial', 'contractor'),
+    is: Joi.valid('commercial', 'contractor', 'designer'),
     then: Joi.required(),
     otherwise: Joi.optional().allow('', null),
   }),
