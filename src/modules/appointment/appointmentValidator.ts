@@ -76,6 +76,7 @@ const baseAppointmentSchema = {
       'COMING TO SHOWROOM'
     ),
   internalNotes: Joi.string().optional().allow('', null),
+  specialInstructions: Joi.string().optional().allow('', null),
   phoneNumber: Joi.string().optional().allow('', null),
   notifications: Joi.object({
     emailToCustomer: Joi.boolean().default(false),
