@@ -31,11 +31,11 @@
     "refreshTokenExpiry": "7d"
   },
   "email": {
-    "host": "mail.letsgetwebdesign.com",
+    "host": "smtp.gmail.com",
     "port": 465,
-    "username": "noreply@letsgetwebdesign.com",
-    "password": "sYVSd!Zy1q9?",
-    "fromAddress": "noreply@awningcompany.com",
+    "username": "dev.team@hoffnmazor.com",
+    "password": "aahvctsiwsnlkdym",
+    "fromAddress": "dev.team@hoffnmazor.com",
     "secure": true
   },
   "payment": {

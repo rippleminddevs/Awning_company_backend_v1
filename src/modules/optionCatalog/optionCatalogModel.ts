@@ -56,6 +56,10 @@ const fields: FieldsConfig = {
     type: 'json',
     nullable: true,
   },
+  sort_order: {
+    type: 'number',
+    nullable: true,
+  },
 }
 
 export class OptionCatalogModel extends BaseModel<OptionCatalog> {

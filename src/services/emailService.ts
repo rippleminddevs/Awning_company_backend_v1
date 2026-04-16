@@ -147,6 +147,51 @@ export class EmailService {
     }
   }
 
+  public sendInvoiceToClient = async (
+    to: string,
+    customerName: string,
+    invoiceUrl: string,
+    quoteNumber: string
+  ): Promise<void> => {
+    try {
+      // Fetch PDF buffer from Cloudinary URL
+      const axiosLib = require('axios').default
+      const pdfResponse = await axiosLib.get(invoiceUrl, { responseType: 'arraybuffer' })
+      const pdfBuffer = Buffer.from(pdfResponse.data)
+
+      const subject = `Your Quote from The Awning Company — #${quoteNumber}`
+      const text = `Hi ${customerName},\n\nPlease find your quote attached. Thank you for choosing The Awning Company!\n\nIf you have any questions, feel free to reach out.\n\nBest regards,\nThe Awning Company`
+
+      const html = await this.renderTemplate('invoiceEmail', {
+        customerName,
+        quoteNumber,
+      })
+
+      const mailOptions: nodemailer.SendMailOptions = {
+        from: config.email.fromAddress.includes('<')
+          ? config.email.fromAddress
+          : `"The Awning Company" <${config.email.fromAddress}>`,
+        to,
+        subject,
+        text,
+        html,
+        attachments: [
+          {
+            filename: `Quote-${quoteNumber}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf',
+          },
+        ],
+      }
+
+      await this.transporter.sendMail(mailOptions)
+      console.log(`Invoice email sent to ${to}`)
+    } catch (error: any) {
+      console.error('Error sending invoice email:', error)
+      throw new AppError('Failed to send invoice email', 500)
+    }
+  }
+
   public sendAppointmentToManagers = async (
     appointmentData: any,
     managerEmails: string[]

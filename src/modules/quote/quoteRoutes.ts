@@ -18,6 +18,7 @@ const invoiceController = new InvoiceController()
 router.get('/:quoteId/invoice-view', invoiceController.viewInvoice)
 router.get('/:quoteId/invoice', invoiceController.generateInvoice)
 router.get('/:quoteId/invoice/download', invoiceController.downloadInvoice)
+router.post('/:quoteId/invoice/email', invoiceController.emailInvoice)
 
 router.use(authenticate)
 router.get('/', validateQuery(QuoteValidator.getAll), quoteController.getAll)

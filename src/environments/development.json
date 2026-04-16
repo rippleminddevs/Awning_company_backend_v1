@@ -31,12 +31,12 @@
     "refreshTokenExpiry": "7d"
   },
   "email": {
-    "host": "sandbox.smtp.mailtrap.io",
-    "port": 2525,
-    "username": "9f8fb0f6ec36d8",
-    "password": "e0939a5fe22291",
-    "fromAddress": "no-reply@awningcompany.com",
-    "secure": false
+    "host": "smtp.gmail.com",
+    "port": 465,
+    "username": "dev.team@hoffnmazor.com",
+    "password": "aahvctsiwsnlkdym",
+    "fromAddress": "dev.team@hoffnmazor.com",
+    "secure": true
   },
   "payment": {
     "stripe": {

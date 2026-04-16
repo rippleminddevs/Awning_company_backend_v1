@@ -15,6 +15,7 @@ import { UploadService } from '../upload/uploadService'
 import { Readable } from 'stream'
 import { config } from '../../services/configService'
 import * as fs from 'fs'
+import { EmailService } from '../../services/emailService'
 
 export class InvoiceService {
   private quoteModel: QuoteModel
@@ -23,6 +24,7 @@ export class InvoiceService {
   private appointmentModel: AppointmentModel
   private userModel: UserModel
   private uploadService: UploadService
+  private emailService: EmailService
 
   private productTypeModel: ProductTypeModel
   private productSubCategoryModel: ProductSubCategoryModel
@@ -38,6 +40,7 @@ export class InvoiceService {
     this.appointmentModel = AppointmentModel.getInstance()
     this.userModel = UserModel.getInstance()
     this.uploadService = new UploadService()
+    this.emailService = new EmailService()
   }
 
   // Generate invoice data
@@ -790,6 +793,34 @@ export class InvoiceService {
     })
 
     return response
+  }
+
+  // Email invoice PDF to client
+  public async emailInvoiceToClient(quoteId: string): Promise<void> {
+    const quote = await this.quoteModel.getMongooseModel()
+      ?.findById(quoteId)
+      .populate('appointmentId', 'emailAddress firstName lastName businessName customerType')
+      .lean()
+      .exec()
+
+    if (!quote) throw new Error('Quote not found')
+    if (!quote.invoice) throw new Error('No invoice found for this quote. Please generate invoice first.')
+
+    const file = await this.uploadService.getById(quote.invoice)
+    if (!file?.url) throw new Error('Invoice file not found. Please regenerate the invoice.')
+
+    const appt: any = quote.appointmentId || {}
+    const customerEmail = appt.emailAddress
+    if (!customerEmail) throw new Error('No email address found for this client.')
+
+    const customerName =
+      appt.customerType === 'residential' || appt.customerType === 'designer'
+        ? `${appt.firstName || ''} ${appt.lastName || ''}`.trim()
+        : appt.businessName || 'Valued Customer'
+
+    const quoteNumber = (quote as any)._id.toString().slice(-6).toUpperCase()
+
+    await this.emailService.sendInvoiceToClient(customerEmail, customerName, file.url, quoteNumber)
   }
 
   // Format file size to human readable format

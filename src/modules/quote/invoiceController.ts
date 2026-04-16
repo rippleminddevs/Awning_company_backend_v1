@@ -53,4 +53,15 @@ export class InvoiceController {
       throw AppError.badRequest(error.message || 'Failed to get invoice')
     }
   }
+
+  public emailInvoice = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { quoteId } = req.params
+      await this.invoiceService.emailInvoiceToClient(quoteId)
+      apiResponse(res, null, 200, 'Invoice emailed to client successfully')
+    } catch (error: any) {
+      console.error('Error emailing invoice:', error)
+      throw AppError.badRequest(error.message || 'Failed to email invoice')
+    }
+  }
 }
