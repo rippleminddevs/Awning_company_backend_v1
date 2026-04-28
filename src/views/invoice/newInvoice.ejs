@@ -196,9 +196,21 @@
 
   /* ── Signature ── */
   .sig-section { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 20px; }
-  .sig-field label { font-size: 10px; color: #666; }
-  .sig-line { border-bottom: 1.5px solid #333; margin-top: 36px; }
-
+  .sig-field label { font-size: 12px; color: #666; }
+  .sig-line {
+    border-bottom: 1.5px solid #333;
+    margin-top: 35px;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 10px;
+  }
+  .sig-line img {
+    width: 100%;
+    object-fit: contain;
+    max-height: 100%;
+  }
   /* ── Sponsors ── */
   .sponsors { display:flex; flex-wrap:wrap; justify-content:center; gap:16px; padding-top:14px; border-top:1px solid #e0e0e0; }
   .sponsors img { max-height:36px; width:auto; opacity:.75; }
@@ -418,11 +430,11 @@
 <!-- ═══ TOTALS + PAYMENT ══════════════════════════════════ -->
 <div class="bottom-grid">
   <div>
-    <div class="section-header">Project Totals</div>
+    <div class="section-header">Totals</div>
     <table class="summary-table">
-      <tr><td>Project Sub Total</td><td class="r"><%= summary.subtotal  %></td></tr>
+      <tr><td>Sub Total</td><td class="r"><%= summary.subtotal  %></td></tr>
       <tr><td>Discount $</td>       <td class="r"><%= summary.discount  %></td></tr>
-      <tr><td>Taxes</td>            <td class="r"><%= summary.taxes     %></td></tr>
+      <tr><td>Additional Install Charge ( $ )</td><td class="r">+<%= summary.additionalInstallationCharges %></td></tr>
       <tr class="total-row"><td>Grand Total</td><td class="r"><%= summary.grandTotal %></td></tr>
     </table>
   </div>
@@ -446,8 +458,20 @@
 </div>
 
 <div class="sig-section">
-  <div class="sig-field"><label>Acceptance Signature:</label><div class="sig-line"></div></div>
-  <div class="sig-field"><label>Date:</label><div class="sig-line"></div></div>
+  <div class="sig-field"><label>Acceptance Signature:</label>
+    <div class="sig-line">
+      <% if (signatureData?.sign) { %>
+        <img src="<%= signatureData?.sign %>" alt="Signature">
+      <% } %>
+    </div>
+  </div>
+  <div class="sig-field"><label>Date:</label>
+    <div class="sig-line">
+      <% if (signatureData?.date) { %>
+        <%= signatureData?.date %>
+      <% } %>
+    </div>
+  </div>
 </div>
 
 <% if (company.sponsers && company.sponsers.length > 0) { %>

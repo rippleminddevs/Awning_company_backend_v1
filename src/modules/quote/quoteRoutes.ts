@@ -42,6 +42,12 @@ router.post(
   validate(QuoteValidator.updateDocuments),
   quoteController.updateDocuments
 )
+router.post(
+  '/:id/complete-sale',
+  upload.single('checkImage'),
+  parseQuoteBody,
+  quoteController.completeSale
+)
 router.get('/:id', quoteController.getById)
 router.put('/:id', validate(QuoteValidator.update), quoteController.update)
 router.put(

@@ -11,6 +11,7 @@ export interface PaymentStructure {
   numberOfInstallments: string
   grandTotal: number
   freight?: string
+  additionalInstallationCharges?: string
 }
 
 export interface PaymentSummary {
@@ -251,6 +252,10 @@ export interface InvoiceData {
     hiddenMarkup: string
   }
   terms: string[]
+  signatureData?: {
+    sign: string
+    date: string
+  }
 }
 
 export interface SalesPersonAnalytics {

@@ -14,6 +14,7 @@ const PaymentStructure: FieldsConfig = {
   numberOfInstallments: { type: 'string', nullable: false },
   grandTotal: { type: 'number', nullable: false },
   freight: { type: 'string', nullable: true },
+  additionalInstallationCharges: { type: 'string', nullable: true },
 }
 
 const PaymentSummary: FieldsConfig = {
@@ -60,6 +61,8 @@ const PaymentDetails: FieldsConfig = {
   authorization: { type: 'string', nullable: true },
   date: { type: 'string', nullable: true },
   signature: { type: 'string', nullable: true },
+  customer_initials: { type: 'string', nullable: true },
+  signature_timestamp: { type: 'string', nullable: true },
 }
 
 const fields: FieldsConfig = {
@@ -156,6 +159,7 @@ const fields: FieldsConfig = {
     type: 'string',
     nullable: true,
   },
+  follow_up_sent_at: { type: 'string', nullable: true },
 }
 
 export class QuoteModel extends BaseModel<Quote> {

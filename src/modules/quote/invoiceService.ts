@@ -440,9 +440,10 @@ export class InvoiceService {
 
     const summary = {
       subtotal:  this.formatCurrency(msrp || (quote.paymentSummary?.subtotal || 0)),
-      discount:  discount > 0 ? `−${this.formatCurrency(discount)}` : '—',
+      discount:  discount > 0 ? `−${this.formatCurrency(discount)}` : '0',
       taxes:     hasTax ? this.formatCurrency(taxAmt) : 'Included',
       grandTotal: this.formatCurrency(grandTotal || quote.paymentSummary?.total || 0),
+      additionalInstallationCharges: parseFloat(ps.additionalInstallationCharges || '0') > 0 ? this.formatCurrency(parseFloat(ps.additionalInstallationCharges || '0')) : null,
     }
 
     // ── Payment schedule ─────────────────────────────────────────────────────
@@ -468,6 +469,14 @@ export class InvoiceService {
       hiddenMarkup:    parseFloat(ps.hiddenMarkup || '0') > 0 ? this.formatCurrency(parseFloat(ps.hiddenMarkup)) : '—',
     }
 
+    const signatureData = {
+      sign: quote.paymentDetails?.signature ? this.optimizeImageUrl(quote.paymentDetails.signature, 200, 100, 70) : '',
+      date: quote.paymentDetails?.signature_timestamp
+    }
+    // const signature = quote.paymentDetails?.signature ? this.optimizeImageUrl(quote.paymentDetails.signature, 200, 100, 70) : ''
+    // const signDate = quote.paymentDetails?.signature_timestamp;
+
+
     const terms = [
       'THE UNPAID BALANCE IS DUE TO THE INSTALLERS UPON COMPLETION OF THE INSTALLATION. Unpaid balances will bear interest at the rate of .2% per month. The goods sold herein remain the property of the Seller until full payment is received. Product specifications are subject to change without notice.',
       'If any legal action is commenced to enforce the terms of this contract the prevailing party shall be entitled to reasonable attorney fees, collection costs and court costs.',
@@ -477,7 +486,7 @@ export class InvoiceService {
       'Company installers do not carry paint but will do "touch up" stucco or wood (first coat only), provided BUYER supplies necessary materials during the installation.',
     ]
 
-    return { company: companyInfo, salesperson, customer, project, billTo, items, summary, payment, officeOnly, terms }
+    return { company: companyInfo, salesperson, customer, project, billTo, items, summary, payment, officeOnly, terms, signatureData }
   }
 
   // Optimize image URL using Cloudinary transformations
@@ -512,7 +521,7 @@ export class InvoiceService {
       return files
         .filter(file => /\.(jpg|jpeg|png)$/i.test(file))
         .sort()
-        .slice(0, 5) // Limit to 5 sponsors max to reduce PDF size
+        // .slice(0, 5) // Limit to 5 sponsors max to reduce PDF size
         .map(file => this.optimizeImageUrl(`${config.app.url}/static/sponsers/${file}`, 150, 80, 60))
     } catch (error) {
       console.error('Error reading sponsor directory:', error)

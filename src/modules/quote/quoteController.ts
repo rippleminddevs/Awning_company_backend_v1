@@ -94,4 +94,13 @@ export class QuoteController extends BaseController<Quote, QuoteService> {
     const updatedQuote = await this.service.updatePaymentStatus(id, { paymentStatus })
     apiResponse(res, updatedQuote, 200, 'Payment status updated successfully')
   }
+
+  public completeSale = async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params
+    const result = await this.service.completeSaleService(id, {
+      ...req.body,
+      checkImage: req.file || undefined,
+    })
+    apiResponse(res, result, 200, 'Sale completed successfully')
+  }
 }

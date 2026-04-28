@@ -30,6 +30,8 @@ import { InventoryModel } from '../inventory/inventoryModel'
 import { OrderModel } from '../order/orderModel'
 import { NotificationService } from '../notification/notificationService'
 import { AppError } from '../../common/utils/appError'
+import { InvoiceService } from './invoiceService'
+
 export class QuoteService extends BaseService<Quote> {
   private orderService: OrderService
   private productModel: ProductModel
@@ -39,7 +41,8 @@ export class QuoteService extends BaseService<Quote> {
   private inventoryModel: InventoryModel
   private orderModel: OrderModel
   private notificationService: NotificationService
-
+  // private invoiceService: InvoiceService;
+  
   constructor() {
     super(QuoteModel.getInstance())
     this.orderService = new OrderService()
@@ -51,6 +54,7 @@ export class QuoteService extends BaseService<Quote> {
     this.inventoryModel = InventoryModel.getInstance()
     this.orderModel = OrderModel.getInstance()
     this.notificationService = new NotificationService()
+    // this.invoiceService = new InvoiceService();
   }
 
   // private function to return populated data
@@ -165,7 +169,8 @@ export class QuoteService extends BaseService<Quote> {
     const taxRate = paymentStructure.salesTax === 'Default' ? 0.0975 : 0 // 9.75% CA sales tax
     const taxes = subtotal * taxRate
     const freight = parseFloat(paymentStructure.freight || '0') || 0
-    const total = Math.max(0, subtotal)
+    const additionalInstall = parseFloat(paymentStructure.additionalInstallationCharges || '0') || 0
+    const total = Math.max(0, subtotal + additionalInstall)
 
     // Calculate payment schedule
     const upfrontPercentage = parseFloat(paymentStructure.upfrontDeposit) || 50 // Default 50%
@@ -316,7 +321,6 @@ export class QuoteService extends BaseService<Quote> {
 
   // Create quote and order
   public createQuote = async (payload: CreateQuote): Promise<Quote> => {
-    console.log('quote service');
     const { items = [], paymentDetails, ...quoteData } = payload
 
     // Upload payment details image
@@ -330,14 +334,15 @@ export class QuoteService extends BaseService<Quote> {
     // Calculate payment summary
     const paymentSummary = this.calculatePaymentSummary(quoteData.paymentStructure, paymentDetails)
 
-    // Calculate grandTotal from line items (use discountedSalesPrice if available)
+    // Calculate grandTotal from line items (use discountedSalesPrice if available) + additional install charge
+    const additionalInstall = parseFloat(quoteData.paymentStructure?.additionalInstallationCharges || '0') || 0
     const grandTotal = items.length > 0
       ? (parseFloat(quoteData.paymentStructure?.discountedSalesPrice || '0') ||
          items.reduce(
            (sum: number, item: any) =>
              sum + (item.line_total ?? (item.unitPrice ?? 0) + (item.optionsTotal ?? 0) + (item.installPrice ?? 0)),
            0
-         ))
+         )) + additionalInstall
       : 0
 
     // Create the quote with line_items_v2 in a single operation
@@ -962,6 +967,64 @@ export class QuoteService extends BaseService<Quote> {
       paymentStatuses,
       transactionTrends,
     }
+  }
+
+  public completeSaleService = async (id: string, data: any): Promise<any> => {
+    const { checkImage, paymentMethod, checkNumber, cardLast4, initials, signature, signatureTimestamp } = data
+
+    let checkImageId: any = undefined
+    if (checkImage) {
+      const uploaded = await this.uploadService.create({ file: checkImage })
+      checkImageId = uploaded._id
+    }
+
+    const setFields: Record<string, any> = {
+      status: 'SALE PENDING',
+      'paymentDetails.paymentMethod': paymentMethod,
+      'paymentDetails.customer_initials': initials,
+      'paymentDetails.signature_timestamp': signatureTimestamp,
+    }
+
+    if (checkNumber) setFields['paymentDetails.checkNumber'] = checkNumber
+    if (cardLast4) setFields['paymentDetails.cardNumber'] = cardLast4
+    if (signature) setFields['paymentDetails.signature'] = signature
+    if (checkImageId) setFields['paymentDetails.checkImage'] = checkImageId
+
+    const quoteModel = this.model.getMongooseModel()
+    const updated = await quoteModel?.findByIdAndUpdate(id, { $set: setFields }, { new: true })
+    if (!updated) throw AppError.notFound('Quote not found')
+
+    setImmediate(async () => {
+      try {
+        const quote = await this.model.getMongooseModel().findById(id)
+        // Regenerate invoice with new check image
+        const res = await new InvoiceService().generatePdfWithData(id)
+        quoteModel.invoice = res.fileId;
+        await quoteModel?.findByIdAndUpdate(id, { $set: {
+            invoice: res.fileId
+        } }, { new: true })
+
+        if (quote?.appointmentId) {
+          const appointment = await this.appointmentModel.getMongooseModel()
+            ?.findById(quote.appointmentId).select('createdBy').lean()
+          if (appointment?.createdBy) {
+            await this.notificationService.createNotification({
+              type: 'Quote-Updated',
+              refType: 'Quote',
+              refId: id,
+              targets: [appointment.createdBy.toString()],
+              data: { quote: id, status: 'SALE PENDING' },
+              sendPush: true,
+              createdBy: updated.createdBy.toString(),
+            })
+          }
+        }
+      } catch (err) {
+        console.error('Failed to send sale notification:', err)
+      }
+    })
+
+    return updated
   }
 
   // Helper to get transaction trends
