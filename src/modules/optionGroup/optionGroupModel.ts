@@ -79,6 +79,21 @@ const fields: FieldsConfig = {
     type: 'string',
     nullable: true,
   },
+  // Fabric picker — allowed fabric types
+  fabric_types: {
+    type: 'array',
+    itemType: 'string',
+    nullable: true,
+  },
+  // Option dependency — show this group only when another group matches a value
+  depends_on_slug: {
+    type: 'string',
+    nullable: true,
+  },
+  depends_on_value: {
+    type: 'string',
+    nullable: true,
+  },
 }
 
 export class OptionGroupModel extends BaseModel<OptionGroup> {

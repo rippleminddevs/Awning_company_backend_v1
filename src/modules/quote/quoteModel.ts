@@ -152,6 +152,10 @@ const fields: FieldsConfig = {
     type: 'string',
     nullable: true,
   },
+  customer_signature: {
+    type: 'string',
+    nullable: true,
+  },
 }
 
 export class QuoteModel extends BaseModel<Quote> {

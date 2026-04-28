@@ -18,6 +18,11 @@ export interface OptionGroup {
   // ── Catalog linkage ───────────────────────────────────────────────────────
   option_type_filter?: string | null
   option_slug_filter?: string | null
+  // ── Fabric picker ─────────────────────────────────────────────────────────
+  fabric_types?: string[]
+  // ── Option dependency ─────────────────────────────────────────────────────
+  depends_on_slug?: string | null
+  depends_on_value?: string
   // ── Sub-fields (extra pickers / free-text fields shown inside this group) ─
   sub_fields?: Array<{
     key: string

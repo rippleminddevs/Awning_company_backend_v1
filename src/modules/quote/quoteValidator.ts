@@ -45,6 +45,7 @@ export const QuoteValidator = {
       .default('pending'),
     line_items_v2: Joi.array().items(Joi.object().unknown(true)).optional(),
     quote_notes: Joi.string().optional().allow(''),
+    customer_signature: Joi.string().allow('', null).optional(),
   }),
 
   update: Joi.object({
@@ -84,6 +85,7 @@ export const QuoteValidator = {
     paymentStatus: Joi.string().valid('pending', 'paid', 'partially paid').optional(),
     line_items_v2: Joi.array().items(Joi.object().unknown(true)).optional(),
     quote_notes: Joi.string().optional().allow(''),
+    customer_signature: Joi.string().allow('', null).optional(),
   }),
 
   updateDocuments: Joi.object({

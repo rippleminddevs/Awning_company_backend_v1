@@ -87,6 +87,7 @@ export interface Quote {
   _id?: string
   appointmentId: string
   documents: string[]
+  customer_signature?: string
   status?:
     | 'Hot'
     | 'Warm'

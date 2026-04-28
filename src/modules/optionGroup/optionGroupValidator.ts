@@ -3,7 +3,7 @@ import Joi from 'joi'
 const RENDER_TYPES = [
   'yn_toggle', 'yn_with_qty', 'yn_with_linft', 'yn_then_picker',
   'yn_then_picker_qty', 'qty_per_item', 'dropdown_single', 'brand_qty',
-  'width_priced', 'info_only', 'freetext',
+  'width_priced', 'info_only', 'freetext', 'fabric_picker',
 ]
 
 const subFieldSchema = Joi.object({
@@ -29,6 +29,9 @@ export const OptionGroupValidator = {
     option_type_filter:Joi.string().allow('', null).optional(),
     option_slug_filter:Joi.string().allow('', null).optional(),
     sub_fields:        Joi.array().items(subFieldSchema).optional(),
+    fabric_types:      Joi.array().items(Joi.string()).optional(),
+    depends_on_slug:   Joi.string().allow('', null).optional(),
+    depends_on_value:  Joi.string().allow('', null).optional(),
   }),
 
   update: Joi.object({
@@ -46,5 +49,8 @@ export const OptionGroupValidator = {
     option_type_filter:Joi.string().allow('', null).optional(),
     option_slug_filter:Joi.string().allow('', null).optional(),
     sub_fields:        Joi.array().items(subFieldSchema).optional(),
+    fabric_types:      Joi.array().items(Joi.string()).optional(),
+    depends_on_slug:   Joi.string().allow('', null).optional(),
+    depends_on_value:  Joi.string().allow('', null).optional(),
   }),
 }
