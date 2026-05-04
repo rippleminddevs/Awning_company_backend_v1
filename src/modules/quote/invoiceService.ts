@@ -307,7 +307,7 @@ export class InvoiceService {
           const val = buildValue(key, dims[key])
           if (!val) return
           const label = fieldDefs[key]?.label || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-          fields.push({ label, value: val })
+          fields.push({ label, value: val, key })
         })
 
         // ── Build options from options_map ────────────────────────────────
@@ -315,15 +315,15 @@ export class InvoiceService {
         if (item.options_map) {
           Object.entries(item.options_map).forEach(([slug, sel]: [string, any]) => {
             const yn = sel.yn ?? ''
-            if (!yn || yn === 'No' || yn === '') return
+            if (!yn || yn === '') return
             const label = optionGroupMap.get(slug) || slug.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
 
-            // Build detail: sub_slug, brand, yn (if not "Yes"), then sub_fields
+            // Build detail: sub_slug, brand, yn (if not "Yes"/"No"), then sub_fields
             const detailParts: string[] = []
 
             if (sel.sub_slug) {
               detailParts.push(sel.sub_slug.replace(/_/g, ' '))
-            } else if (yn !== 'Yes') {
+            } else if (yn !== 'Yes' && yn !== 'No') {
               detailParts.push(yn)
             }
 

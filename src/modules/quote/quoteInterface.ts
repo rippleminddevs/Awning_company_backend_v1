@@ -220,7 +220,7 @@ export interface InvoiceData {
     qty: number
     image: string
     title: string
-    fields: Array<{ label: string; value: string }>
+    fields: Array<{ label: string; value: string; key?: string }>
     options: Array<{ label: string; detail: string; yn: string; qty: string; price: string }>
     fabric?: { number: string; name: string } | null
     unitPrice: string

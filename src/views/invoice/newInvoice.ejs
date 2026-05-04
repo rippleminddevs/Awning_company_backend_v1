@@ -331,10 +331,20 @@
               <% } %>
             </div>
 
-            <!-- Dynamic field grid -->
-            <% if (item.fields && item.fields.length > 0) { %>
+            <!-- Dynamic field grid — all fields except location / install / story -->
+            <%
+              var META_KEYS = ['location', 'install', 'story'];
+              var META_LABELS = { location: 'Location', install: 'Install', story: 'Story' };
+              var regularFields = (item.fields || []).filter(function(f) { return !META_KEYS.includes(f.key); });
+              var metaFields = META_KEYS.map(function(k) {
+                var found = (item.fields || []).find(function(f) { return f.key === k; });
+                return found || { key: k, label: META_LABELS[k], value: '-' };
+              });
+            %>
+
+            <% if (regularFields.length > 0) { %>
               <div class="fields-grid">
-                <% item.fields.forEach(function(f) { %>
+                <% regularFields.forEach(function(f) { %>
                   <div class="field-item">
                     <div class="field-lbl"><%= f.label %></div>
                     <div class="field-val"><%= f.value %></div>
@@ -342,8 +352,17 @@
                 <% }) %>
               </div>
             <% } %>
-          </div>
+            </div>
 
+            <!-- Location / Install / Story — always 3 columns on one line -->
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 6px 14px; margin-bottom: 8px;">
+              <% metaFields.forEach(function(f) { %>
+                <div class="field-item">
+                  <div class="field-lbl"><%= f.label %></div>
+                  <div class="field-val"><%= f.value && f.value.toString().trim() !== '' ? f.value : '-' %></div>
+                </div>
+              <% }) %>
+            </div>
           <!-- Fabric -->
           <% if (item.fabric && item.fabric.number) { %>
             <div class="fabric-section">
