@@ -283,7 +283,7 @@ export class InvoiceService {
           : ''
 
 
-        const fields: Array<{ label: string; value: string }> = []
+        const fields: Array<{ label: string; value: string, key: string }> = []
 
 
         // Add all filled dimension/product fields in sort order
@@ -303,12 +303,13 @@ export class InvoiceService {
         // if (fabricValue) fields.push({ label: 'Fabric', value: fabricValue })
 
         // Preserve the natural key order from dimensions as stored on the item
-        Object.keys(dims).forEach(key => {
+        Object.keys(dims).forEach((key: string) => {
           const val = buildValue(key, dims[key])
           if (!val) return
           const label = fieldDefs[key]?.label || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
           fields.push({ label, value: val, key })
         })
+
 
         // ── Build options from options_map ────────────────────────────────
         const options: Array<{ label: string; detail: string; yn: string; qty: string; price: string }> = []
