@@ -187,7 +187,7 @@ export class InvoiceService {
     // ── Prefetch product types + option groups for V2 items ──────────────────
     const productTypeMap = new Map<string, any>()
     const subCategoryImageMap = new Map<string, string>() // sub_category_slug → image URL
-    const optionGroupMap = new Map<string, string>() // slug → display_label
+    const optionGroupMap = new Map<string, { display_label: string; render_type: string; items?: any[]; sub_fields?: any[] }>()
 
     if (isV2) {
       const ptIds = [...new Set(
@@ -223,9 +223,14 @@ export class InvoiceService {
       })
       if (allOptionSlugs.size > 0) {
         const ogs = await this.optionGroupModel.getMongooseModel()
-          ?.find({ slug: { $in: [...allOptionSlugs] } }, 'slug display_label')
+          ?.find({ slug: { $in: [...allOptionSlugs] } }, 'slug display_label render_type items sub_fields')
           .lean().exec() || []
-        ogs.forEach((og: any) => optionGroupMap.set(og.slug, og.display_label || og.slug))
+        ogs.forEach((og: any) => optionGroupMap.set(og.slug, {
+          display_label: og.display_label || og.slug,
+          render_type: og.render_type || '',
+          items: og.items || [],
+          sub_fields: og.sub_fields || [],
+        }))
       }
     }
 
@@ -317,36 +322,59 @@ export class InvoiceService {
           Object.entries(item.options_map).forEach(([slug, sel]: [string, any]) => {
             const yn = sel.yn ?? ''
             if (!yn || yn === '') return
-            const label = optionGroupMap.get(slug) || slug.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+            const og = optionGroupMap.get(slug)
+            const label = og?.display_label || slug.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+            const renderType = og?.render_type || ''
+            const groupItems: any[] = (og as any)?.items || []
+            const subFieldDefs: any[] = (og as any)?.sub_fields || []
 
-            // Build detail: sub_slug, brand, yn (if not "Yes"/"No"), then sub_fields
             const detailParts: string[] = []
 
+            // sub_slug — resolve display name
             if (sel.sub_slug) {
-              detailParts.push(sel.sub_slug.replace(/_/g, ' '))
+              if (renderType === 'fabric_picker') {
+                const fabricName = sel.sub_fields?.fabric_name ?? ''
+                detailParts.push(`#${sel.sub_slug}${fabricName ? ' — ' + fabricName : ''}`)
+              } else {
+                // Try inline items first
+                let name = sel.sub_slug.replace(/_/g, ' ')
+                if (groupItems.length > 0) {
+                  const inlineItem = groupItems.find((it: any) =>
+                    (it.label || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') === sel.sub_slug
+                  )
+                  if (inlineItem) name = inlineItem.label
+                }
+                detailParts.push(name)
+              }
             } else if (yn !== 'Yes' && yn !== 'No') {
               detailParts.push(yn)
             }
 
+            // Brand
             if (sel.brand) {
               detailParts.push(String(sel.brand).charAt(0).toUpperCase() + String(sel.brand).slice(1))
             }
 
-            // Include sub_fields (skip zero/empty values for qty_per_item style)
-            if (sel.sub_fields && typeof sel.sub_fields === 'object') {
+            // sub_fields — show all non-empty values (skip fabric_picker — already handled above)
+            if (sel.sub_fields && typeof sel.sub_fields === 'object' && renderType !== 'fabric_picker') {
               Object.entries(sel.sub_fields).forEach(([sfKey, sfVal]: [string, any]) => {
                 if (sfVal === undefined || sfVal === null || sfVal === '' || sfVal === 0) return
-                // Skip notes-only fields when already captured in sub_slug
+                const sfDef = subFieldDefs.find((sf: any) => sf.key === sfKey)
+                const sfLabel = sfDef?.label || sfKey.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
                 const sfStr = String(sfVal).replace(/_/g, ' ')
-                const sfLabel = sfKey.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-                detailParts.push(`${sfLabel}: ${sfStr}`)
+                detailParts.push(sfKey === 'notes' ? sfStr : `${sfLabel}: ${sfStr}`)
               })
+            }
+
+            // Linear feet
+            if (renderType === 'yn_with_linft' && sel.qty != null) {
+              detailParts.push(`${sel.qty} ft`)
             }
 
             const detail = detailParts.join(' · ')
             const ynDisplay = yn === 'Yes' ? 'Yes' : yn || 'Yes'
-            const qty    = sel.qty && sel.qty >= 1 ? `×${sel.qty}` : ''
-            const price  = (sel.price ?? 0) > 0 ? this.formatCurrency(sel.price) : ''
+            const qty = renderType === 'yn_with_linft' ? '' : (sel.qty && sel.qty >= 1 ? `×${sel.qty}` : '')
+            const price = (sel.price ?? 0) > 0 ? this.formatCurrency(sel.price) : ''
             options.push({ label, detail, yn: ynDisplay, qty, price })
           })
         }
