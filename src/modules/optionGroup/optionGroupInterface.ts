@@ -15,7 +15,7 @@ export interface OptionGroup {
   // ── Qty range ─────────────────────────────────────────────────────────────
   qty_min?: number
   qty_max?: number
-  // ── Catalog linkage ───────────────────────────────────────────────────────
+  // ── Catalog linkage (legacy — prefer inline items) ────────────────────────
   option_type_filter?: string | null
   option_slug_filter?: string | null
   // ── Fabric picker ─────────────────────────────────────────────────────────
@@ -30,4 +30,23 @@ export interface OptionGroup {
     free_text?: boolean
     options?: string[]
   }>
+  // ── Tree structure ────────────────────────────────────────────────────────
+  // Inline choice items — replaces OptionCatalog for new-style options
+  items?: Array<{
+    label: string
+    price: number | null
+    is_active: boolean
+    brand?: string
+  }>
+  // Child options shown inline when this option is "Yes"
+  sub_options?: Array<{
+    slug: string
+    sort_order?: number
+  }>
+  // Embedded pricing config — replaces scattered catalog pricing
+  pricing?: {
+    type: string          // flat | per_qty | per_linft | width | per_choice
+    amount?: number | null
+    width_table?: Record<string, number> | null
+  } | null
 }

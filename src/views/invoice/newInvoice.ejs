@@ -341,28 +341,31 @@
                 return found || { key: k, label: META_LABELS[k], value: '-' };
               });
             %>
-
-            <% if (regularFields.length > 0) { %>
+            <div style="flex:1; display:flex; flex-direction:column; gap:8px;">
+              <% if (regularFields.length > 0) { %>
+                <div class="fields-grid">
+                  <% regularFields.forEach(function(f) { %>
+                    <div class="field-item">
+                      <div class="field-lbl"><%= f.label %></div>
+                      <div class="field-val"><%= f.value %></div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } %>
+              <% if (metaFields.length > 0) { %>
               <div class="fields-grid">
-                <% regularFields.forEach(function(f) { %>
+                <% metaFields.forEach(function(f) { %>
                   <div class="field-item">
                     <div class="field-lbl"><%= f.label %></div>
-                    <div class="field-val"><%= f.value %></div>
+                    <div class="field-val"><%= f.value && f.value.toString().trim() !== '' ? f.value : '-' %></div>
                   </div>
                 <% }) %>
               </div>
-            <% } %>
+              <% } %>
             </div>
+          </div>
 
-            <!-- Location / Install / Story — always 3 columns on one line -->
-            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 6px 14px; margin-bottom: 8px;">
-              <% metaFields.forEach(function(f) { %>
-                <div class="field-item">
-                  <div class="field-lbl"><%= f.label %></div>
-                  <div class="field-val"><%= f.value && f.value.toString().trim() !== '' ? f.value : '-' %></div>
-                </div>
-              <% }) %>
-            </div>
+         
           <!-- Fabric -->
           <% if (item.fabric && item.fabric.number) { %>
             <div class="fabric-section">

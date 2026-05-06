@@ -14,6 +14,34 @@ const subFieldSchema = new mongoose.Schema(
   { _id: false }
 )
 
+const itemSchema = new mongoose.Schema(
+  {
+    label:     { type: String, required: true },
+    price:     { type: Number, default: null },
+    is_active: { type: Boolean, default: true },
+    sort_order: { type: Number, default: 1 },
+    brand:     { type: String, default: null },
+  },
+  { _id: false }
+)
+
+const subOptionRefSchema = new mongoose.Schema(
+  {
+    slug:       { type: String, required: true },
+    sort_order: { type: Number, default: 1 },
+  },
+  { _id: false }
+)
+
+const pricingSchema = new mongoose.Schema(
+  {
+    type:        { type: String },
+    amount:      { type: Number, default: null },
+    width_table: { type: mongoose.Schema.Types.Mixed, default: null },
+  },
+  { _id: false }
+)
+
 const fields: FieldsConfig = {
   // Primary identity
   display_label: {
@@ -105,9 +133,11 @@ export class OptionGroupModel extends BaseModel<OptionGroup> {
       includeTimestamps: true,
     })
 
-    // sub_fields can't be expressed in FieldsConfig (array of subdocs with mixed shape),
-    // so we add it directly to the Mongoose schema after creation.
-    schema.add({ sub_fields: { type: [subFieldSchema], default: [] } })
+    // Complex subdoc arrays are added directly to the Mongoose schema after creation.
+    schema.add({ sub_fields:   { type: [subFieldSchema],   default: [] } })
+    schema.add({ items:        { type: [itemSchema],        default: [] } })
+    schema.add({ sub_options:  { type: [subOptionRefSchema], default: [] } })
+    schema.add({ pricing:      { type: pricingSchema,       default: null } })
 
     schema.index({ slug: 1 }, { unique: true })
     super('OptionGroup', fields, schema)

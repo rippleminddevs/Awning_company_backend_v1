@@ -47,7 +47,17 @@ export class OptionGroupController extends BaseController<OptionGroup, OptionGro
 
     const sorted = groupSlugs
       .map((slug) => allGroups.find((g: any) => g.slug === slug))
-      .filter(Boolean);
+      .filter(Boolean) as any[];
+
+    // Also resolve any sub_option groups not already in the list
+    const existingSlugs = new Set(sorted.map((g: any) => g.slug))
+    const subOptionSlugs = new Set<string>()
+    sorted.forEach((g: any) => (g.sub_options ?? []).forEach((so: any) => subOptionSlugs.add(so.slug)))
+    const missingSlugs = [...subOptionSlugs].filter(s => !existingSlugs.has(s))
+    if (missingSlugs.length > 0) {
+      const subGroups = await this.service.getAll({ slug: { $in: missingSlugs } })
+      sorted.push(...subGroups)
+    }
 
     return apiResponse(res, sorted, 200);
   }
