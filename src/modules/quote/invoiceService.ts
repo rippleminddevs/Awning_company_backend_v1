@@ -216,10 +216,13 @@ export class InvoiceService {
         }
       }
 
-      // Collect all option group slugs referenced across all items
+      // Collect all option group slugs referenced across all items.
+      // Namespaced sub-option keys ("parentSlug::childSlug") are stripped to the child slug.
       const allOptionSlugs = new Set<string>()
       quote.line_items_v2.forEach((item: any) => {
-        if (item.options_map) Object.keys(item.options_map).forEach((s: string) => allOptionSlugs.add(s))
+        if (item.options_map) Object.keys(item.options_map).forEach((s: string) => {
+          allOptionSlugs.add(s.includes('::') ? s.split('::')[1] : s)
+        })
       })
       if (allOptionSlugs.size > 0) {
         const ogs = await this.optionGroupModel.getMongooseModel()
@@ -317,11 +320,17 @@ export class InvoiceService {
 
 
         // ── Build options from options_map ────────────────────────────────
-        const options: Array<{ label: string; detail: string; yn: string; qty: string; price: string }> = []
+        const options: Array<{ label: string; detail: string; yn: string; qty: string; price: string; parentLabel?: string }> = []
         if (item.options_map) {
-          Object.entries(item.options_map).forEach(([slug, sel]: [string, any]) => {
+          Object.entries(item.options_map).forEach(([rawSlug, sel]: [string, any]) => {
             const yn = sel.yn ?? ''
             if (!yn || yn === '') return
+            // Namespaced sub-option keys arrive as "parentSlug::childSlug"
+            const isNamespaced = rawSlug.includes('::')
+            const slug = isNamespaced ? rawSlug.split('::')[1] : rawSlug
+            const parentLabel = isNamespaced
+              ? (optionGroupMap.get(rawSlug.split('::')[0])?.display_label || '')
+              : ''
             const og = optionGroupMap.get(slug)
             const label = og?.display_label || slug.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
             const renderType = og?.render_type || ''
@@ -375,7 +384,7 @@ export class InvoiceService {
             const ynDisplay = yn === 'Yes' ? 'Yes' : yn || 'Yes'
             const qty = renderType === 'yn_with_linft' ? '' : (sel.qty && sel.qty >= 1 ? `×${sel.qty}` : '')
             const price = (sel.price ?? 0) > 0 ? this.formatCurrency(sel.price) : ''
-            options.push({ label, detail, yn: ynDisplay, qty, price })
+            options.push({ label, detail, yn: ynDisplay, qty, price, ...(parentLabel ? { parentLabel } : {}) })
           })
         }
 
