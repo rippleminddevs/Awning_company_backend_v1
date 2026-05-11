@@ -160,7 +160,7 @@ export class InvoiceService {
       street:   custStreet,
       cityZip:  custCityZip,
       source:   appt.source || '',
-      leadTime: appt.duration || '2–3 weeks',
+      leadTime: ps.leadTime || appt.duration || '9–12 Weeks',
     }
 
     // Project address (job site — same as customer if not separately set)
@@ -400,7 +400,7 @@ export class InvoiceService {
         const sunbrellaLogo = this.optimizeImageUrl(`${config.app.url}/static/uploads/defaults/sunbrella.png`, 80, 40, 70)
 
         return {
-          qty:          1,
+          qty:          item.qty || 1,
           image,
           title:        item.product_name || '',
           fields,

@@ -24,6 +24,7 @@ const itemSchema = Joi.object({
 const subOptionRefSchema = Joi.object({
   slug:       Joi.string().pattern(/^[a-z0-9_]+$/).required(),
   sort_order: Joi.number().optional(),
+  required:   Joi.boolean().optional(),
 })
 
 const pricingSchema = Joi.object({
@@ -48,8 +49,10 @@ const sharedFields = {
   option_slug_filter:Joi.string().allow('', null).optional(),
   sub_fields:        Joi.array().items(subFieldSchema).optional(),
   fabric_types:      Joi.array().items(Joi.string()).optional(),
-  depends_on_slug:   Joi.string().allow('', null).optional(),
-  depends_on_value:  Joi.string().allow('', null).optional(),
+  depends_on_slug:            Joi.string().allow('', null).optional(),
+  depends_on_value:           Joi.string().allow('', null).optional(),
+  depends_on_width_operator:  Joi.string().valid('>=', '<=', '<', '>', '=').allow(null).optional(),
+  depends_on_width_value:     Joi.number().allow(null).optional(),
   items:             Joi.array().items(itemSchema).optional(),
   sub_options:       Joi.array().items(subOptionRefSchema).optional(),
   pricing:           pricingSchema.allow(null).optional(),

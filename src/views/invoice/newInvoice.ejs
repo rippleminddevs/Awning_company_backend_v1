@@ -308,9 +308,10 @@
 
       <!-- Card header: item # · name · sub-total -->
       <div class="product-card-header">
-        <div style="display:flex;align-items:center;">
+        <div style="display:flex;align-items:center;gap:6px;">
           <div class="item-num"><%= idx + 1 %></div>
           <span class="item-name"><%= item.title || '—' %></span>
+          <% if (item.qty && item.qty > 1) { %><span style="font-size:11px;color:#666;font-weight:400;">× <%= item.qty %></span><% } %>
         </div>
         <span class="item-price"><%= item.subTotal %></span>
       </div>
@@ -439,6 +440,11 @@
         <div>
           <span class="price-lbl">Install</span>
           <span class="price-val"><%= item.installPrice %></span>
+        </div>
+        <% } %>
+        <% if (item.qty && item.qty > 1) { %>
+        <div>
+          <span class="price-lbl">× <%= item.qty %> units</span>
         </div>
         <% } %>
         <div>

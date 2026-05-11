@@ -29,6 +29,7 @@ const subOptionRefSchema = new mongoose.Schema(
   {
     slug:       { type: String, required: true },
     sort_order: { type: Number, default: 1 },
+    required:   { type: Boolean, default: false },
   },
   { _id: false }
 )
@@ -120,6 +121,15 @@ const fields: FieldsConfig = {
   },
   depends_on_value: {
     type: 'string',
+    nullable: true,
+  },
+  // Width dependency — show this group only when awning width satisfies the condition
+  depends_on_width_operator: {
+    type: 'string',
+    nullable: true,
+  },
+  depends_on_width_value: {
+    type: 'number',
     nullable: true,
   },
 }

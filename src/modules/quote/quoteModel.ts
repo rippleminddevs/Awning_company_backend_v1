@@ -15,6 +15,7 @@ const PaymentStructure: FieldsConfig = {
   grandTotal: { type: 'number', nullable: false },
   freight: { type: 'string', nullable: true },
   additionalInstallationCharges: { type: 'string', nullable: true },
+  leadTime: { type: 'string', nullable: true },
 }
 
 const PaymentSummary: FieldsConfig = {

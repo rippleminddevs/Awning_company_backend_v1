@@ -23,6 +23,8 @@ export interface OptionGroup {
   // ── Option dependency ─────────────────────────────────────────────────────
   depends_on_slug?: string | null
   depends_on_value?: string
+  depends_on_width_operator?: '>=' | '<=' | '<' | '>' | '='
+  depends_on_width_value?: number | null
   // ── Sub-fields (extra pickers / free-text fields shown inside this group) ─
   sub_fields?: Array<{
     key: string
@@ -42,6 +44,7 @@ export interface OptionGroup {
   sub_options?: Array<{
     slug: string
     sort_order?: number
+    required?: boolean
   }>
   // Embedded pricing config — replaces scattered catalog pricing
   pricing?: {

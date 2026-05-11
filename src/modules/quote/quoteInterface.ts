@@ -12,6 +12,7 @@ export interface PaymentStructure {
   grandTotal: number
   freight?: string
   additionalInstallationCharges?: string
+  leadTime?: string
 }
 
 export interface PaymentSummary {
@@ -80,6 +81,7 @@ export interface LineItemV2 {
   optionsTotal: number
   installPrice: number
   options_map: Record<string, OptionGroupSelection>
+  qty?: number
   line_total: number
   drive_type?: string
 }
