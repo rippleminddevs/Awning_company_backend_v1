@@ -463,7 +463,7 @@
     <div class="section-header">Totals</div>
     <table class="summary-table">
       <tr><td>Sub Total</td><td class="r"><%= summary.subtotal  %></td></tr>
-      <tr><td>Discount $</td>       <td class="r"><%= summary.discount  %></td></tr>
+      <tr style="color: #c0392b;"><td>Discount $</td>       <td class="r"><%= summary.discount  %></td></tr>
       <tr><td>Additional Install Charge ( $ )</td><td class="r">+<%= summary.additionalInstallationCharges %></td></tr>
       <tr class="total-row"><td>Grand Total</td><td class="r"><%= summary.grandTotal %></td></tr>
     </table>
@@ -472,7 +472,7 @@
     <div class="section-header">Payment Schedule</div>
     <table class="summary-table">
       <tr><td>Number of Installments</td>          <td class="r"><%= payment.numberOfInstallments %></td></tr>
-      <tr><td>Down Payment</td>                    <td class="r"><%= payment.downPayment %></td></tr>
+      <tr style="color: #c0392b;"><td>Down Payment</td>                    <td class="r"><%= payment.downPayment %></td></tr>
       <tr class="total-row"><td>Balance Due Upon Installation</td><td class="r"><%= payment.balanceDue %></td></tr>
       <tr><td>Payment Method</td>                  <td class="r"><%= payment.paymentMethod %></td></tr>
     </table>
